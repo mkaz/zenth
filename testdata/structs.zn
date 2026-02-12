@@ -1,0 +1,29 @@
+// Structs and methods in Zenth
+struct Point {
+    x: f64;
+    y: f64;
+}
+
+fn (p: Point) string() -> str {
+    return "(" + str(p.x) + ", " + str(p.y) + ")";
+}
+
+struct Rectangle {
+    width: f64;
+    height: f64;
+}
+
+fn (r: Rectangle) area() -> f64 {
+    return r.width * r.height;
+}
+
+fn main() {
+    let origin = Point{ x: 0.0, y: 0.0 };
+    let corner = Point{ x: 3.0, y: 4.0 };
+
+    println("Origin: " + origin.string());
+    println("Corner: " + corner.string());
+
+    let rect = Rectangle{ width: 10.0, height: 5.0 };
+    println("Area: " + str(rect.area()));
+}

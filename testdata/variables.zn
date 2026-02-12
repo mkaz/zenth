@@ -1,0 +1,31 @@
+// Variables and types in Zenth
+fn main() {
+    // Type inference with =
+    let name = "Zenth";
+    let year = 2026;
+    let pi = 3.14159;
+    let active = true;
+
+    println("Language: " + name);
+    println("Year: " + str(year));
+
+    // Mutable variables
+    var counter = 0;
+    counter = counter + 1;
+    counter += 1;
+    println("Counter: " + str(counter));
+
+    // If/else
+    if counter > 1 {
+        println("Counter is greater than 1");
+    } else {
+        println("Counter is 1 or less");
+    }
+
+    // For loop
+    var sum = 0;
+    for var i = 1; i <= 10; i++ {
+        sum += i;
+    }
+    println("Sum 1..10: " + str(sum));
+}

@@ -1,0 +1,4 @@
+// Should fail: type mismatch
+fn main() {
+    let x: int = "hello";
+}

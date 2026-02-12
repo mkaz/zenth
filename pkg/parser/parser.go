@@ -1,0 +1,786 @@
+package parser
+
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/mkaz/zenth/pkg/ast"
+	"github.com/mkaz/zenth/pkg/token"
+)
+
+// Parser converts a token stream into an AST.
+type Parser struct {
+	tokens []token.Token
+	pos    int
+	errors []string
+}
+
+// New creates a new Parser.
+func New(tokens []token.Token) *Parser {
+	return &Parser{tokens: tokens}
+}
+
+func (p *Parser) cur() token.Token {
+	if p.pos >= len(p.tokens) {
+		return token.Token{Type: token.EOF}
+	}
+	return p.tokens[p.pos]
+}
+
+func (p *Parser) peek() token.Type {
+	return p.cur().Type
+}
+
+func (p *Parser) peekAt(offset int) token.Type {
+	idx := p.pos + offset
+	if idx >= len(p.tokens) {
+		return token.EOF
+	}
+	return p.tokens[idx].Type
+}
+
+func (p *Parser) advance() token.Token {
+	tok := p.cur()
+	p.pos++
+	return tok
+}
+
+func (p *Parser) expect(typ token.Type) token.Token {
+	tok := p.cur()
+	if tok.Type != typ {
+		p.errorf(tok.Pos, "expected %s, got %s", typ, tok.Type)
+		return tok
+	}
+	p.pos++
+	return tok
+}
+
+func (p *Parser) errorf(pos token.Pos, format string, args ...interface{}) {
+	msg := fmt.Sprintf("%s: %s", pos, fmt.Sprintf(format, args...))
+	p.errors = append(p.errors, msg)
+}
+
+// Parse parses the token stream into a Program AST.
+func (p *Parser) Parse() (*ast.Program, error) {
+	prog := &ast.Program{}
+
+	for p.peek() != token.EOF {
+		stmt := p.parseTopLevel()
+		if stmt != nil {
+			prog.Stmts = append(prog.Stmts, stmt)
+		}
+		if len(p.errors) > 10 {
+			break
+		}
+	}
+
+	if len(p.errors) > 0 {
+		return nil, fmt.Errorf("parse errors:\n%s", joinErrors(p.errors))
+	}
+	return prog, nil
+}
+
+func (p *Parser) parseTopLevel() ast.Node {
+	switch p.peek() {
+	case token.Fn:
+		return p.parseFnDecl()
+	case token.Struct:
+		return p.parseStructDecl()
+	case token.Interface:
+		return p.parseInterfaceDecl()
+	case token.Import:
+		return p.parseImportDecl()
+	case token.Let:
+		return p.parseLetStmt()
+	case token.Var:
+		return p.parseVarStmt()
+	case token.Const:
+		return p.parseConstStmt()
+	default:
+		p.errorf(p.cur().Pos, "unexpected token at top level: %s", p.peek())
+		p.advance()
+		return nil
+	}
+}
+
+func (p *Parser) parseFnDecl() *ast.FnDecl {
+	fnTok := p.expect(token.Fn)
+	decl := &ast.FnDecl{TokenPos: fnTok.Pos}
+
+	// Check for method receiver: fn (name: Type) methodName(...)
+	if p.peek() == token.LParen && p.isReceiverSyntax() {
+		p.expect(token.LParen)
+		recvName := p.expect(token.Ident).Literal
+		p.expect(token.Colon)
+		recvType := p.parseTypeExpr()
+		p.expect(token.RParen)
+		decl.Receiver = &ast.Param{Name: recvName, Type: recvType}
+	}
+
+	decl.Name = p.expect(token.Ident).Literal
+
+	// Parameters
+	p.expect(token.LParen)
+	decl.Params = p.parseParams()
+	p.expect(token.RParen)
+
+	// Return type
+	if p.peek() == token.Arrow {
+		p.advance()
+		decl.ReturnType = p.parseTypeExpr()
+	}
+
+	// Body
+	decl.Body = p.parseBlock()
+
+	return decl
+}
+
+// isReceiverSyntax looks ahead to determine if ( starts a method receiver.
+// Receiver: (name: Type)
+func (p *Parser) isReceiverSyntax() bool {
+	// Look for pattern: ( Ident : Ident ) Ident
+	if p.peekAt(0) != token.LParen {
+		return false
+	}
+	if p.peekAt(1) != token.Ident {
+		return false
+	}
+	if p.peekAt(2) != token.Colon {
+		return false
+	}
+	return true
+}
+
+func (p *Parser) parseParams() []ast.Param {
+	var params []ast.Param
+	if p.peek() == token.RParen {
+		return params
+	}
+	for {
+		name := p.expect(token.Ident).Literal
+		p.expect(token.Colon)
+		typ := p.parseTypeExpr()
+		params = append(params, ast.Param{Name: name, Type: typ})
+		if p.peek() != token.Comma {
+			break
+		}
+		p.advance() // consume comma
+	}
+	return params
+}
+
+func (p *Parser) parseTypeExpr() *ast.TypeExpr {
+	pos := p.cur().Pos
+
+	// Slice type: []Type
+	if p.peek() == token.LBracket && p.peekAt(1) == token.RBracket {
+		p.advance() // [
+		p.advance() // ]
+		elem := p.parseTypeExpr()
+		return &ast.TypeExpr{TokenPos: pos, Name: elem.Name, IsSlice: true, Params: []*ast.TypeExpr{elem}}
+	}
+
+	name := p.expect(token.Ident).Literal
+	return &ast.TypeExpr{TokenPos: pos, Name: name}
+}
+
+func (p *Parser) parseBlock() *ast.Block {
+	tok := p.expect(token.LBrace)
+	block := &ast.Block{TokenPos: tok.Pos}
+	for p.peek() != token.RBrace && p.peek() != token.EOF {
+		stmt := p.parseStmt()
+		if stmt != nil {
+			block.Stmts = append(block.Stmts, stmt)
+		}
+	}
+	p.expect(token.RBrace)
+	return block
+}
+
+func (p *Parser) parseStmt() ast.Node {
+	switch p.peek() {
+	case token.Let:
+		return p.parseLetStmt()
+	case token.Var:
+		return p.parseVarStmt()
+	case token.Const:
+		return p.parseConstStmt()
+	case token.Return:
+		return p.parseReturnStmt()
+	case token.If:
+		return p.parseIfStmt()
+	case token.For:
+		return p.parseForStmt()
+	case token.Match:
+		return p.parseMatchStmt()
+	case token.Break:
+		tok := p.advance()
+		p.expect(token.Semicolon)
+		return &ast.BreakStmt{TokenPos: tok.Pos}
+	case token.Continue:
+		tok := p.advance()
+		p.expect(token.Semicolon)
+		return &ast.ContinueStmt{TokenPos: tok.Pos}
+	default:
+		return p.parseExprOrAssignStmt()
+	}
+}
+
+func (p *Parser) parseLetStmt() *ast.LetStmt {
+	tok := p.expect(token.Let)
+	stmt := &ast.LetStmt{TokenPos: tok.Pos}
+	stmt.Name = p.expect(token.Ident).Literal
+
+	if p.peek() == token.Colon {
+		// let name: Type = expr
+		p.advance()
+		stmt.Type = p.parseTypeExpr()
+		p.expect(token.Assign)
+		stmt.Value = p.parseExpr(0)
+	} else if p.peek() == token.Assign {
+		// let name = expr  (infer type)
+		p.advance()
+		stmt.Infer = true
+		stmt.Value = p.parseExpr(0)
+	} else {
+		p.errorf(tok.Pos, "expected = or : after let variable name")
+	}
+
+	p.expect(token.Semicolon)
+	return stmt
+}
+
+func (p *Parser) parseVarStmt() *ast.VarStmt {
+	tok := p.expect(token.Var)
+	stmt := &ast.VarStmt{TokenPos: tok.Pos}
+	stmt.Name = p.expect(token.Ident).Literal
+
+	if p.peek() == token.Colon {
+		// var name: Type = expr
+		p.advance()
+		stmt.Type = p.parseTypeExpr()
+		p.expect(token.Assign)
+		stmt.Value = p.parseExpr(0)
+	} else if p.peek() == token.Assign {
+		// var name = expr  (infer type)
+		p.advance()
+		stmt.Infer = true
+		stmt.Value = p.parseExpr(0)
+	} else {
+		p.errorf(tok.Pos, "expected = or : after var variable name")
+	}
+
+	p.expect(token.Semicolon)
+	return stmt
+}
+
+func (p *Parser) parseConstStmt() *ast.ConstStmt {
+	tok := p.expect(token.Const)
+	stmt := &ast.ConstStmt{TokenPos: tok.Pos}
+	stmt.Name = p.expect(token.Ident).Literal
+
+	if p.peek() == token.Colon {
+		// const name: Type = expr
+		p.advance()
+		stmt.Type = p.parseTypeExpr()
+		p.expect(token.Assign)
+		stmt.Value = p.parseExpr(0)
+	} else if p.peek() == token.Assign {
+		// const name = expr  (infer type)
+		p.advance()
+		stmt.Infer = true
+		stmt.Value = p.parseExpr(0)
+	} else {
+		p.errorf(tok.Pos, "expected = or : after const name")
+	}
+
+	p.expect(token.Semicolon)
+	return stmt
+}
+
+func (p *Parser) parseReturnStmt() *ast.ReturnStmt {
+	tok := p.expect(token.Return)
+	stmt := &ast.ReturnStmt{TokenPos: tok.Pos}
+	if p.peek() != token.Semicolon {
+		stmt.Value = p.parseExpr(0)
+	}
+	p.expect(token.Semicolon)
+	return stmt
+}
+
+func (p *Parser) parseIfStmt() *ast.IfStmt {
+	tok := p.expect(token.If)
+	stmt := &ast.IfStmt{TokenPos: tok.Pos}
+	stmt.Condition = p.parseExpr(0)
+	stmt.Body = p.parseBlock()
+	if p.peek() == token.Else {
+		p.advance()
+		if p.peek() == token.If {
+			stmt.Else = p.parseIfStmt()
+		} else {
+			stmt.Else = p.parseBlock()
+		}
+	}
+	return stmt
+}
+
+func (p *Parser) parseForStmt() ast.Node {
+	tok := p.expect(token.For)
+
+	// for { ... } -- infinite loop
+	if p.peek() == token.LBrace {
+		body := p.parseBlock()
+		return &ast.ForStmt{TokenPos: tok.Pos, Body: body}
+	}
+
+	// Try to detect for...in: look for `ident in` or `ident, ident in`
+	if p.isForIn() {
+		return p.parseForInStmt(tok)
+	}
+
+	// for condition { ... } -- while-style
+	// or for init; cond; post { ... } -- C-style
+	return p.parseCStyleFor(tok)
+}
+
+func (p *Parser) isForIn() bool {
+	// ident in ...
+	if p.peekAt(0) == token.Ident && p.peekAt(1) == token.In {
+		return true
+	}
+	// ident, ident in ...
+	if p.peekAt(0) == token.Ident && p.peekAt(1) == token.Comma && p.peekAt(2) == token.Ident && p.peekAt(3) == token.In {
+		return true
+	}
+	return false
+}
+
+func (p *Parser) parseForInStmt(tok token.Token) *ast.ForInStmt {
+	stmt := &ast.ForInStmt{TokenPos: tok.Pos}
+
+	first := p.expect(token.Ident).Literal
+	if p.peek() == token.Comma {
+		p.advance()
+		stmt.Index = first
+		stmt.Value = p.expect(token.Ident).Literal
+	} else {
+		stmt.Value = first
+	}
+
+	p.expect(token.In)
+	stmt.Iterable = p.parseExpr(0)
+	stmt.Body = p.parseBlock()
+	return stmt
+}
+
+func (p *Parser) parseCStyleFor(tok token.Token) *ast.ForStmt {
+	stmt := &ast.ForStmt{TokenPos: tok.Pos}
+
+	// Check for while-style: expr { ... }
+	// vs C-style: init; cond; post { ... }
+	// We detect C-style by trying to parse the first part and seeing if a semicolon follows
+	startPos := p.pos
+	_ = startPos
+
+	// Try: is the first semicolon before the first { ?
+	if p.hasSemicolonBeforeBrace() {
+		// C-style for
+		stmt.Init = p.parseSimpleStmt()
+		p.expect(token.Semicolon)
+		if p.peek() != token.Semicolon {
+			stmt.Condition = p.parseExpr(0)
+		}
+		p.expect(token.Semicolon)
+		if p.peek() != token.LBrace {
+			stmt.Post = p.parseSimpleStmtNoSemicolon()
+		}
+	} else {
+		// While-style: just a condition
+		stmt.Condition = p.parseExpr(0)
+	}
+
+	stmt.Body = p.parseBlock()
+	return stmt
+}
+
+func (p *Parser) hasSemicolonBeforeBrace() bool {
+	depth := 0
+	for i := p.pos; i < len(p.tokens); i++ {
+		switch p.tokens[i].Type {
+		case token.LParen, token.LBracket:
+			depth++
+		case token.RParen, token.RBracket:
+			depth--
+		case token.Semicolon:
+			if depth == 0 {
+				return true
+			}
+		case token.LBrace:
+			if depth == 0 {
+				return false
+			}
+		case token.EOF:
+			return false
+		}
+	}
+	return false
+}
+
+// parseSimpleStmt parses a let/var or expression (for 'for' init clauses).
+func (p *Parser) parseSimpleStmt() ast.Node {
+	switch p.peek() {
+	case token.Let:
+		tok := p.expect(token.Let)
+		stmt := &ast.LetStmt{TokenPos: tok.Pos}
+		stmt.Name = p.expect(token.Ident).Literal
+		if p.peek() == token.Colon {
+			p.advance()
+			stmt.Type = p.parseTypeExpr()
+			p.expect(token.Assign)
+			stmt.Value = p.parseExpr(0)
+		} else if p.peek() == token.Assign {
+			p.advance()
+			stmt.Infer = true
+			stmt.Value = p.parseExpr(0)
+		}
+		return stmt
+	case token.Var:
+		tok := p.expect(token.Var)
+		stmt := &ast.VarStmt{TokenPos: tok.Pos}
+		stmt.Name = p.expect(token.Ident).Literal
+		if p.peek() == token.Colon {
+			p.advance()
+			stmt.Type = p.parseTypeExpr()
+			p.expect(token.Assign)
+			stmt.Value = p.parseExpr(0)
+		} else if p.peek() == token.Assign {
+			p.advance()
+			stmt.Infer = true
+			stmt.Value = p.parseExpr(0)
+		}
+		return stmt
+	default:
+		return p.parseSimpleStmtNoSemicolon()
+	}
+}
+
+func (p *Parser) parseSimpleStmtNoSemicolon() ast.Node {
+	expr := p.parseExpr(0)
+	// Check for assignment
+	if p.peek() == token.Assign || p.peek() == token.PlusAssign || p.peek() == token.MinusAssign || p.peek() == token.StarAssign || p.peek() == token.SlashAssign {
+		op := p.advance()
+		value := p.parseExpr(0)
+		return &ast.AssignStmt{TokenPos: op.Pos, Target: expr, Op: op.Type, Value: value}
+	}
+	// Check for ++ or --
+	if p.peek() == token.PlusPlus || p.peek() == token.MinusMinus {
+		op := p.advance()
+		return &ast.IncDecStmt{TokenPos: op.Pos, Operand: expr, Op: op.Type}
+	}
+	return &ast.ExprStmt{Expr: expr}
+}
+
+func (p *Parser) parseMatchStmt() *ast.MatchStmt {
+	tok := p.expect(token.Match)
+	stmt := &ast.MatchStmt{TokenPos: tok.Pos}
+	stmt.Subject = p.parseExpr(0)
+	p.expect(token.LBrace)
+	for p.peek() != token.RBrace && p.peek() != token.EOF {
+		arm := p.parseMatchArm()
+		stmt.Arms = append(stmt.Arms, arm)
+	}
+	p.expect(token.RBrace)
+	return stmt
+}
+
+func (p *Parser) parseMatchArm() ast.MatchArm {
+	var arm ast.MatchArm
+	arm.Pattern = p.parseExpr(0)
+	p.expect(token.FatArrow)
+	if p.peek() == token.LBrace {
+		arm.Body = p.parseBlock()
+	} else {
+		arm.Body = p.parseStmt()
+	}
+	return arm
+}
+
+func (p *Parser) parseExprOrAssignStmt() ast.Node {
+	expr := p.parseExpr(0)
+
+	// Assignment
+	if p.peek() == token.Assign || p.peek() == token.PlusAssign || p.peek() == token.MinusAssign || p.peek() == token.StarAssign || p.peek() == token.SlashAssign {
+		op := p.advance()
+		value := p.parseExpr(0)
+		p.expect(token.Semicolon)
+		return &ast.AssignStmt{TokenPos: op.Pos, Target: expr, Op: op.Type, Value: value}
+	}
+
+	// IncDec
+	if p.peek() == token.PlusPlus || p.peek() == token.MinusMinus {
+		op := p.advance()
+		p.expect(token.Semicolon)
+		return &ast.IncDecStmt{TokenPos: op.Pos, Operand: expr, Op: op.Type}
+	}
+
+	p.expect(token.Semicolon)
+	return &ast.ExprStmt{Expr: expr}
+}
+
+// ---------- Expression Parsing (Pratt) ----------
+
+func (p *Parser) parseExpr(minPrec int) ast.Node {
+	left := p.parseUnary()
+
+	for {
+		prec := p.precedence(p.peek())
+		if prec <= minPrec {
+			break
+		}
+		op := p.advance()
+		right := p.parseExpr(prec)
+		left = &ast.BinaryExpr{
+			TokenPos: op.Pos,
+			Left:     left,
+			Op:       op.Type,
+			Right:    right,
+		}
+	}
+
+	return left
+}
+
+func (p *Parser) precedence(t token.Type) int {
+	switch t {
+	case token.Or:
+		return 1
+	case token.And:
+		return 2
+	case token.Eq, token.Neq:
+		return 3
+	case token.Lt, token.Gt, token.Lte, token.Gte:
+		return 4
+	case token.Plus, token.Minus:
+		return 5
+	case token.Star, token.Slash, token.Percent:
+		return 6
+	default:
+		return 0
+	}
+}
+
+func (p *Parser) parseUnary() ast.Node {
+	if p.peek() == token.Not || p.peek() == token.Minus {
+		op := p.advance()
+		operand := p.parseUnary()
+		return &ast.UnaryExpr{TokenPos: op.Pos, Op: op.Type, Operand: operand}
+	}
+	return p.parsePostfix()
+}
+
+func (p *Parser) parsePostfix() ast.Node {
+	expr := p.parsePrimary()
+
+	for {
+		switch p.peek() {
+		case token.LParen:
+			expr = p.parseCallExpr(expr)
+		case token.LBracket:
+			tok := p.advance()
+			index := p.parseExpr(0)
+			p.expect(token.RBracket)
+			expr = &ast.IndexExpr{TokenPos: tok.Pos, Object: expr, Index: index}
+		case token.Dot:
+			tok := p.advance()
+			field := p.expect(token.Ident).Literal
+			expr = &ast.FieldExpr{TokenPos: tok.Pos, Object: expr, Field: field}
+		default:
+			return expr
+		}
+	}
+}
+
+func (p *Parser) parseCallExpr(callee ast.Node) *ast.CallExpr {
+	tok := p.expect(token.LParen)
+	call := &ast.CallExpr{TokenPos: tok.Pos, Callee: callee}
+	if p.peek() != token.RParen {
+		for {
+			arg := p.parseExpr(0)
+			call.Args = append(call.Args, arg)
+			if p.peek() != token.Comma {
+				break
+			}
+			p.advance()
+		}
+	}
+	p.expect(token.RParen)
+	return call
+}
+
+func (p *Parser) parsePrimary() ast.Node {
+	tok := p.cur()
+
+	switch tok.Type {
+	case token.IntLit:
+		p.advance()
+		val, _ := strconv.ParseInt(tok.Literal, 10, 64)
+		return &ast.IntLitExpr{TokenPos: tok.Pos, Value: val}
+
+	case token.FloatLit:
+		p.advance()
+		val, _ := strconv.ParseFloat(tok.Literal, 64)
+		return &ast.FloatLitExpr{TokenPos: tok.Pos, Value: val}
+
+	case token.StringLit:
+		p.advance()
+		return &ast.StringLitExpr{TokenPos: tok.Pos, Value: tok.Literal}
+
+	case token.True:
+		p.advance()
+		return &ast.BoolLitExpr{TokenPos: tok.Pos, Value: true}
+
+	case token.False:
+		p.advance()
+		return &ast.BoolLitExpr{TokenPos: tok.Pos, Value: false}
+
+	case token.Nil:
+		p.advance()
+		return &ast.NilExpr{TokenPos: tok.Pos}
+
+	case token.Ident:
+		p.advance()
+		// Check for struct literal: Name{ field: value }
+		if p.peek() == token.LBrace && p.isStructLit() {
+			return p.parseStructLit(tok)
+		}
+		return &ast.IdentExpr{TokenPos: tok.Pos, Name: tok.Literal}
+
+	case token.LParen:
+		p.advance()
+		expr := p.parseExpr(0)
+		p.expect(token.RParen)
+		return expr
+
+	case token.LBracket:
+		return p.parseArrayLit()
+
+	default:
+		p.errorf(tok.Pos, "unexpected token: %s (%q)", tok.Type, tok.Literal)
+		p.advance()
+		return &ast.IdentExpr{TokenPos: tok.Pos, Name: "<error>"}
+	}
+}
+
+func (p *Parser) isStructLit() bool {
+	// Look for { ident : pattern
+	if p.peekAt(0) != token.LBrace {
+		return false
+	}
+	if p.peekAt(1) == token.Ident && p.peekAt(2) == token.Colon {
+		return true
+	}
+	// Empty struct: {}
+	if p.peekAt(1) == token.RBrace {
+		return true
+	}
+	return false
+}
+
+func (p *Parser) parseStructLit(nameTok token.Token) *ast.StructLitExpr {
+	lit := &ast.StructLitExpr{TokenPos: nameTok.Pos, Name: nameTok.Literal}
+	p.expect(token.LBrace)
+	if p.peek() != token.RBrace {
+		for {
+			fieldName := p.expect(token.Ident).Literal
+			p.expect(token.Colon)
+			value := p.parseExpr(0)
+			lit.Fields = append(lit.Fields, ast.StructLitField{Name: fieldName, Value: value})
+			if p.peek() != token.Comma {
+				break
+			}
+			p.advance()
+		}
+	}
+	p.expect(token.RBrace)
+	return lit
+}
+
+func (p *Parser) parseArrayLit() *ast.ArrayLitExpr {
+	tok := p.expect(token.LBracket)
+	lit := &ast.ArrayLitExpr{TokenPos: tok.Pos}
+	if p.peek() != token.RBracket {
+		for {
+			elem := p.parseExpr(0)
+			lit.Elements = append(lit.Elements, elem)
+			if p.peek() != token.Comma {
+				break
+			}
+			p.advance()
+		}
+	}
+	p.expect(token.RBracket)
+	return lit
+}
+
+func (p *Parser) parseStructDecl() *ast.StructDecl {
+	tok := p.expect(token.Struct)
+	decl := &ast.StructDecl{TokenPos: tok.Pos}
+	decl.Name = p.expect(token.Ident).Literal
+	p.expect(token.LBrace)
+	for p.peek() != token.RBrace && p.peek() != token.EOF {
+		name := p.expect(token.Ident).Literal
+		p.expect(token.Colon)
+		typ := p.parseTypeExpr()
+		p.expect(token.Semicolon)
+		decl.Fields = append(decl.Fields, ast.Field{Name: name, Type: typ})
+	}
+	p.expect(token.RBrace)
+	return decl
+}
+
+func (p *Parser) parseInterfaceDecl() *ast.InterfaceDecl {
+	tok := p.expect(token.Interface)
+	decl := &ast.InterfaceDecl{TokenPos: tok.Pos}
+	decl.Name = p.expect(token.Ident).Literal
+	p.expect(token.LBrace)
+	for p.peek() != token.RBrace && p.peek() != token.EOF {
+		p.expect(token.Fn)
+		name := p.expect(token.Ident).Literal
+		p.expect(token.LParen)
+		params := p.parseParams()
+		p.expect(token.RParen)
+		var retType *ast.TypeExpr
+		if p.peek() == token.Arrow {
+			p.advance()
+			retType = p.parseTypeExpr()
+		}
+		p.expect(token.Semicolon)
+		decl.Methods = append(decl.Methods, ast.MethodSig{Name: name, Params: params, ReturnType: retType})
+	}
+	p.expect(token.RBrace)
+	return decl
+}
+
+func (p *Parser) parseImportDecl() *ast.ImportDecl {
+	tok := p.expect(token.Import)
+	decl := &ast.ImportDecl{TokenPos: tok.Pos}
+	decl.Path = p.expect(token.StringLit).Literal
+	if p.peek() == token.As {
+		p.advance()
+		decl.Alias = p.expect(token.Ident).Literal
+	}
+	p.expect(token.Semicolon)
+	return decl
+}
+
+func joinErrors(errs []string) string {
+	result := ""
+	for i, e := range errs {
+		if i > 0 {
+			result += "\n"
+		}
+		result += "  " + e
+	}
+	return result
+}
