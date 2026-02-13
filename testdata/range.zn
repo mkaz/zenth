@@ -1,0 +1,40 @@
+// Test range() and rangei() built-in functions
+
+fn main() {
+    // Basic range (exclusive end)
+    let nums = range(0, 5);
+    println("range(0,5): " + str(len(nums)));
+    for n in nums {
+        print(str(n) + " ");
+    }
+    println("");
+
+    // rangei (inclusive end)
+    let inc = rangei(1, 5);
+    println("rangei(1,5): " + str(len(inc)));
+    for n in inc {
+        print(str(n) + " ");
+    }
+    println("");
+
+    // range with step
+    let evens = range(0, 10, 2);
+    println("range(0,10,2): " + str(len(evens)));
+    for n in evens {
+        print(str(n) + " ");
+    }
+    println("");
+
+    // rangei with step
+    let by3 = rangei(0, 10, 3);
+    println("rangei(0,10,3): " + str(len(by3)));
+    for n in by3 {
+        print(str(n) + " ");
+    }
+    println("");
+
+    // for-in with index
+    for i, v in range(10, 13) {
+        println("i=" + str(i) + " v=" + str(v));
+    }
+}

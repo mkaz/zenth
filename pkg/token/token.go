@@ -14,7 +14,8 @@ const (
 	Ident     // variable names, function names
 	IntLit    // 42
 	FloatLit  // 3.14
-	StringLit // "hello"
+	StringLit       // "hello"
+	InterpStringLit // "hello {name}" (contains interpolation)
 
 	// Operators
 	Plus     // +
@@ -90,7 +91,8 @@ var typeNames = map[Type]string{
 	Ident:      "Ident",
 	IntLit:     "IntLit",
 	FloatLit:   "FloatLit",
-	StringLit:  "StringLit",
+	StringLit:       "StringLit",
+	InterpStringLit: "InterpStringLit",
 	Plus:       "+",
 	Minus:      "-",
 	Star:       "*",

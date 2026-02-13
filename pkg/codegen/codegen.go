@@ -10,10 +10,12 @@ import (
 
 // Generator translates a Zenth AST to Go source code.
 type Generator struct {
-	buf     strings.Builder
-	indent  int
-	imports map[string]string // Go import path -> alias (or empty)
-	structs map[string]*ast.StructDecl
+	buf         strings.Builder
+	indent      int
+	imports     map[string]string // Go import path -> alias (or empty)
+	structs     map[string]*ast.StructDecl
+	needsRange  bool
+	needsRangei bool
 }
 
 // New creates a new code Generator.
@@ -71,6 +73,31 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		}
 		g.indent--
 		g.writeln(")")
+		g.writeln("")
+	}
+
+	if g.needsRange {
+		g.writeln("func zenth_range(start, end, step int) []int {")
+		g.writeln("\tvar r []int")
+		g.writeln("\tif step > 0 {")
+		g.writeln("\t\tfor i := start; i < end; i += step { r = append(r, i) }")
+		g.writeln("\t} else if step < 0 {")
+		g.writeln("\t\tfor i := start; i > end; i += step { r = append(r, i) }")
+		g.writeln("\t}")
+		g.writeln("\treturn r")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsRangei {
+		g.writeln("func zenth_rangei(start, end, step int) []int {")
+		g.writeln("\tvar r []int")
+		g.writeln("\tif step > 0 {")
+		g.writeln("\t\tfor i := start; i <= end; i += step { r = append(r, i) }")
+		g.writeln("\t} else if step < 0 {")
+		g.writeln("\t\tfor i := start; i >= end; i += step { r = append(r, i) }")
+		g.writeln("\t}")
+		g.writeln("\treturn r")
+		g.writeln("}")
 		g.writeln("")
 	}
 
@@ -557,6 +584,8 @@ func (g *Generator) genExpr(node ast.Node) {
 		g.genArrayLit(n)
 	case *ast.StructLitExpr:
 		g.genStructLit(n)
+	case *ast.InterpStringExpr:
+		g.genInterpString(n)
 	default:
 		g.write(fmt.Sprintf("/* unhandled expr: %T */", node))
 	}
@@ -584,6 +613,24 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 		case "str":
 			g.write("fmt.Sprint(")
 			g.genArgList(c.Args)
+			g.write(")")
+			return
+		case "range":
+			g.needsRange = true
+			g.write("zenth_range(")
+			g.genArgList(c.Args)
+			if len(c.Args) == 2 {
+				g.write(", 1")
+			}
+			g.write(")")
+			return
+		case "rangei":
+			g.needsRangei = true
+			g.write("zenth_rangei(")
+			g.genArgList(c.Args)
+			if len(c.Args) == 2 {
+				g.write(", 1")
+			}
 			g.write(")")
 			return
 		}
@@ -640,6 +687,34 @@ func (g *Generator) genStructLit(s *ast.StructLitExpr) {
 		g.genExpr(f.Value)
 	}
 	g.write("}")
+}
+
+func (g *Generator) genInterpString(s *ast.InterpStringExpr) {
+	// Build fmt.Sprintf("...%v...", arg1, arg2, ...)
+	var format strings.Builder
+	var args []ast.Node
+	for _, part := range s.Parts {
+		if part.IsExpr {
+			format.WriteString("%v")
+			args = append(args, part.Expr)
+		} else {
+			// Escape % as %% and quote special chars for Go string literal
+			for _, ch := range part.Lit {
+				if ch == '%' {
+					format.WriteString("%%")
+				} else {
+					format.WriteRune(ch)
+				}
+			}
+		}
+	}
+	g.write("fmt.Sprintf(")
+	g.write(fmt.Sprintf("%q", format.String()))
+	for _, arg := range args {
+		g.write(", ")
+		g.genExpr(arg)
+	}
+	g.write(")")
 }
 
 // ---------- Helpers ----------

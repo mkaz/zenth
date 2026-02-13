@@ -63,6 +63,16 @@ func New() *Checker {
 		Params: []ZType{TypeInt},
 		Return: TypeStr,
 	}
+	c.funcs["range"] = &FuncInfo{
+		Name:   "range",
+		Params: []ZType{TypeInt, TypeInt},
+		Return: &SliceType{Elem: TypeInt},
+	}
+	c.funcs["rangei"] = &FuncInfo{
+		Name:   "rangei",
+		Params: []ZType{TypeInt, TypeInt},
+		Return: &SliceType{Elem: TypeInt},
+	}
 
 	return c
 }
@@ -232,6 +242,13 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 		return c.checkArrayLit(n)
 	case *ast.StructLitExpr:
 		return c.checkStructLit(n)
+	case *ast.InterpStringExpr:
+		for _, part := range n.Parts {
+			if part.IsExpr {
+				c.checkNode(part.Expr)
+			}
+		}
+		return TypeStr
 	default:
 		c.errorf(node.Pos(), "unhandled node type in checker: %T", node)
 		return TypeVoid
@@ -553,6 +570,13 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 	}
 	// Flexible arg count for variadic builtins (print, println, etc.)
 	if info.Name == "print" || info.Name == "println" {
+		return
+	}
+	// range/rangei accept 2 or 3 int args
+	if info.Name == "range" || info.Name == "rangei" {
+		if len(e.Args) < 2 || len(e.Args) > 3 {
+			c.errorf(e.Pos(), "%s expects 2 or 3 arguments, got %d", info.Name, len(e.Args))
+		}
 		return
 	}
 	if len(e.Args) != len(info.Params) {

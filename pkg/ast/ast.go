@@ -384,3 +384,19 @@ type StructLitField struct {
 	Name  string
 	Value Node
 }
+
+// InterpStringExpr represents a string with interpolated expressions: "hello {name}"
+type InterpStringExpr struct {
+	TokenPos token.Pos
+	Parts    []InterpPart
+}
+
+func (s *InterpStringExpr) Pos() token.Pos { return s.TokenPos }
+func (s *InterpStringExpr) nodeMarker()    {}
+
+// InterpPart is one segment of an interpolated string.
+type InterpPart struct {
+	IsExpr bool
+	Lit    string // text content (when IsExpr is false)
+	Expr   Node   // parsed expression (when IsExpr is true)
+}

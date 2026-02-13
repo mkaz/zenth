@@ -6,6 +6,13 @@ struct Point {
     fn string() -> str {
         return "(" + str(self.x) + ", " + str(self.y) + ")";
     }
+
+    fn distance(pt: Point) -> f64 {
+        let x_dist = self.x - pt.x;
+        let y_dist = self.y - pt.y;
+        // Need to absolute value
+        return x_dist + y_dist;
+    }
 }
 
 struct Rectangle {
@@ -21,9 +28,10 @@ fn main() {
     let origin = Point{ x: 0.0, y: 0.0 };
     let corner = Point{ x: 3.0, y: 4.0 };
 
-    println("Origin: " + origin.string());
-    println("Corner: " + corner.string());
+    println("Origin: {origin.string()}");
+    println("Corner: {corner.string()}");
 
+    println("Distance between: {origin.distance(corner)}");
     let rect = Rectangle{ width: 10.0, height: 5.0 };
-    println("Area: " + str(rect.area()));
+    println("Area: {rect.area()}");
 }

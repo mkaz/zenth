@@ -33,6 +33,35 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "match.zn",
 			contains: []string{"Fizz", "Buzz", "FizzBuzz", "Wednesday"},
 		},
+		{
+			file: "range.zn",
+			contains: []string{
+				"range(0,5): 5",
+				"0 1 2 3 4",
+				"rangei(1,5): 5",
+				"1 2 3 4 5",
+				"range(0,10,2): 5",
+				"0 2 4 6 8",
+				"rangei(0,10,3): 4",
+				"0 3 6 9",
+				"i=0 v=10",
+				"i=1 v=11",
+				"i=2 v=12",
+			},
+		},
+		{
+			file: "interpolation.zn",
+			contains: []string{
+				"Hello World!",
+				"3 + 4 = 7",
+				"No interpolation here",
+				"Raw {name} string",
+				"Use {braces} literally",
+				"Result: 30",
+				"Area: 50",
+				"Say: hi",
+			},
+		},
 	}
 
 	for _, tt := range tests {

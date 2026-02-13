@@ -83,6 +83,8 @@ func (l *Lexer) Tokenize() ([]token.Token, error) {
 		switch {
 		case ch == '"':
 			l.readString(pos)
+		case ch == '\'':
+			l.readRawString(pos)
 		case isDigit(ch):
 			l.readNumber(pos)
 		case isIdentStart(ch):
@@ -139,11 +141,16 @@ func (l *Lexer) skipWhitespaceAndComments() {
 func (l *Lexer) readString(pos token.Pos) {
 	l.advance() // opening "
 	var lit []rune
+	hasInterp := false
 	for l.pos < len(l.src) {
 		ch := l.peek()
 		if ch == '"' {
 			l.advance() // closing "
-			l.emit(token.StringLit, string(lit), pos)
+			if hasInterp {
+				l.emit(token.InterpStringLit, string(lit), pos)
+			} else {
+				l.emit(token.StringLit, string(lit), pos)
+			}
 			return
 		}
 		if ch == '\\' {
@@ -158,6 +165,51 @@ func (l *Lexer) readString(pos token.Pos) {
 				lit = append(lit, '\\')
 			case '"':
 				lit = append(lit, '"')
+			case '0':
+				lit = append(lit, 0)
+			case '{':
+				lit = append(lit, '{')
+			case '}':
+				lit = append(lit, '}')
+			default:
+				lit = append(lit, '\\', esc)
+			}
+			continue
+		}
+		if ch == '{' {
+			hasInterp = true
+		}
+		if ch == '\n' {
+			l.error(pos, "unterminated string literal")
+			return
+		}
+		lit = append(lit, l.advance())
+	}
+	l.error(pos, "unterminated string literal")
+}
+
+func (l *Lexer) readRawString(pos token.Pos) {
+	l.advance() // opening '
+	var lit []rune
+	for l.pos < len(l.src) {
+		ch := l.peek()
+		if ch == '\'' {
+			l.advance() // closing '
+			l.emit(token.StringLit, string(lit), pos)
+			return
+		}
+		if ch == '\\' {
+			l.advance()
+			esc := l.advance()
+			switch esc {
+			case 'n':
+				lit = append(lit, '\n')
+			case 't':
+				lit = append(lit, '\t')
+			case '\\':
+				lit = append(lit, '\\')
+			case '\'':
+				lit = append(lit, '\'')
 			case '0':
 				lit = append(lit, 0)
 			default:

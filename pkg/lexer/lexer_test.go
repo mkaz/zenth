@@ -127,6 +127,64 @@ func TestStringEscapes(t *testing.T) {
 	}
 }
 
+func TestInterpString(t *testing.T) {
+	src := `"hello {name}"`
+	l := New("test.zn", src)
+	tokens, err := l.Tokenize()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tokens[0].Type != token.InterpStringLit {
+		t.Errorf("expected InterpStringLit, got %s", tokens[0].Type)
+	}
+	if tokens[0].Literal != "hello {name}" {
+		t.Errorf("expected literal 'hello {name}', got %q", tokens[0].Literal)
+	}
+}
+
+func TestPlainStringNoInterp(t *testing.T) {
+	src := `"hello world"`
+	l := New("test.zn", src)
+	tokens, err := l.Tokenize()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tokens[0].Type != token.StringLit {
+		t.Errorf("expected StringLit, got %s", tokens[0].Type)
+	}
+}
+
+func TestRawString(t *testing.T) {
+	src := `'hello {name}'`
+	l := New("test.zn", src)
+	tokens, err := l.Tokenize()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tokens[0].Type != token.StringLit {
+		t.Errorf("expected StringLit for raw string, got %s", tokens[0].Type)
+	}
+	if tokens[0].Literal != "hello {name}" {
+		t.Errorf("expected literal 'hello {name}', got %q", tokens[0].Literal)
+	}
+}
+
+func TestEscapedBrace(t *testing.T) {
+	src := `"hello \{world\}"`
+	l := New("test.zn", src)
+	tokens, err := l.Tokenize()
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Escaped braces should NOT trigger interpolation
+	if tokens[0].Type != token.StringLit {
+		t.Errorf("expected StringLit for escaped braces, got %s", tokens[0].Type)
+	}
+	if tokens[0].Literal != "hello {world}" {
+		t.Errorf("expected literal 'hello {world}', got %q", tokens[0].Literal)
+	}
+}
+
 func TestPositionTracking(t *testing.T) {
 	src := "fn main() {\n    println(\"hi\");\n}"
 	l := New("test.zn", src)

@@ -3,8 +3,10 @@ package parser
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/mkaz/zenth/pkg/ast"
+	"github.com/mkaz/zenth/pkg/lexer"
 	"github.com/mkaz/zenth/pkg/token"
 )
 
@@ -610,6 +612,10 @@ func (p *Parser) parsePrimary() ast.Node {
 		p.advance()
 		return &ast.StringLitExpr{TokenPos: tok.Pos, Value: tok.Literal}
 
+	case token.InterpStringLit:
+		p.advance()
+		return p.parseInterpString(tok)
+
 	case token.True:
 		p.advance()
 		return &ast.BoolLitExpr{TokenPos: tok.Pos, Value: true}
@@ -754,6 +760,66 @@ func (p *Parser) parseImportDecl() *ast.ImportDecl {
 	}
 	p.expect(token.Semicolon)
 	return decl
+}
+
+func (p *Parser) parseInterpString(tok token.Token) ast.Node {
+	raw := tok.Literal
+	var parts []ast.InterpPart
+	var buf strings.Builder
+
+	i := 0
+	for i < len(raw) {
+		if raw[i] == '{' {
+			// Flush any accumulated text
+			if buf.Len() > 0 {
+				parts = append(parts, ast.InterpPart{Lit: buf.String()})
+				buf.Reset()
+			}
+			// Find matching closing brace, accounting for nested braces
+			i++ // skip opening {
+			depth := 1
+			start := i
+			for i < len(raw) && depth > 0 {
+				if raw[i] == '{' {
+					depth++
+				} else if raw[i] == '}' {
+					depth--
+				}
+				if depth > 0 {
+					i++
+				}
+			}
+			exprStr := raw[start:i]
+			if i < len(raw) {
+				i++ // skip closing }
+			}
+			// Sub-lex and sub-parse the expression
+			subLex := lexer.New(tok.Pos.File, exprStr)
+			subTokens, err := subLex.Tokenize()
+			if err != nil {
+				p.errorf(tok.Pos, "error in interpolated expression: %s", err)
+				continue
+			}
+			subParser := New(subTokens)
+			expr := subParser.parseExpr(0)
+			if len(subParser.errors) > 0 {
+				for _, e := range subParser.errors {
+					p.errors = append(p.errors, e)
+				}
+				continue
+			}
+			parts = append(parts, ast.InterpPart{IsExpr: true, Expr: expr})
+		} else {
+			buf.WriteByte(raw[i])
+			i++
+		}
+	}
+	// Flush remaining text
+	if buf.Len() > 0 {
+		parts = append(parts, ast.InterpPart{Lit: buf.String()})
+	}
+
+	return &ast.InterpStringExpr{TokenPos: tok.Pos, Parts: parts}
 }
 
 func joinErrors(errs []string) string {
