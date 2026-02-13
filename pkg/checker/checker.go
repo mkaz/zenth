@@ -515,6 +515,10 @@ func (c *Checker) checkBinaryExpr(e *ast.BinaryExpr) ZType {
 		if IsNumeric(left) && left.Equals(right) {
 			return left
 		}
+		if promoted := PromoteNumeric(left, right); promoted != nil {
+			c.annotatePromotion(e, left, right, promoted)
+			return promoted
+		}
 		c.errorf(e.Pos(), "cannot add %s and %s", left, right)
 		return left
 
@@ -522,14 +526,27 @@ func (c *Checker) checkBinaryExpr(e *ast.BinaryExpr) ZType {
 		if IsNumeric(left) && left.Equals(right) {
 			return left
 		}
+		if promoted := PromoteNumeric(left, right); promoted != nil {
+			c.annotatePromotion(e, left, right, promoted)
+			return promoted
+		}
 		c.errorf(e.Pos(), "cannot use %s with %s and %s", e.Op, left, right)
 		return left
 
 	case token.Eq, token.Neq:
+		if IsNumeric(left) && IsNumeric(right) && !left.Equals(right) {
+			if promoted := PromoteNumeric(left, right); promoted != nil {
+				c.annotatePromotion(e, left, right, promoted)
+			}
+		}
 		return TypeBool
 
 	case token.Lt, token.Gt, token.Lte, token.Gte:
 		if IsNumeric(left) && left.Equals(right) {
+			return TypeBool
+		}
+		if promoted := PromoteNumeric(left, right); promoted != nil {
+			c.annotatePromotion(e, left, right, promoted)
 			return TypeBool
 		}
 		c.errorf(e.Pos(), "cannot compare %s and %s", left, right)
@@ -543,6 +560,15 @@ func (c *Checker) checkBinaryExpr(e *ast.BinaryExpr) ZType {
 	}
 
 	return TypeVoid
+}
+
+func (c *Checker) annotatePromotion(e *ast.BinaryExpr, left, right, promoted ZType) {
+	if !left.Equals(promoted) {
+		e.PromoteLeft = goTypeName(promoted)
+	}
+	if !right.Equals(promoted) {
+		e.PromoteRight = goTypeName(promoted)
+	}
 }
 
 func (c *Checker) checkUnaryExpr(e *ast.UnaryExpr) ZType {

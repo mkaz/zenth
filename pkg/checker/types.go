@@ -161,3 +161,37 @@ func IsInteger(t ZType) bool {
 	}
 	return false
 }
+
+// IsFloat returns true if the type is a floating-point type.
+func IsFloat(t ZType) bool {
+	b, ok := t.(*BuiltinType)
+	if !ok {
+		return false
+	}
+	return b.Name == "f32" || b.Name == "f64"
+}
+
+// PromoteNumeric returns the promoted type when mixing numeric types.
+// Returns nil if promotion is not possible.
+func PromoteNumeric(a, b ZType) ZType {
+	if a.Equals(b) {
+		return a
+	}
+	if !IsNumeric(a) || !IsNumeric(b) {
+		return nil
+	}
+	aFloat, bFloat := IsFloat(a), IsFloat(b)
+	// Float + integer → float type wins
+	if aFloat && !bFloat {
+		return a
+	}
+	if !aFloat && bFloat {
+		return b
+	}
+	// Both floats, different sizes → f64
+	if aFloat && bFloat {
+		return TypeF64
+	}
+	// Both integers, different sizes → not auto-promoted
+	return nil
+}

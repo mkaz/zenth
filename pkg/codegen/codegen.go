@@ -205,7 +205,7 @@ func (g *Generator) genFnDecl(f *ast.FnDecl) {
 	g.writeIndent()
 	g.write("func ")
 	if f.OwnerObj != "" {
-		g.write("(self ")
+		g.write("(self *")
 		g.write(f.OwnerObj)
 		g.write(") ")
 		g.write(exportName(f.Name))
@@ -584,9 +584,21 @@ func (g *Generator) genIncDecStmt(s *ast.IncDecStmt) {
 func (g *Generator) genExpr(node ast.Node) {
 	switch n := node.(type) {
 	case *ast.BinaryExpr:
-		g.genExpr(n.Left)
+		if n.PromoteLeft != "" {
+			g.write(n.PromoteLeft + "(")
+			g.genExpr(n.Left)
+			g.write(")")
+		} else {
+			g.genExpr(n.Left)
+		}
 		g.write(" " + goOp(n.Op) + " ")
-		g.genExpr(n.Right)
+		if n.PromoteRight != "" {
+			g.write(n.PromoteRight + "(")
+			g.genExpr(n.Right)
+			g.write(")")
+		} else {
+			g.genExpr(n.Right)
+		}
 	case *ast.UnaryExpr:
 		g.write(goOp(n.Op))
 		g.genExpr(n.Operand)
@@ -764,7 +776,7 @@ func (g *Generator) genObjConstructor(decl *ast.ObjDecl, args []ast.Node) {
 		}
 	}
 
-	g.write(decl.Name + "{")
+	g.write("&" + decl.Name + "{")
 	first := true
 	for _, f := range decl.Fields {
 		val, ok := provided[f.Name]
@@ -917,7 +929,8 @@ func mapTypeName(name string) string {
 	case "byte":
 		return "byte"
 	default:
-		return name
+		// User-defined obj types are always pointers
+		return "*" + name
 	}
 }
 

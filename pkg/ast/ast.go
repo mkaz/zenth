@@ -283,10 +283,12 @@ func (i *IncDecStmt) nodeMarker()    {}
 
 // BinaryExpr represents: left op right
 type BinaryExpr struct {
-	TokenPos token.Pos
-	Left     Node
-	Op       token.Type
-	Right    Node
+	TokenPos     token.Pos
+	Left         Node
+	Op           token.Type
+	Right        Node
+	PromoteLeft  string // Go type to cast left operand to (set by checker)
+	PromoteRight string // Go type to cast right operand to (set by checker)
 }
 
 func (b *BinaryExpr) Pos() token.Pos { return b.TokenPos }
