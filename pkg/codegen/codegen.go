@@ -584,6 +584,15 @@ func (g *Generator) genIncDecStmt(s *ast.IncDecStmt) {
 func (g *Generator) genExpr(node ast.Node) {
 	switch n := node.(type) {
 	case *ast.BinaryExpr:
+		if n.Op == token.In {
+			g.imports["strings"] = ""
+			g.write("strings.Contains(")
+			g.genExpr(n.Right)
+			g.write(", ")
+			g.genExpr(n.Left)
+			g.write(")")
+			break
+		}
 		if n.PromoteLeft != "" {
 			g.write(n.PromoteLeft + "(")
 			g.genExpr(n.Left)

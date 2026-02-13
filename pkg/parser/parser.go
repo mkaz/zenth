@@ -577,7 +577,7 @@ func (p *Parser) precedence(t token.Type) int {
 		return 2
 	case token.Eq, token.Neq:
 		return 3
-	case token.Lt, token.Gt, token.Lte, token.Gte:
+	case token.Lt, token.Gt, token.Lte, token.Gte, token.In:
 		return 4
 	case token.Plus, token.Minus:
 		return 5

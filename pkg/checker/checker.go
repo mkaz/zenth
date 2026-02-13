@@ -552,6 +552,12 @@ func (c *Checker) checkBinaryExpr(e *ast.BinaryExpr) ZType {
 		c.errorf(e.Pos(), "cannot compare %s and %s", left, right)
 		return TypeBool
 
+	case token.In:
+		if !left.Equals(TypeStr) || !right.Equals(TypeStr) {
+			c.errorf(e.Pos(), "'in' requires str operands, got %s and %s", left, right)
+		}
+		return TypeBool
+
 	case token.And, token.Or:
 		if !left.Equals(TypeBool) || !right.Equals(TypeBool) {
 			c.errorf(e.Pos(), "logical operators require bool operands, got %s and %s", left, right)
