@@ -14,6 +14,7 @@ type Generator struct {
 	indent      int
 	imports     map[string]string // Go import path -> alias (or empty)
 	structs     map[string]*ast.StructDecl
+	funcs       map[string]*ast.FnDecl // "name" or "StructName.methodName"
 	needsRange  bool
 	needsRangei bool
 }
@@ -23,16 +24,22 @@ func New() *Generator {
 	return &Generator{
 		imports: make(map[string]string),
 		structs: make(map[string]*ast.StructDecl),
+		funcs:   make(map[string]*ast.FnDecl),
 	}
 }
 
 // Generate produces Go source code from a Zenth AST.
 func (g *Generator) Generate(prog *ast.Program) string {
-	// First pass: collect structs and imports
+	// First pass: collect structs, functions, and imports
 	for _, stmt := range prog.Stmts {
 		switch s := stmt.(type) {
 		case *ast.StructDecl:
 			g.structs[s.Name] = s
+			for _, m := range s.Methods {
+				g.funcs[s.Name+"."+m.Name] = m
+			}
+		case *ast.FnDecl:
+			g.funcs[s.Name] = s
 		case *ast.ImportDecl:
 			g.addImport(s)
 		}
@@ -584,6 +591,8 @@ func (g *Generator) genExpr(node ast.Node) {
 		g.genArrayLit(n)
 	case *ast.StructLitExpr:
 		g.genStructLit(n)
+	case *ast.IfExpr:
+		g.genIfExpr(n)
 	case *ast.InterpStringExpr:
 		g.genInterpString(n)
 	default:
@@ -650,10 +659,37 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 		}
 	}
 
+	// Fill in default args for user-defined functions
+	args := c.Args
+	if ident, ok := c.Callee.(*ast.IdentExpr); ok {
+		if decl, ok := g.funcs[ident.Name]; ok && len(args) < len(decl.Params) {
+			args = g.fillDefaults(args, decl)
+		}
+	} else if field, ok := c.Callee.(*ast.FieldExpr); ok {
+		// Check for struct method calls
+		if ident, ok := field.Object.(*ast.IdentExpr); ok {
+			key := ident.Name + "." + field.Field
+			if decl, ok := g.funcs[key]; ok && len(args) < len(decl.Params) {
+				args = g.fillDefaults(args, decl)
+			}
+		}
+	}
+
 	g.genExpr(c.Callee)
 	g.write("(")
-	g.genArgList(c.Args)
+	g.genArgList(args)
 	g.write(")")
+}
+
+func (g *Generator) fillDefaults(args []ast.Node, decl *ast.FnDecl) []ast.Node {
+	filled := make([]ast.Node, len(args))
+	copy(filled, args)
+	for i := len(args); i < len(decl.Params); i++ {
+		if decl.Params[i].Default != nil {
+			filled = append(filled, decl.Params[i].Default)
+		}
+	}
+	return filled
 }
 
 func (g *Generator) genArgList(args []ast.Node) {
@@ -715,6 +751,33 @@ func (g *Generator) genInterpString(s *ast.InterpStringExpr) {
 		g.genExpr(arg)
 	}
 	g.write(")")
+}
+
+func (g *Generator) genIfExpr(e *ast.IfExpr) {
+	goType := e.GoType
+	if goType == "" {
+		goType = "interface{}"
+	}
+	g.write("func() " + goType + " { ")
+	g.genIfExprBody(e)
+	g.write(" }()")
+}
+
+func (g *Generator) genIfExprBody(e *ast.IfExpr) {
+	g.write("if ")
+	g.genExpr(e.Condition)
+	g.write(" { return ")
+	g.genExpr(e.Then)
+	g.write(" }")
+	// else branch
+	if inner, ok := e.Else.(*ast.IfExpr); ok {
+		g.write(" else ")
+		g.genIfExprBody(inner)
+	} else {
+		g.write(" else { return ")
+		g.genExpr(e.Else)
+		g.write(" }")
+	}
 }
 
 // ---------- Helpers ----------

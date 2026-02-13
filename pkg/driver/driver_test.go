@@ -62,6 +62,14 @@ func TestBuildAndRun(t *testing.T) {
 				"Say: hi",
 			},
 		},
+		{
+			file:     "ifexpr.zn",
+			contains: []string{"big", "not huge", "A", "42"},
+		},
+		{
+			file:     "defaults.zn",
+			contains: []string{"Hello, Alice!", "Hi, Bob!", "3", "6"},
+		},
 	}
 
 	for _, tt := range tests {

@@ -133,11 +133,21 @@ func (p *Parser) parseParams() []ast.Param {
 	if p.peek() == token.RParen {
 		return params
 	}
+	hasDefault := false
 	for {
-		name := p.expect(token.Ident).Literal
+		nameTok := p.expect(token.Ident)
+		name := nameTok.Literal
 		p.expect(token.Colon)
 		typ := p.parseTypeExpr()
-		params = append(params, ast.Param{Name: name, Type: typ})
+		var def ast.Node
+		if p.peek() == token.Assign {
+			p.advance()
+			def = p.parseExpr(0)
+			hasDefault = true
+		} else if hasDefault {
+			p.errorf(nameTok.Pos, "required parameter '%s' cannot follow a parameter with a default value", name)
+		}
+		params = append(params, ast.Param{Name: name, Type: typ, Default: def})
 		if p.peek() != token.Comma {
 			break
 		}
@@ -645,11 +655,41 @@ func (p *Parser) parsePrimary() ast.Node {
 	case token.LBracket:
 		return p.parseArrayLit()
 
+	case token.If:
+		return p.parseIfExpr()
+
 	default:
 		p.errorf(tok.Pos, "unexpected token: %s (%q)", tok.Type, tok.Literal)
 		p.advance()
 		return &ast.IdentExpr{TokenPos: tok.Pos, Name: "<error>"}
 	}
+}
+
+func (p *Parser) parseIfExpr() *ast.IfExpr {
+	tok := p.expect(token.If)
+	expr := &ast.IfExpr{TokenPos: tok.Pos}
+
+	// Parse condition
+	expr.Condition = p.parseExpr(0)
+
+	// Parse then-branch: { expr }
+	p.expect(token.LBrace)
+	expr.Then = p.parseExpr(0)
+	p.expect(token.RBrace)
+
+	// else is mandatory for if-expressions
+	p.expect(token.Else)
+
+	// else-if chain or final else branch
+	if p.peek() == token.If {
+		expr.Else = p.parseIfExpr()
+	} else {
+		p.expect(token.LBrace)
+		expr.Else = p.parseExpr(0)
+		p.expect(token.RBrace)
+	}
+
+	return expr
 }
 
 func (p *Parser) isStructLit() bool {

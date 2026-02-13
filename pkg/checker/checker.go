@@ -9,11 +9,12 @@ import (
 
 // FuncInfo stores function metadata for type checking.
 type FuncInfo struct {
-	Name       string
-	Params     []ZType
-	ParamNames []string
-	Return     ZType
-	Receiver   string // empty for free functions
+	Name        string
+	Params      []ZType
+	ParamNames  []string
+	Return      ZType
+	Receiver    string // empty for free functions
+	NumRequired int    // number of params without defaults
 }
 
 // StructInfo stores struct metadata.
@@ -138,8 +139,18 @@ func (c *Checker) registerStruct(s *ast.StructDecl) {
 func (c *Checker) registerFunc(f *ast.FnDecl) {
 	info := &FuncInfo{Name: f.Name}
 	for _, p := range f.Params {
-		info.Params = append(info.Params, c.resolveTypeExpr(p.Type))
+		pt := c.resolveTypeExpr(p.Type)
+		info.Params = append(info.Params, pt)
 		info.ParamNames = append(info.ParamNames, p.Name)
+		if p.Default == nil {
+			info.NumRequired++
+		} else {
+			// Type-check default value against declared param type
+			defType := c.checkNode(p.Default)
+			if !pt.Equals(defType) && defType != TypeNil {
+				c.errorf(f.Pos(), "default value for '%s' has type %s, expected %s", p.Name, defType, pt)
+			}
+		}
 	}
 	if f.ReturnType != nil {
 		info.Return = c.resolveTypeExpr(f.ReturnType)
@@ -242,6 +253,8 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 		return c.checkArrayLit(n)
 	case *ast.StructLitExpr:
 		return c.checkStructLit(n)
+	case *ast.IfExpr:
+		return c.checkIfExpr(n)
 	case *ast.InterpStringExpr:
 		for _, part := range n.Parts {
 			if part.IsExpr {
@@ -579,8 +592,12 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 		}
 		return
 	}
-	if len(e.Args) != len(info.Params) {
-		c.errorf(e.Pos(), "%s expects %d arguments, got %d", info.Name, len(info.Params), len(e.Args))
+	if len(e.Args) < info.NumRequired || len(e.Args) > len(info.Params) {
+		if info.NumRequired == len(info.Params) {
+			c.errorf(e.Pos(), "%s expects %d arguments, got %d", info.Name, len(info.Params), len(e.Args))
+		} else {
+			c.errorf(e.Pos(), "%s expects %d to %d arguments, got %d", info.Name, info.NumRequired, len(info.Params), len(e.Args))
+		}
 	}
 }
 
@@ -663,4 +680,65 @@ func (c *Checker) checkStructLit(e *ast.StructLitExpr) ZType {
 		}
 	}
 	return &StructType{Name: info.Name, Fields: info.Fields}
+}
+
+func (c *Checker) checkIfExpr(e *ast.IfExpr) ZType {
+	condType := c.checkNode(e.Condition)
+	if !condType.Equals(TypeBool) {
+		c.errorf(e.Condition.Pos(), "if-expression condition must be bool, got %s", condType)
+	}
+	thenType := c.checkNode(e.Then)
+	elseType := c.checkNode(e.Else)
+
+	// For else-if chains, the elseType comes from the nested IfExpr
+	if !thenType.Equals(elseType) {
+		c.errorf(e.Pos(), "if-expression branches must have same type: then is %s, else is %s", thenType, elseType)
+	}
+
+	e.GoType = goTypeName(thenType)
+	return thenType
+}
+
+func goTypeName(t ZType) string {
+	switch ty := t.(type) {
+	case *BuiltinType:
+		switch ty.Name {
+		case "int":
+			return "int"
+		case "i8":
+			return "int8"
+		case "i16":
+			return "int16"
+		case "i32":
+			return "int32"
+		case "i64":
+			return "int64"
+		case "u8":
+			return "uint8"
+		case "u16":
+			return "uint16"
+		case "u32":
+			return "uint32"
+		case "u64":
+			return "uint64"
+		case "f32":
+			return "float32"
+		case "f64":
+			return "float64"
+		case "bool":
+			return "bool"
+		case "str":
+			return "string"
+		case "byte":
+			return "byte"
+		default:
+			return ty.Name
+		}
+	case *SliceType:
+		return "[]" + goTypeName(ty.Elem)
+	case *StructType:
+		return ty.Name
+	default:
+		return "interface{}"
+	}
 }

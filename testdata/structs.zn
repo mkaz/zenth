@@ -4,7 +4,7 @@ struct Point {
     y: f64;
 
     fn string() -> str {
-        return "(" + str(self.x) + ", " + str(self.y) + ")";
+        return "({self.x}, {self.y})";
     }
 
     fn distance(pt: Point) -> f64 {

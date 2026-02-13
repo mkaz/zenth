@@ -38,8 +38,9 @@ func (f *FnDecl) nodeMarker()    {}
 
 // Param represents a function parameter.
 type Param struct {
-	Name string
-	Type *TypeExpr
+	Name    string
+	Type    *TypeExpr
+	Default Node // nil if no default value
 }
 
 // StructDecl represents a struct declaration.
@@ -179,6 +180,19 @@ type IfStmt struct {
 
 func (i *IfStmt) Pos() token.Pos { return i.TokenPos }
 func (i *IfStmt) nodeMarker()    {}
+
+// IfExpr represents an if-expression (used as a value).
+// Each branch is a single expression: if cond { expr } else { expr }
+type IfExpr struct {
+	TokenPos  token.Pos
+	Condition Node
+	Then      Node   // single expression (then-branch value)
+	Else      Node   // single expression, or another *IfExpr (else-if chain)
+	GoType    string // Go type string, set by checker for codegen
+}
+
+func (i *IfExpr) Pos() token.Pos { return i.TokenPos }
+func (i *IfExpr) nodeMarker()    {}
 
 // ForStmt represents: for [init]; [cond]; [post] { ... }
 type ForStmt struct {

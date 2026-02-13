@@ -1,0 +1,10 @@
+fn main() {
+    let x = 10;
+    let label = if x > 5 { "big" } else { "small" };
+    println(label);
+    println(if x > 100 { "huge" } else { "not huge" });
+    let grade = if x > 9 { "A" } else if x > 7 { "B" } else { "C" };
+    println(grade);
+    let n = if true { 42 } else { 0 };
+    println("{n}");
+}
