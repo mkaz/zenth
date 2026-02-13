@@ -24,14 +24,29 @@ obj Rectangle {
     }
 }
 
+obj Account {
+    balance: int = 0;
+    interest: f64 = 2.5;
+}
+
 fn main() {
-    let origin = Point{ x: 0.0, y: 0.0 };
-    let corner = Point{ x: 3.0, y: 4.0 };
+    let origin = Point(x=0.0, y=0.0);
+    let corner = Point(x=3.0, y=4.0);
 
     println("Origin: {origin.string()}");
     println("Corner: {corner.string()}");
 
     println("Distance between: {origin.distance(corner)}");
-    let rect = Rectangle{ width: 10.0, height: 5.0 };
+    let rect = Rectangle(width=10.0, height=5.0);
     println("Area: {rect.area()}");
+
+    // Test default values
+    let a1 = Account();
+    println("a1: {str(a1.balance)} {str(a1.interest)}");
+
+    let a2 = Account(balance=100);
+    println("a2: {str(a2.balance)} {str(a2.interest)}");
+
+    let a3 = Account(interest=5.0, balance=1000);
+    println("a3: {str(a3.balance)} {str(a3.interest)}");
 }

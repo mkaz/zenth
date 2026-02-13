@@ -17,7 +17,7 @@ fn main() {
 - [Functions](functions.md) -- Declaring and calling functions
 - [Strings](strings.md) -- String literals, interpolation, and raw strings
 - [Control Flow](control-flow.md) -- `if`/`else`, `for` loops, and `match`
-- [Structs](structs.md) -- Structs, methods, and `self`
+- [Objects](objects.md) -- Objects, methods, and `self`
 - [Slices](slices.md) -- Dynamic arrays
 - [Imports](imports.md) -- Using standard library modules
 

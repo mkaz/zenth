@@ -101,7 +101,7 @@ struct Point {
 let p = Point{ x: 1.0, y: 2.0 };
 ```
 
-See [Structs](structs.md) for methods and `self`.
+See [Objects](objects.md) for methods and `self`.
 
 ## Type Conversions
 

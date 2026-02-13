@@ -83,4 +83,4 @@ fn main() {
 
 ## Methods
 
-Functions can be defined inside structs to act as methods. See [Structs](structs.md) for details.
+Functions can be defined inside objects to act as methods. See [Objects](objects.md) for details.

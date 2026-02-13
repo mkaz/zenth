@@ -19,9 +19,10 @@ type FuncInfo struct {
 
 // ObjInfo stores obj metadata.
 type ObjInfo struct {
-	Name   string
-	Fields map[string]ZType
-	Order  []string // field order for codegen
+	Name     string
+	Fields   map[string]ZType
+	Order    []string          // field order for codegen
+	Defaults map[string]bool   // fields that have default values
 }
 
 // Checker performs type checking and semantic analysis on a Zenth AST.
@@ -120,17 +121,25 @@ func (c *Checker) Check(prog *ast.Program) error {
 
 func (c *Checker) registerObj(s *ast.ObjDecl) {
 	info := &ObjInfo{
-		Name:   s.Name,
-		Fields: make(map[string]ZType),
+		Name:     s.Name,
+		Fields:   make(map[string]ZType),
+		Defaults: make(map[string]bool),
 	}
 	for _, f := range s.Fields {
 		t := c.resolveTypeExpr(f.Type)
 		info.Fields[f.Name] = t
 		info.Order = append(info.Order, f.Name)
+		if f.Default != nil {
+			defType := c.checkNode(f.Default)
+			if !t.Equals(defType) && defType != TypeNil {
+				c.errorf(s.Pos(), "default value for field '%s' has type %s, expected %s", f.Name, defType, t)
+			}
+			info.Defaults[f.Name] = true
+		}
 	}
 	c.objs[s.Name] = info
 
-	// Register methods defined inside the struct
+	// Register methods defined inside the obj
 	for _, m := range s.Methods {
 		c.registerFunc(m)
 	}
@@ -253,8 +262,8 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 		return TypeNil
 	case *ast.ArrayLitExpr:
 		return c.checkArrayLit(n)
-	case *ast.ObjLitExpr:
-		return c.checkObjLit(n)
+	case *ast.NamedArgExpr:
+		return c.checkNode(n.Value)
 	case *ast.IfExpr:
 		return c.checkIfExpr(n)
 	case *ast.InterpStringExpr:
@@ -582,6 +591,10 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 
 	// Handle free function calls
 	if ident, ok := e.Callee.(*ast.IdentExpr); ok {
+		// Check if this is an obj constructor call
+		if _, ok := c.objs[ident.Name]; ok {
+			return c.checkObjConstructor(e, ident.Name)
+		}
 		if info, ok := c.funcs[ident.Name]; ok {
 			c.checkArgs(e, info)
 			return info.Return
@@ -689,23 +702,40 @@ func (c *Checker) checkArrayLit(e *ast.ArrayLitExpr) ZType {
 	return &SliceType{Elem: firstType}
 }
 
-func (c *Checker) checkObjLit(e *ast.ObjLitExpr) ZType {
-	info, ok := c.objs[e.Name]
-	if !ok {
-		c.errorf(e.Pos(), "undefined obj: %s", e.Name)
-		return TypeVoid
-	}
-	for _, f := range e.Fields {
-		expected, ok := info.Fields[f.Name]
+func (c *Checker) checkObjConstructor(e *ast.CallExpr, name string) ZType {
+	info := c.objs[name]
+
+	// All args must be named
+	seen := make(map[string]bool)
+	for _, arg := range e.Args {
+		named, ok := arg.(*ast.NamedArgExpr)
 		if !ok {
-			c.errorf(e.Pos(), "obj %s has no field '%s'", e.Name, f.Name)
+			c.errorf(arg.Pos(), "%s constructor requires named arguments (field=value)", name)
 			continue
 		}
-		actual := c.checkNode(f.Value)
+		if seen[named.Name] {
+			c.errorf(named.Pos(), "duplicate field '%s' in %s constructor", named.Name, name)
+			continue
+		}
+		seen[named.Name] = true
+		expected, ok := info.Fields[named.Name]
+		if !ok {
+			c.errorf(named.Pos(), "obj %s has no field '%s'", name, named.Name)
+			continue
+		}
+		actual := c.checkNode(named.Value)
 		if !expected.Equals(actual) {
-			c.errorf(e.Pos(), "field '%s': expected %s, got %s", f.Name, expected, actual)
+			c.errorf(named.Pos(), "field '%s': expected %s, got %s", named.Name, expected, actual)
 		}
 	}
+
+	// Check that all fields without defaults are provided
+	for _, fieldName := range info.Order {
+		if !seen[fieldName] && !info.Defaults[fieldName] {
+			c.errorf(e.Pos(), "%s constructor missing required field '%s'", name, fieldName)
+		}
+	}
+
 	return &ObjType{Name: info.Name, Fields: info.Fields}
 }
 

@@ -23,11 +23,16 @@ func TestBuildAndRun(t *testing.T) {
 		},
 		{
 			file:     "variables.zn",
-			contains: []string{"Language: Zenth", "Counter: 2", "Sum 1..10: 55"},
+			contains: []string{"Language: Zenth", "Counter: 2", "Sum 1..10: 45"},
 		},
 		{
-			file:     "structs.zn",
-			contains: []string{"Origin:", "Corner:", "Area: 50"},
+			file: "objects.zn",
+			contains: []string{
+				"Origin:", "Corner:", "Area: 50",
+				"a1: 0 2.5",
+				"a2: 100 2.5",
+				"a3: 1000 5",
+			},
 		},
 		{
 			file:     "match.zn",

@@ -1,11 +1,11 @@
-# Structs
+# Objects
 
-Structs are user-defined types with named fields. Methods are defined inside the struct body using `self` to access fields.
+Objects are user-defined types with named fields. Methods are defined inside the object body using `self` to access fields.
 
-## Declaring a Struct
+## Declaring an Object
 
 ```zenth
-struct Point {
+obj Point {
     x: f64;
     y: f64;
 }
@@ -13,13 +13,32 @@ struct Point {
 
 Fields are declared with `name: Type;` syntax.
 
-## Creating Instances
+## Default Field Values
 
-Use struct literal syntax with `Name{ field: value }`:
+Fields can have default values. If a default is provided, the field becomes optional in the constructor:
 
 ```zenth
-let origin = Point{ x: 0.0, y: 0.0 };
-let corner = Point{ x: 3.0, y: 4.0 };
+obj Account {
+    balance: int = 0;
+    interest: f64 = 2.5;
+}
+```
+
+## Creating Instances
+
+Use constructor syntax with named arguments `Name(field=value)`:
+
+```zenth
+let origin = Point(x=0.0, y=0.0);
+let corner = Point(x=3.0, y=4.0);
+```
+
+Fields with defaults can be omitted or overridden:
+
+```zenth
+let a1 = Account();                           // all defaults
+let a2 = Account(balance=100);                // override one
+let a3 = Account(interest=5.0, balance=1000); // override multiple
 ```
 
 ## Accessing Fields
@@ -33,10 +52,10 @@ println(str(corner.y));  // 4
 
 ## Methods
 
-Methods are defined inside the struct body. Use `self` to access the struct's fields and call its other methods:
+Methods are defined inside the object body. Use `self` to access the object's fields and call its other methods:
 
 ```zenth
-struct Rectangle {
+obj Rectangle {
     width: f64;
     height: f64;
 
@@ -57,7 +76,7 @@ struct Rectangle {
 ## Calling Methods
 
 ```zenth
-let r = Rectangle{ width: 10.0, height: 5.0 };
+let r = Rectangle(width=10.0, height=5.0);
 println("Area: {r.area()}");         // Area: 50
 println("Perimeter: {r.perimeter()}"); // Perimeter: 30
 r.describe();
@@ -68,7 +87,7 @@ r.describe();
 Methods can take parameters in addition to `self`:
 
 ```zenth
-struct Point {
+obj Point {
     x: f64;
     y: f64;
 
@@ -85,7 +104,7 @@ struct Point {
 A common pattern is to define a `string()` method for display:
 
 ```zenth
-struct Point {
+obj Point {
     x: f64;
     y: f64;
 
@@ -95,7 +114,7 @@ struct Point {
 }
 
 fn main() {
-    let p = Point{ x: 1.0, y: 2.0 };
+    let p = Point(x=1.0, y=2.0);
     println(p.string());  // (1, 2)
 }
 ```
@@ -103,7 +122,7 @@ fn main() {
 ## Complete Example
 
 ```zenth
-struct Circle {
+obj Circle {
     radius: f64;
 
     fn area() -> f64 {
@@ -116,7 +135,7 @@ struct Circle {
 }
 
 fn main() {
-    let c = Circle{ radius: 5.0 };
+    let c = Circle(radius=5.0);
     println("Circle with radius {c.radius}");
     println("  Area: {c.area()}");
     println("  Circumference: {c.circumference()}");

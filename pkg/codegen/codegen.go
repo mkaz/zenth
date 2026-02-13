@@ -30,7 +30,7 @@ func New() *Generator {
 
 // Generate produces Go source code from a Zenth AST.
 func (g *Generator) Generate(prog *ast.Program) string {
-	// First pass: collect structs, functions, and imports
+	// First pass: collect objects, functions, and imports
 	for _, stmt := range prog.Stmts {
 		switch s := stmt.(type) {
 		case *ast.ObjDecl:
@@ -623,8 +623,8 @@ func (g *Generator) genExpr(node ast.Node) {
 		g.write("nil")
 	case *ast.ArrayLitExpr:
 		g.genArrayLit(n)
-	case *ast.ObjLitExpr:
-		g.genObjLit(n)
+	case *ast.NamedArgExpr:
+		g.genExpr(n.Value)
 	case *ast.IfExpr:
 		g.genIfExpr(n)
 	case *ast.InterpStringExpr:
@@ -675,6 +675,14 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write(", 1")
 			}
 			g.write(")")
+			return
+		}
+	}
+
+	// Handle obj constructor calls
+	if ident, ok := c.Callee.(*ast.IdentExpr); ok {
+		if decl, ok := g.objs[ident.Name]; ok {
+			g.genObjConstructor(decl, c.Args)
 			return
 		}
 	}
@@ -747,14 +755,31 @@ func (g *Generator) genArrayLit(a *ast.ArrayLitExpr) {
 	g.write("}")
 }
 
-func (g *Generator) genObjLit(s *ast.ObjLitExpr) {
-	g.write(s.Name + "{")
-	for i, f := range s.Fields {
-		if i > 0 {
+func (g *Generator) genObjConstructor(decl *ast.ObjDecl, args []ast.Node) {
+	// Build map of provided named args
+	provided := make(map[string]ast.Node)
+	for _, arg := range args {
+		if named, ok := arg.(*ast.NamedArgExpr); ok {
+			provided[named.Name] = named.Value
+		}
+	}
+
+	g.write(decl.Name + "{")
+	first := true
+	for _, f := range decl.Fields {
+		val, ok := provided[f.Name]
+		if !ok {
+			val = f.Default
+		}
+		if val == nil {
+			continue
+		}
+		if !first {
 			g.write(", ")
 		}
+		first = false
 		g.write(exportName(f.Name) + ": ")
-		g.genExpr(f.Value)
+		g.genExpr(val)
 	}
 	g.write("}")
 }
@@ -904,7 +929,7 @@ func exportName(name string) string {
 }
 
 func goFieldName(field string, _ ast.Node) string {
-	// All field/method access on structs gets capitalized for Go export
+	// All field/method access on objects gets capitalized for Go export
 	return exportName(field)
 }
 

@@ -24,7 +24,7 @@ fn main() {
     println("Result: {x + y}");
 
     // Nested field access
-    let r = Rectangle{ width: 5.0, height: 10.0 };
+    let r = Rectangle(width=5.0, height=10.0);
     println("Area: {r.area()}");
 
     // Interpolation with str type
