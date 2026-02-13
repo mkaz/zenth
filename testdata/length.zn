@@ -1,0 +1,13 @@
+// Test .length() method on arrays
+fn main() {
+    let c = [0, 1];
+    let l = c.length();
+    println("len=" + str(l));
+
+    let empty = [].length();
+    println("empty=" + str(empty));
+
+    var d = [1, 2];
+    d.add(3);
+    println("after=" + str(d.length()));
+}

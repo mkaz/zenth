@@ -83,6 +83,14 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "pop.zn",
 			contains: []string{"last=6", "four=4", "len=5"},
 		},
+		{
+			file:     "addpush.zn",
+			contains: []string{"after add: 4", "last=5", "after push: 5", "first=1", "second=2"},
+		},
+		{
+			file:     "length.zn",
+			contains: []string{"len=2", "empty=0", "after=3"},
+		},
 	}
 
 	for _, tt := range tests {

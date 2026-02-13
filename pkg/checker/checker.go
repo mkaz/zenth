@@ -632,6 +632,36 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.SliceMethod = true
 				return sliceType.Elem
+			case "add":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "add() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !sliceType.Elem.Equals(argType) {
+						c.errorf(e.Args[0].Pos(), "add() argument type %s does not match slice element type %s", argType, sliceType.Elem)
+					}
+				}
+				e.SliceMethod = true
+				return TypeVoid
+			case "push":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "push() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !sliceType.Elem.Equals(argType) {
+						c.errorf(e.Args[0].Pos(), "push() argument type %s does not match slice element type %s", argType, sliceType.Elem)
+					}
+				}
+				e.SliceMethod = true
+				return TypeVoid
+			case "length":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "length() takes no arguments, got %d", len(e.Args))
+				}
+				e.SliceMethod = true
+				return TypeInt
 			}
 		}
 		// Check for imported module function call (e.g., fmt.println)

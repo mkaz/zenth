@@ -18,6 +18,8 @@ type Generator struct {
 	needsRange  bool
 	needsRangei bool
 	needsPop    bool
+	needsAdd    bool
+	needsPush   bool
 }
 
 // New creates a new code Generator.
@@ -122,6 +124,18 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\telem := (*s)[i]")
 		g.writeln("\t*s = append((*s)[:i], (*s)[i+1:]...)")
 		g.writeln("\treturn elem")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsAdd {
+		g.writeln("func zenth_add(s *[]interface{}, elem interface{}) {")
+		g.writeln("\t*s = append(*s, elem)")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsPush {
+		g.writeln("func zenth_push(s *[]interface{}, elem interface{}) {")
+		g.writeln("\t*s = append([]interface{}{elem}, *s...)")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -751,6 +765,27 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 					g.genExpr(c.Args[0])
 					g.write(")")
 				}
+				return
+			case "add":
+				g.needsAdd = true
+				g.write("zenth_add(&")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(")")
+				return
+			case "push":
+				g.needsPush = true
+				g.write("zenth_push(&")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(")")
+				return
+			case "length":
+				g.write("len(")
+				g.genExpr(field.Object)
+				g.write(")")
 				return
 			}
 		}
