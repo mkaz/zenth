@@ -57,7 +57,7 @@ func TestOperators(t *testing.T) {
 }
 
 func TestKeywords(t *testing.T) {
-	src := `fn let var const return if else for in match struct`
+	src := `fn let var const return if else for in match obj`
 	l := New("test.zn", src)
 	tokens, err := l.Tokenize()
 	if err != nil {
@@ -66,7 +66,7 @@ func TestKeywords(t *testing.T) {
 
 	expected := []token.Type{
 		token.Fn, token.Let, token.Var, token.Const, token.Return,
-		token.If, token.Else, token.For, token.In, token.Match, token.Struct,
+		token.If, token.Else, token.For, token.In, token.Match, token.Obj,
 		token.EOF,
 	}
 

@@ -17,8 +17,8 @@ type FuncInfo struct {
 	NumRequired int    // number of params without defaults
 }
 
-// StructInfo stores struct metadata.
-type StructInfo struct {
+// ObjInfo stores obj metadata.
+type ObjInfo struct {
 	Name   string
 	Fields map[string]ZType
 	Order  []string // field order for codegen
@@ -28,7 +28,7 @@ type StructInfo struct {
 type Checker struct {
 	scope   *Scope
 	funcs   map[string]*FuncInfo   // "name" or "Type.name"
-	structs map[string]*StructInfo
+	objs    map[string]*ObjInfo
 	errors  []string
 	currentFunc *FuncInfo // for checking return types
 }
@@ -40,7 +40,7 @@ func New() *Checker {
 	c := &Checker{
 		scope:   global,
 		funcs:   make(map[string]*FuncInfo),
-		structs: make(map[string]*StructInfo),
+		objs:    make(map[string]*ObjInfo),
 	}
 
 	// Register built-in functions
@@ -96,8 +96,8 @@ func (c *Checker) Check(prog *ast.Program) error {
 	// First pass: register all top-level declarations
 	for _, stmt := range prog.Stmts {
 		switch s := stmt.(type) {
-		case *ast.StructDecl:
-			c.registerStruct(s)
+		case *ast.ObjDecl:
+			c.registerObj(s)
 		case *ast.FnDecl:
 			c.registerFunc(s)
 		}
@@ -118,8 +118,8 @@ func (c *Checker) Check(prog *ast.Program) error {
 	return nil
 }
 
-func (c *Checker) registerStruct(s *ast.StructDecl) {
-	info := &StructInfo{
+func (c *Checker) registerObj(s *ast.ObjDecl) {
+	info := &ObjInfo{
 		Name:   s.Name,
 		Fields: make(map[string]ZType),
 	}
@@ -128,7 +128,7 @@ func (c *Checker) registerStruct(s *ast.StructDecl) {
 		info.Fields[f.Name] = t
 		info.Order = append(info.Order, f.Name)
 	}
-	c.structs[s.Name] = info
+	c.objs[s.Name] = info
 
 	// Register methods defined inside the struct
 	for _, m := range s.Methods {
@@ -157,9 +157,9 @@ func (c *Checker) registerFunc(f *ast.FnDecl) {
 	} else {
 		info.Return = TypeVoid
 	}
-	if f.OwnerStruct != "" {
-		info.Receiver = f.OwnerStruct
-		key := f.OwnerStruct + "." + f.Name
+	if f.OwnerObj != "" {
+		info.Receiver = f.OwnerObj
+		key := f.OwnerObj + "." + f.Name
 		c.funcs[key] = info
 	} else {
 		c.funcs[f.Name] = info
@@ -176,8 +176,8 @@ func (c *Checker) resolveTypeExpr(t *ast.TypeExpr) ZType {
 	if bt := LookupBuiltinType(t.Name); bt != nil {
 		return bt
 	}
-	if st, ok := c.structs[t.Name]; ok {
-		return &StructType{Name: st.Name, Fields: st.Fields}
+	if st, ok := c.objs[t.Name]; ok {
+		return &ObjType{Name: st.Name, Fields: st.Fields}
 	}
 	c.errorf(t.Pos(), "unknown type: %s", t.Name)
 	return TypeVoid
@@ -187,8 +187,8 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 	switch n := node.(type) {
 	case *ast.FnDecl:
 		return c.checkFnDecl(n)
-	case *ast.StructDecl:
-		// Check methods defined inside the struct
+	case *ast.ObjDecl:
+		// Check methods defined inside the obj
 		for _, m := range n.Methods {
 			c.checkFnDecl(m)
 		}
@@ -253,8 +253,8 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 		return TypeNil
 	case *ast.ArrayLitExpr:
 		return c.checkArrayLit(n)
-	case *ast.StructLitExpr:
-		return c.checkStructLit(n)
+	case *ast.ObjLitExpr:
+		return c.checkObjLit(n)
 	case *ast.IfExpr:
 		return c.checkIfExpr(n)
 	case *ast.InterpStringExpr:
@@ -273,17 +273,17 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 func (c *Checker) checkFnDecl(f *ast.FnDecl) ZType {
 	prev := c.currentFunc
 	info := c.funcs[f.Name]
-	if f.OwnerStruct != "" {
-		info = c.funcs[f.OwnerStruct+"."+f.Name]
+	if f.OwnerObj != "" {
+		info = c.funcs[f.OwnerObj+"."+f.Name]
 	}
 	c.currentFunc = info
 
 	c.pushScope()
 
 	// Bind self for methods
-	if f.OwnerStruct != "" {
-		if st, ok := c.structs[f.OwnerStruct]; ok {
-			selfType := &StructType{Name: st.Name, Fields: st.Fields}
+	if f.OwnerObj != "" {
+		if st, ok := c.objs[f.OwnerObj]; ok {
+			selfType := &ObjType{Name: st.Name, Fields: st.Fields}
 			c.scope.Define(&Symbol{Name: "self", Type: selfType})
 		}
 	}
@@ -558,7 +558,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 	if field, ok := e.Callee.(*ast.FieldExpr); ok {
 		objType := c.checkNode(field.Object)
 		methodKey := ""
-		if st, ok := objType.(*StructType); ok {
+		if st, ok := objType.(*ObjType); ok {
 			methodKey = st.Name + "." + field.Field
 		}
 		if info, ok := c.funcs[methodKey]; ok {
@@ -630,11 +630,11 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 
 func (c *Checker) checkFieldExpr(e *ast.FieldExpr) ZType {
 	objType := c.checkNode(e.Object)
-	if st, ok := objType.(*StructType); ok {
+	if st, ok := objType.(*ObjType); ok {
 		if ft, ok := st.Fields[e.Field]; ok {
 			return ft
 		}
-		c.errorf(e.Pos(), "struct %s has no field '%s'", st.Name, e.Field)
+		c.errorf(e.Pos(), "obj %s has no field '%s'", st.Name, e.Field)
 	}
 	return TypeVoid
 }
@@ -668,7 +668,7 @@ func (c *Checker) checkIdentExpr(e *ast.IdentExpr) ZType {
 		return sym.Type
 	}
 	// Could be a struct name used as a type constructor
-	if _, ok := c.structs[e.Name]; ok {
+	if _, ok := c.objs[e.Name]; ok {
 		return TypeVoid // struct names aren't values
 	}
 	// Allow unresolved idents for module names (fmt, math, etc.)
@@ -689,16 +689,16 @@ func (c *Checker) checkArrayLit(e *ast.ArrayLitExpr) ZType {
 	return &SliceType{Elem: firstType}
 }
 
-func (c *Checker) checkStructLit(e *ast.StructLitExpr) ZType {
-	info, ok := c.structs[e.Name]
+func (c *Checker) checkObjLit(e *ast.ObjLitExpr) ZType {
+	info, ok := c.objs[e.Name]
 	if !ok {
-		c.errorf(e.Pos(), "undefined struct: %s", e.Name)
+		c.errorf(e.Pos(), "undefined obj: %s", e.Name)
 		return TypeVoid
 	}
 	for _, f := range e.Fields {
 		expected, ok := info.Fields[f.Name]
 		if !ok {
-			c.errorf(e.Pos(), "struct %s has no field '%s'", e.Name, f.Name)
+			c.errorf(e.Pos(), "obj %s has no field '%s'", e.Name, f.Name)
 			continue
 		}
 		actual := c.checkNode(f.Value)
@@ -706,7 +706,7 @@ func (c *Checker) checkStructLit(e *ast.StructLitExpr) ZType {
 			c.errorf(e.Pos(), "field '%s': expected %s, got %s", f.Name, expected, actual)
 		}
 	}
-	return &StructType{Name: info.Name, Fields: info.Fields}
+	return &ObjType{Name: info.Name, Fields: info.Fields}
 }
 
 func (c *Checker) checkIfExpr(e *ast.IfExpr) ZType {
@@ -763,7 +763,7 @@ func goTypeName(t ZType) string {
 		}
 	case *SliceType:
 		return "[]" + goTypeName(ty.Elem)
-	case *StructType:
+	case *ObjType:
 		return ty.Name
 	default:
 		return "interface{}"

@@ -1,5 +1,5 @@
-// Structs and methods in Zenth
-struct Point {
+// Objects and methods in Zenth
+obj Point {
     x: f64;
     y: f64;
 
@@ -15,7 +15,7 @@ struct Point {
     }
 }
 
-struct Rectangle {
+obj Rectangle {
     width: f64;
     height: f64;
 

@@ -86,8 +86,8 @@ func (p *Parser) parseTopLevel() ast.Node {
 	switch p.peek() {
 	case token.Fn:
 		return p.parseFnDecl()
-	case token.Struct:
-		return p.parseStructDecl()
+	case token.Obj:
+		return p.parseObjDecl()
 	case token.Interface:
 		return p.parseInterfaceDecl()
 	case token.Import:
@@ -624,8 +624,20 @@ func (p *Parser) parseCallExpr(callee ast.Node) *ast.CallExpr {
 	call := &ast.CallExpr{TokenPos: tok.Pos, Callee: callee}
 	if p.peek() != token.RParen {
 		for {
-			arg := p.parseExpr(0)
-			call.Args = append(call.Args, arg)
+			// Detect named arg: ident = value
+			if p.peek() == token.Ident && p.peekAt(1) == token.Assign {
+				nameTok := p.advance()
+				eqTok := p.advance() // consume =
+				value := p.parseExpr(0)
+				call.Args = append(call.Args, &ast.NamedArgExpr{
+					TokenPos: eqTok.Pos,
+					Name:     nameTok.Literal,
+					Value:    value,
+				})
+			} else {
+				arg := p.parseExpr(0)
+				call.Args = append(call.Args, arg)
+			}
 			if p.peek() != token.Comma {
 				break
 			}
@@ -672,10 +684,6 @@ func (p *Parser) parsePrimary() ast.Node {
 
 	case token.Ident:
 		p.advance()
-		// Check for struct literal: Name{ field: value }
-		if p.peek() == token.LBrace && p.isStructLit() {
-			return p.parseStructLit(tok)
-		}
 		return &ast.IdentExpr{TokenPos: tok.Pos, Name: tok.Literal}
 
 	case token.LParen:
@@ -724,40 +732,6 @@ func (p *Parser) parseIfExpr() *ast.IfExpr {
 	return expr
 }
 
-func (p *Parser) isStructLit() bool {
-	// Look for { ident : pattern
-	if p.peekAt(0) != token.LBrace {
-		return false
-	}
-	if p.peekAt(1) == token.Ident && p.peekAt(2) == token.Colon {
-		return true
-	}
-	// Empty struct: {}
-	if p.peekAt(1) == token.RBrace {
-		return true
-	}
-	return false
-}
-
-func (p *Parser) parseStructLit(nameTok token.Token) *ast.StructLitExpr {
-	lit := &ast.StructLitExpr{TokenPos: nameTok.Pos, Name: nameTok.Literal}
-	p.expect(token.LBrace)
-	if p.peek() != token.RBrace {
-		for {
-			fieldName := p.expect(token.Ident).Literal
-			p.expect(token.Colon)
-			value := p.parseExpr(0)
-			lit.Fields = append(lit.Fields, ast.StructLitField{Name: fieldName, Value: value})
-			if p.peek() != token.Comma {
-				break
-			}
-			p.advance()
-		}
-	}
-	p.expect(token.RBrace)
-	return lit
-}
-
 func (p *Parser) parseArrayLit() *ast.ArrayLitExpr {
 	tok := p.expect(token.LBracket)
 	lit := &ast.ArrayLitExpr{TokenPos: tok.Pos}
@@ -775,24 +749,29 @@ func (p *Parser) parseArrayLit() *ast.ArrayLitExpr {
 	return lit
 }
 
-func (p *Parser) parseStructDecl() *ast.StructDecl {
-	tok := p.expect(token.Struct)
-	decl := &ast.StructDecl{TokenPos: tok.Pos}
+func (p *Parser) parseObjDecl() *ast.ObjDecl {
+	tok := p.expect(token.Obj)
+	decl := &ast.ObjDecl{TokenPos: tok.Pos}
 	decl.Name = p.expect(token.Ident).Literal
 	p.expect(token.LBrace)
 	for p.peek() != token.RBrace && p.peek() != token.EOF {
 		if p.peek() == token.Fn {
 			// Method inside struct
 			method := p.parseFnDecl()
-			method.OwnerStruct = decl.Name
+			method.OwnerObj = decl.Name
 			decl.Methods = append(decl.Methods, method)
 		} else {
 			// Field
 			name := p.expect(token.Ident).Literal
 			p.expect(token.Colon)
 			typ := p.parseTypeExpr()
+			var def ast.Node
+			if p.peek() == token.Assign {
+				p.advance()
+				def = p.parseExpr(0)
+			}
 			p.expect(token.Semicolon)
-			decl.Fields = append(decl.Fields, ast.Field{Name: name, Type: typ})
+			decl.Fields = append(decl.Fields, ast.Field{Name: name, Type: typ, Default: def})
 		}
 	}
 	p.expect(token.RBrace)

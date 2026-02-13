@@ -68,7 +68,7 @@ const (
 	For
 	In
 	Match
-	Struct
+	Obj
 	Enum
 	Interface
 	Import
@@ -133,7 +133,7 @@ var typeNames = map[Type]string{
 	For:        "for",
 	In:         "in",
 	Match:      "match",
-	Struct:     "struct",
+	Obj:        "obj",
 	Enum:       "enum",
 	Interface:  "interface",
 	Import:     "import",
@@ -168,7 +168,7 @@ var keywords = map[string]Type{
 	"for":       For,
 	"in":        In,
 	"match":     Match,
-	"struct":    Struct,
+	"obj":       Obj,
 	"enum":      Enum,
 	"interface": Interface,
 	"import":    Import,

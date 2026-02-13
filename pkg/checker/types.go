@@ -43,20 +43,20 @@ var (
 	TypeNil    = &BuiltinType{"nil"}
 )
 
-// StructType represents a user-defined struct type.
-type StructType struct {
+// ObjType represents a user-defined obj type.
+type ObjType struct {
 	Name   string
 	Fields map[string]ZType
 }
 
-func (s *StructType) String() string { return s.Name }
-func (s *StructType) Equals(other ZType) bool {
-	if o, ok := other.(*StructType); ok {
+func (s *ObjType) String() string { return s.Name }
+func (s *ObjType) Equals(other ZType) bool {
+	if o, ok := other.(*ObjType); ok {
 		return s.Name == o.Name
 	}
 	return false
 }
-func (s *StructType) typeMarker() {}
+func (s *ObjType) typeMarker() {}
 
 // SliceType represents a []T type.
 type SliceType struct {

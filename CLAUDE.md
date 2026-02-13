@@ -61,12 +61,12 @@ fn greet(name: str) {
 }
 ```
 
-### Structs and Methods (OOP-style)
+### Objects and Methods (OOP-style)
 
-Methods are defined inside the struct body. Use `self` to access fields and call other methods.
+Methods are defined inside the obj body. Use `self` to access fields and call other methods.
 
 ```zenth
-struct Rectangle {
+obj Rectangle {
     width: f64;
     height: f64;
 
@@ -126,7 +126,7 @@ match day {
 
 Built-in: `int`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`, `f32`, `f64`, `bool`, `str`, `byte`
 
-Composite: `[]int` (slice), struct literals `Point{ x: 1.0, y: 2.0 }`
+Composite: `[]int` (slice), obj literals `Point{ x: 1.0, y: 2.0 }`
 
 ### Built-in Functions
 
@@ -147,7 +147,7 @@ Standard library modules map to Go stdlib: `fmt`, `math`, `os`, `strings`/`str`
 - **`let` is immutable, `var` is mutable** — catches accidental mutation at compile time
 - **Simple `=` assignment** — no `:=`. `let`/`var`/`const` keyword is the declaration signal
 - **Strongly typed with inference** — function signatures require explicit types, locals are inferred
-- **OOP-style methods** — methods defined inside the struct body, use `self` to access fields
+- **OOP-style methods** — methods defined inside the obj body, use `self` to access fields
 - **`for` is the only loop** — three styles: C-style, for-in, while-style
 - **`match` instead of switch** — with `_` as default/wildcard
 - **File extension** — `.zn`
@@ -157,7 +157,7 @@ Standard library modules map to Go stdlib: `fmt`, `math`, `os`, `strings`/`str`
 ## Conventions
 
 - Use `justfile` (not Makefile)
-- Struct fields are lowercase in Zenth, exported (capitalized) in generated Go
+- Obj fields are lowercase in Zenth, exported (capitalized) in generated Go
 - Method names are lowercase in Zenth, exported in generated Go
 - `self` is the implicit receiver name for methods
 
@@ -170,6 +170,6 @@ Standard library modules map to Go stdlib: `fmt`, `math`, `os`, `strings`/`str`
 
 ## Current Status (v0.1)
 
-**Working:** functions, let/var/const, type inference, structs with OOP-style methods and `self`, if/else/else-if, for loops (C-style, for-in, while-style, infinite), match statements, compile-time type errors, mutability checking, string/int/float/bool types, slices, struct literals, break/continue, compound assignment (`+=`, `-=`, etc.), `++`/`--`, imports.
+**Working:** functions, let/var/const, type inference, objects (`obj`) with OOP-style methods and `self`, if/else/else-if, for loops (C-style, for-in, while-style, infinite), match statements, compile-time type errors, mutability checking, string/int/float/bool types, slices, obj literals, break/continue, compound assignment (`+=`, `-=`, etc.), `++`/`--`, imports, multi-variable assignment.
 
 **Not yet implemented:** enums/tagged unions, interfaces (parsed but not checked), error handling (`try`), multi-return, concurrency, generics, multi-file projects, user-defined packages.

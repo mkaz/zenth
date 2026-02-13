@@ -13,7 +13,7 @@ type Generator struct {
 	buf         strings.Builder
 	indent      int
 	imports     map[string]string // Go import path -> alias (or empty)
-	structs     map[string]*ast.StructDecl
+	objs        map[string]*ast.ObjDecl
 	funcs       map[string]*ast.FnDecl // "name" or "StructName.methodName"
 	needsRange  bool
 	needsRangei bool
@@ -23,7 +23,7 @@ type Generator struct {
 func New() *Generator {
 	return &Generator{
 		imports: make(map[string]string),
-		structs: make(map[string]*ast.StructDecl),
+		objs: make(map[string]*ast.ObjDecl),
 		funcs:   make(map[string]*ast.FnDecl),
 	}
 }
@@ -33,8 +33,8 @@ func (g *Generator) Generate(prog *ast.Program) string {
 	// First pass: collect structs, functions, and imports
 	for _, stmt := range prog.Stmts {
 		switch s := stmt.(type) {
-		case *ast.StructDecl:
-			g.structs[s.Name] = s
+		case *ast.ObjDecl:
+			g.objs[s.Name] = s
 			for _, m := range s.Methods {
 				g.funcs[s.Name+"."+m.Name] = m
 			}
@@ -160,8 +160,8 @@ func (g *Generator) genNode(node ast.Node) {
 	switch n := node.(type) {
 	case *ast.FnDecl:
 		g.genFnDecl(n)
-	case *ast.StructDecl:
-		g.genStructDecl(n)
+	case *ast.ObjDecl:
+		g.genObjDecl(n)
 	case *ast.InterfaceDecl:
 		g.genInterfaceDecl(n)
 	case *ast.Block:
@@ -204,9 +204,9 @@ func (g *Generator) genNode(node ast.Node) {
 func (g *Generator) genFnDecl(f *ast.FnDecl) {
 	g.writeIndent()
 	g.write("func ")
-	if f.OwnerStruct != "" {
+	if f.OwnerObj != "" {
 		g.write("(self ")
-		g.write(f.OwnerStruct)
+		g.write(f.OwnerObj)
 		g.write(") ")
 		g.write(exportName(f.Name))
 	} else {
@@ -238,7 +238,7 @@ func (g *Generator) genFnDecl(f *ast.FnDecl) {
 	g.writeln("")
 }
 
-func (g *Generator) genStructDecl(s *ast.StructDecl) {
+func (g *Generator) genObjDecl(s *ast.ObjDecl) {
 	g.writef("type %s struct {\n", s.Name)
 	g.indent++
 	for _, f := range s.Fields {
@@ -623,8 +623,8 @@ func (g *Generator) genExpr(node ast.Node) {
 		g.write("nil")
 	case *ast.ArrayLitExpr:
 		g.genArrayLit(n)
-	case *ast.StructLitExpr:
-		g.genStructLit(n)
+	case *ast.ObjLitExpr:
+		g.genObjLit(n)
 	case *ast.IfExpr:
 		g.genIfExpr(n)
 	case *ast.InterpStringExpr:
@@ -747,7 +747,7 @@ func (g *Generator) genArrayLit(a *ast.ArrayLitExpr) {
 	g.write("}")
 }
 
-func (g *Generator) genStructLit(s *ast.StructLitExpr) {
+func (g *Generator) genObjLit(s *ast.ObjLitExpr) {
 	g.write(s.Name + "{")
 	for i, f := range s.Fields {
 		if i > 0 {

@@ -30,7 +30,7 @@ type FnDecl struct {
 	Params     []Param
 	ReturnType *TypeExpr // nil means no return
 	Body       *Block
-	OwnerStruct string // non-empty for methods defined inside a struct
+	OwnerObj string // non-empty for methods defined inside an obj
 }
 
 func (f *FnDecl) Pos() token.Pos { return f.TokenPos }
@@ -43,21 +43,22 @@ type Param struct {
 	Default Node // nil if no default value
 }
 
-// StructDecl represents a struct declaration.
-type StructDecl struct {
+// ObjDecl represents an obj declaration.
+type ObjDecl struct {
 	TokenPos token.Pos
 	Name     string
 	Fields   []Field
 	Methods  []*FnDecl
 }
 
-func (s *StructDecl) Pos() token.Pos { return s.TokenPos }
-func (s *StructDecl) nodeMarker()    {}
+func (s *ObjDecl) Pos() token.Pos { return s.TokenPos }
+func (s *ObjDecl) nodeMarker()    {}
 
-// Field represents a struct field.
+// Field represents an obj field.
 type Field struct {
-	Name string
-	Type *TypeExpr
+	Name    string
+	Type    *TypeExpr
+	Default Node // nil if no default
 }
 
 // InterfaceDecl represents an interface declaration.
@@ -393,21 +394,15 @@ type ArrayLitExpr struct {
 func (a *ArrayLitExpr) Pos() token.Pos { return a.TokenPos }
 func (a *ArrayLitExpr) nodeMarker()    {}
 
-// StructLitExpr represents: TypeName{ field: value, ... }
-type StructLitExpr struct {
+// NamedArgExpr represents a named argument: name=value
+type NamedArgExpr struct {
 	TokenPos token.Pos
 	Name     string
-	Fields   []StructLitField
+	Value    Node
 }
 
-func (s *StructLitExpr) Pos() token.Pos { return s.TokenPos }
-func (s *StructLitExpr) nodeMarker()    {}
-
-// StructLitField represents a field in a struct literal.
-type StructLitField struct {
-	Name  string
-	Value Node
-}
+func (n *NamedArgExpr) Pos() token.Pos { return n.TokenPos }
+func (n *NamedArgExpr) nodeMarker()    {}
 
 // InterpStringExpr represents a string with interpolated expressions: "hello {name}"
 type InterpStringExpr struct {
