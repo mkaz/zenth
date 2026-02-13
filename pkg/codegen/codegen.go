@@ -593,6 +593,14 @@ func (g *Generator) genExpr(node ast.Node) {
 			g.write(")")
 			break
 		}
+		if n.SliceConcat {
+			g.write("append(")
+			g.genExpr(n.Left)
+			g.write(", ")
+			g.genExpr(n.Right)
+			g.write("...)")
+			break
+		}
 		if n.PromoteLeft != "" {
 			g.write(n.PromoteLeft + "(")
 			g.genExpr(n.Left)

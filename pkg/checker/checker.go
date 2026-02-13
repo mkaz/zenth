@@ -519,6 +519,17 @@ func (c *Checker) checkBinaryExpr(e *ast.BinaryExpr) ZType {
 			c.annotatePromotion(e, left, right, promoted)
 			return promoted
 		}
+		// Slice concatenation
+		if ls, ok := left.(*SliceType); ok {
+			if rs, ok := right.(*SliceType); ok {
+				if ls.Elem.Equals(rs.Elem) {
+					e.SliceConcat = true
+					return left
+				}
+				c.errorf(e.Pos(), "cannot concatenate %s and %s (element types differ)", left, right)
+				return left
+			}
+		}
 		c.errorf(e.Pos(), "cannot add %s and %s", left, right)
 		return left
 

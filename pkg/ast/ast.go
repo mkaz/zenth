@@ -289,6 +289,7 @@ type BinaryExpr struct {
 	Right        Node
 	PromoteLeft  string // Go type to cast left operand to (set by checker)
 	PromoteRight string // Go type to cast right operand to (set by checker)
+	SliceConcat  bool   // true when + means slice concatenation (set by checker)
 }
 
 func (b *BinaryExpr) Pos() token.Pos { return b.TokenPos }

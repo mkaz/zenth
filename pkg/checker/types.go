@@ -174,11 +174,11 @@ func IsFloat(t ZType) bool {
 // PromoteNumeric returns the promoted type when mixing numeric types.
 // Returns nil if promotion is not possible.
 func PromoteNumeric(a, b ZType) ZType {
-	if a.Equals(b) {
-		return a
-	}
 	if !IsNumeric(a) || !IsNumeric(b) {
 		return nil
+	}
+	if a.Equals(b) {
+		return a
 	}
 	aFloat, bFloat := IsFloat(a), IsFloat(b)
 	// Float + integer → float type wins
