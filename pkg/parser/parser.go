@@ -107,16 +107,6 @@ func (p *Parser) parseFnDecl() *ast.FnDecl {
 	fnTok := p.expect(token.Fn)
 	decl := &ast.FnDecl{TokenPos: fnTok.Pos}
 
-	// Check for method receiver: fn (name: Type) methodName(...)
-	if p.peek() == token.LParen && p.isReceiverSyntax() {
-		p.expect(token.LParen)
-		recvName := p.expect(token.Ident).Literal
-		p.expect(token.Colon)
-		recvType := p.parseTypeExpr()
-		p.expect(token.RParen)
-		decl.Receiver = &ast.Param{Name: recvName, Type: recvType}
-	}
-
 	decl.Name = p.expect(token.Ident).Literal
 
 	// Parameters
@@ -134,22 +124,6 @@ func (p *Parser) parseFnDecl() *ast.FnDecl {
 	decl.Body = p.parseBlock()
 
 	return decl
-}
-
-// isReceiverSyntax looks ahead to determine if ( starts a method receiver.
-// Receiver: (name: Type)
-func (p *Parser) isReceiverSyntax() bool {
-	// Look for pattern: ( Ident : Ident ) Ident
-	if p.peekAt(0) != token.LParen {
-		return false
-	}
-	if p.peekAt(1) != token.Ident {
-		return false
-	}
-	if p.peekAt(2) != token.Colon {
-		return false
-	}
-	return true
 }
 
 func (p *Parser) parseParams() []ast.Param {
@@ -729,11 +703,19 @@ func (p *Parser) parseStructDecl() *ast.StructDecl {
 	decl.Name = p.expect(token.Ident).Literal
 	p.expect(token.LBrace)
 	for p.peek() != token.RBrace && p.peek() != token.EOF {
-		name := p.expect(token.Ident).Literal
-		p.expect(token.Colon)
-		typ := p.parseTypeExpr()
-		p.expect(token.Semicolon)
-		decl.Fields = append(decl.Fields, ast.Field{Name: name, Type: typ})
+		if p.peek() == token.Fn {
+			// Method inside struct
+			method := p.parseFnDecl()
+			method.OwnerStruct = decl.Name
+			decl.Methods = append(decl.Methods, method)
+		} else {
+			// Field
+			name := p.expect(token.Ident).Literal
+			p.expect(token.Colon)
+			typ := p.parseTypeExpr()
+			p.expect(token.Semicolon)
+			decl.Fields = append(decl.Fields, ast.Field{Name: name, Type: typ})
+		}
 	}
 	p.expect(token.RBrace)
 	return decl

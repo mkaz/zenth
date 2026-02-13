@@ -30,7 +30,7 @@ type FnDecl struct {
 	Params     []Param
 	ReturnType *TypeExpr // nil means no return
 	Body       *Block
-	Receiver   *Param // nil for free functions, non-nil for methods
+	OwnerStruct string // non-empty for methods defined inside a struct
 }
 
 func (f *FnDecl) Pos() token.Pos { return f.TokenPos }
@@ -47,6 +47,7 @@ type StructDecl struct {
 	TokenPos token.Pos
 	Name     string
 	Fields   []Field
+	Methods  []*FnDecl
 }
 
 func (s *StructDecl) Pos() token.Pos { return s.TokenPos }

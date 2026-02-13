@@ -168,14 +168,10 @@ func (g *Generator) genNode(node ast.Node) {
 func (g *Generator) genFnDecl(f *ast.FnDecl) {
 	g.writeIndent()
 	g.write("func ")
-	if f.Receiver != nil {
-		g.write("(")
-		g.write(f.Receiver.Name)
-		g.write(" ")
-		g.write(mapTypeName(f.Receiver.Type.Name))
+	if f.OwnerStruct != "" {
+		g.write("(self ")
+		g.write(f.OwnerStruct)
 		g.write(") ")
-	}
-	if f.Receiver != nil {
 		g.write(exportName(f.Name))
 	} else {
 		g.write(f.Name)
@@ -215,6 +211,11 @@ func (g *Generator) genStructDecl(s *ast.StructDecl) {
 	g.indent--
 	g.writeln("}")
 	g.writeln("")
+
+	// Generate methods
+	for _, m := range s.Methods {
+		g.genFnDecl(m)
+	}
 }
 
 func (g *Generator) genInterfaceDecl(iface *ast.InterfaceDecl) {

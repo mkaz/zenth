@@ -118,6 +118,11 @@ func (c *Checker) registerStruct(s *ast.StructDecl) {
 		info.Order = append(info.Order, f.Name)
 	}
 	c.structs[s.Name] = info
+
+	// Register methods defined inside the struct
+	for _, m := range s.Methods {
+		c.registerFunc(m)
+	}
 }
 
 func (c *Checker) registerFunc(f *ast.FnDecl) {
@@ -131,9 +136,9 @@ func (c *Checker) registerFunc(f *ast.FnDecl) {
 	} else {
 		info.Return = TypeVoid
 	}
-	if f.Receiver != nil {
-		info.Receiver = f.Receiver.Type.Name
-		key := f.Receiver.Type.Name + "." + f.Name
+	if f.OwnerStruct != "" {
+		info.Receiver = f.OwnerStruct
+		key := f.OwnerStruct + "." + f.Name
 		c.funcs[key] = info
 	} else {
 		c.funcs[f.Name] = info
@@ -162,7 +167,11 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 	case *ast.FnDecl:
 		return c.checkFnDecl(n)
 	case *ast.StructDecl:
-		return TypeVoid // already registered
+		// Check methods defined inside the struct
+		for _, m := range n.Methods {
+			c.checkFnDecl(m)
+		}
+		return TypeVoid
 	case *ast.InterfaceDecl:
 		return TypeVoid // TODO: check interface
 	case *ast.ImportDecl:
@@ -232,17 +241,19 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 func (c *Checker) checkFnDecl(f *ast.FnDecl) ZType {
 	prev := c.currentFunc
 	info := c.funcs[f.Name]
-	if f.Receiver != nil {
-		info = c.funcs[f.Receiver.Type.Name+"."+f.Name]
+	if f.OwnerStruct != "" {
+		info = c.funcs[f.OwnerStruct+"."+f.Name]
 	}
 	c.currentFunc = info
 
 	c.pushScope()
 
-	// Bind receiver
-	if f.Receiver != nil {
-		recvType := c.resolveTypeExpr(f.Receiver.Type)
-		c.scope.Define(&Symbol{Name: f.Receiver.Name, Type: recvType})
+	// Bind self for methods
+	if f.OwnerStruct != "" {
+		if st, ok := c.structs[f.OwnerStruct]; ok {
+			selfType := &StructType{Name: st.Name, Fields: st.Fields}
+			c.scope.Define(&Symbol{Name: "self", Type: selfType})
+		}
 	}
 
 	// Bind parameters
