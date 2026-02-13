@@ -79,6 +79,10 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "multiassign.zn",
 			contains: []string{"2 1", "5"},
 		},
+		{
+			file:     "pop.zn",
+			contains: []string{"last=6", "four=4", "len=5"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -130,6 +134,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/mutability.zn",
 			errMsg: "cannot assign to immutable",
+		},
+		{
+			file:   "errors/pop_too_many_args.zn",
+			errMsg: "pop() takes 0 or 1 arguments",
 		},
 	}
 

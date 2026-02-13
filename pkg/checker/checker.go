@@ -617,6 +617,23 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 			c.checkArgs(e, info)
 			return info.Return
 		}
+		// Check for built-in slice methods
+		if sliceType, ok := objType.(*SliceType); ok {
+			switch field.Field {
+			case "pop":
+				if len(e.Args) > 1 {
+					c.errorf(e.Pos(), "pop() takes 0 or 1 arguments, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !IsInteger(argType) {
+						c.errorf(e.Args[0].Pos(), "pop() index must be integer, got %s", argType)
+					}
+				}
+				e.SliceMethod = true
+				return sliceType.Elem
+			}
+		}
 		// Check for imported module function call (e.g., fmt.println)
 		if ident, ok := field.Object.(*ast.IdentExpr); ok {
 			qualName := ident.Name + "." + field.Field

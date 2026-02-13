@@ -307,9 +307,10 @@ func (u *UnaryExpr) nodeMarker()    {}
 
 // CallExpr represents: callee(args)
 type CallExpr struct {
-	TokenPos token.Pos
-	Callee   Node
-	Args     []Node
+	TokenPos    token.Pos
+	Callee      Node
+	Args        []Node
+	SliceMethod bool // set by checker for built-in slice methods
 }
 
 func (c *CallExpr) Pos() token.Pos { return c.TokenPos }

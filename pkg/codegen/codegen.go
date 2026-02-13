@@ -17,6 +17,7 @@ type Generator struct {
 	funcs       map[string]*ast.FnDecl // "name" or "StructName.methodName"
 	needsRange  bool
 	needsRangei bool
+	needsPop    bool
 }
 
 // New creates a new code Generator.
@@ -104,6 +105,23 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\t\tfor i := start; i >= end; i += step { r = append(r, i) }")
 		g.writeln("\t}")
 		g.writeln("\treturn r")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsPop {
+		g.writeln("func zenth_pop(s *[]interface{}) interface{} {")
+		g.writeln("\tif len(*s) == 0 { return nil }")
+		g.writeln("\tn := len(*s) - 1")
+		g.writeln("\telem := (*s)[n]")
+		g.writeln("\t*s = (*s)[:n]")
+		g.writeln("\treturn elem")
+		g.writeln("}")
+		g.writeln("")
+		g.writeln("func zenth_pop_at(s *[]interface{}, i int) interface{} {")
+		g.writeln("\tif i < 0 || i >= len(*s) { return nil }")
+		g.writeln("\telem := (*s)[i]")
+		g.writeln("\t*s = append((*s)[:i], (*s)[i+1:]...)")
+		g.writeln("\treturn elem")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -713,6 +731,28 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 		if decl, ok := g.objs[ident.Name]; ok {
 			g.genObjConstructor(decl, c.Args)
 			return
+		}
+	}
+
+	// Handle built-in slice methods
+	if c.SliceMethod {
+		if field, ok := c.Callee.(*ast.FieldExpr); ok {
+			switch field.Field {
+			case "pop":
+				g.needsPop = true
+				if len(c.Args) == 0 {
+					g.write("zenth_pop(&")
+					g.genExpr(field.Object)
+					g.write(")")
+				} else {
+					g.write("zenth_pop_at(&")
+					g.genExpr(field.Object)
+					g.write(", ")
+					g.genExpr(c.Args[0])
+					g.write(")")
+				}
+				return
+			}
 		}
 	}
 
