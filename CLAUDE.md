@@ -2,6 +2,11 @@
 
 A compiled programming language that blends Go's type discipline with Python's simplicity, using curly braces and semicolons for structure. Compiles to native binaries.
 
+## Instructions
+
+- You MUST for every change set, increment the patch version number
+- For example: a change will increment 0.1.4 to 0.1.5
+
 ## Build
 
 ```
@@ -173,3 +178,5 @@ Standard library modules map to Go stdlib: `fmt`, `math`, `os`, `strings`/`str`
 **Working:** functions, let/var/const, type inference, objects (`obj`) with OOP-style methods and `self`, if/else/else-if, for loops (C-style, for-in, while-style, infinite), match statements, compile-time type errors, mutability checking, string/int/float/bool types, slices, obj literals, break/continue, compound assignment (`+=`, `-=`, etc.), `++`/`--`, imports, multi-variable assignment.
 
 **Not yet implemented:** enums/tagged unions, interfaces (parsed but not checked), error handling (`try`), multi-return, concurrency, generics, multi-file projects, user-defined packages.
+
+
