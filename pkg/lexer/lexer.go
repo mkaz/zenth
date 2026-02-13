@@ -113,8 +113,8 @@ func (l *Lexer) skipWhitespaceAndComments() {
 			l.advance()
 			continue
 		}
-		// Line comment
-		if ch == '/' && l.peekAt(1) == '/' {
+		// Line comment: // or #
+		if (ch == '/' && l.peekAt(1) == '/') || ch == '#' {
 			for l.pos < len(l.src) && l.peek() != '\n' {
 				l.advance()
 			}

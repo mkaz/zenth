@@ -98,6 +98,7 @@ func TestNumberLiterals(t *testing.T) {
 
 func TestComments(t *testing.T) {
 	src := `// this is a comment
+# this is also a comment
 fn main() { /* block comment */ }`
 	l := New("test.zn", src)
 	tokens, err := l.Tokenize()
@@ -105,9 +106,9 @@ fn main() { /* block comment */ }`
 		t.Fatal(err)
 	}
 
-	// Comments should be stripped
+	// All comments should be stripped
 	if tokens[0].Type != token.Fn {
-		t.Errorf("expected Fn after comment, got %s", tokens[0].Type)
+		t.Errorf("expected Fn after comments, got %s", tokens[0].Type)
 	}
 }
 
