@@ -453,6 +453,21 @@ func (p *Parser) parseSimpleStmt() ast.Node {
 
 func (p *Parser) parseSimpleStmtNoSemicolon() ast.Node {
 	expr := p.parseExpr(0)
+	// Multi-assign: expr, expr, ... = expr, expr, ...
+	if p.peek() == token.Comma {
+		targets := []ast.Node{expr}
+		for p.peek() == token.Comma {
+			p.advance()
+			targets = append(targets, p.parseExpr(0))
+		}
+		eqTok := p.expect(token.Assign)
+		values := []ast.Node{p.parseExpr(0)}
+		for p.peek() == token.Comma {
+			p.advance()
+			values = append(values, p.parseExpr(0))
+		}
+		return &ast.MultiAssignStmt{TokenPos: eqTok.Pos, Targets: targets, Values: values}
+	}
 	// Check for assignment
 	if p.peek() == token.Assign || p.peek() == token.PlusAssign || p.peek() == token.MinusAssign || p.peek() == token.StarAssign || p.peek() == token.SlashAssign {
 		op := p.advance()
@@ -494,6 +509,23 @@ func (p *Parser) parseMatchArm() ast.MatchArm {
 
 func (p *Parser) parseExprOrAssignStmt() ast.Node {
 	expr := p.parseExpr(0)
+
+	// Multi-assign: expr, expr, ... = expr, expr, ...;
+	if p.peek() == token.Comma {
+		targets := []ast.Node{expr}
+		for p.peek() == token.Comma {
+			p.advance()
+			targets = append(targets, p.parseExpr(0))
+		}
+		eqTok := p.expect(token.Assign)
+		values := []ast.Node{p.parseExpr(0)}
+		for p.peek() == token.Comma {
+			p.advance()
+			values = append(values, p.parseExpr(0))
+		}
+		p.expect(token.Semicolon)
+		return &ast.MultiAssignStmt{TokenPos: eqTok.Pos, Targets: targets, Values: values}
+	}
 
 	// Assignment
 	if p.peek() == token.Assign || p.peek() == token.PlusAssign || p.peek() == token.MinusAssign || p.peek() == token.StarAssign || p.peek() == token.SlashAssign {

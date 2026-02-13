@@ -1,0 +1,14 @@
+fn main() {
+    var x = 1;
+    var y = 2;
+    x, y = y, x;
+    println("{x} {y}");
+
+    # fibonacci
+    var a = 0;
+    var b = 1;
+    for var i = 0; i < 5; i++ {
+        a, b = b, a + b;
+    }
+    println(str(a));
+}

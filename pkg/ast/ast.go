@@ -161,6 +161,16 @@ type AssignStmt struct {
 func (a *AssignStmt) Pos() token.Pos { return a.TokenPos }
 func (a *AssignStmt) nodeMarker()    {}
 
+// MultiAssignStmt represents: t1, t2 = v1, v2;
+type MultiAssignStmt struct {
+	TokenPos token.Pos
+	Targets  []Node // lvalues (IdentExpr, IndexExpr, FieldExpr)
+	Values   []Node // rvalue expressions
+}
+
+func (m *MultiAssignStmt) Pos() token.Pos { return m.TokenPos }
+func (m *MultiAssignStmt) nodeMarker()    {}
+
 // ReturnStmt represents: return [expr];
 type ReturnStmt struct {
 	TokenPos token.Pos

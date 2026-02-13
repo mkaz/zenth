@@ -174,6 +174,8 @@ func (g *Generator) genNode(node ast.Node) {
 		g.genConstStmt(n)
 	case *ast.AssignStmt:
 		g.genAssignStmt(n)
+	case *ast.MultiAssignStmt:
+		g.genMultiAssignStmt(n)
 	case *ast.ReturnStmt:
 		g.genReturnStmt(n)
 	case *ast.IfStmt:
@@ -338,6 +340,24 @@ func (g *Generator) genAssignStmt(s *ast.AssignStmt) {
 	g.write("\n")
 }
 
+func (g *Generator) genMultiAssignStmt(s *ast.MultiAssignStmt) {
+	g.writeIndent()
+	for i, target := range s.Targets {
+		if i > 0 {
+			g.write(", ")
+		}
+		g.genExpr(target)
+	}
+	g.write(" = ")
+	for i, value := range s.Values {
+		if i > 0 {
+			g.write(", ")
+		}
+		g.genExpr(value)
+	}
+	g.write("\n")
+}
+
 func (g *Generator) genReturnStmt(s *ast.ReturnStmt) {
 	g.writeIndent()
 	g.write("return")
@@ -472,6 +492,20 @@ func (g *Generator) genForClause(node ast.Node) {
 			g.write(" += ")
 		}
 		g.genExpr(n.Value)
+	case *ast.MultiAssignStmt:
+		for i, target := range n.Targets {
+			if i > 0 {
+				g.write(", ")
+			}
+			g.genExpr(target)
+		}
+		g.write(" = ")
+		for i, value := range n.Values {
+			if i > 0 {
+				g.write(", ")
+			}
+			g.genExpr(value)
+		}
 	case *ast.IncDecStmt:
 		g.genExpr(n.Operand)
 		if n.Op == token.PlusPlus {

@@ -70,6 +70,10 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "defaults.zn",
 			contains: []string{"Hello, Alice!", "Hi, Bob!", "3", "6"},
 		},
+		{
+			file:     "multiassign.zn",
+			contains: []string{"2 1", "5"},
+		},
 	}
 
 	for _, tt := range tests {

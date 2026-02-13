@@ -207,6 +207,8 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 		return c.checkConstStmt(n)
 	case *ast.AssignStmt:
 		return c.checkAssignStmt(n)
+	case *ast.MultiAssignStmt:
+		return c.checkMultiAssignStmt(n)
 	case *ast.ReturnStmt:
 		return c.checkReturnStmt(n)
 	case *ast.IfStmt:
@@ -372,6 +374,31 @@ func (c *Checker) checkAssignStmt(s *ast.AssignStmt) ZType {
 				return TypeVoid
 			}
 			c.errorf(s.Pos(), "compound assignment requires numeric type, got %s", targetType)
+		}
+	}
+	return TypeVoid
+}
+
+func (c *Checker) checkMultiAssignStmt(s *ast.MultiAssignStmt) ZType {
+	if len(s.Targets) != len(s.Values) {
+		c.errorf(s.Pos(), "multi-assign: %d targets but %d values", len(s.Targets), len(s.Values))
+		return TypeVoid
+	}
+	for i, target := range s.Targets {
+		targetType := c.checkNode(target)
+		valueType := c.checkNode(s.Values[i])
+		// Check mutability
+		if ident, ok := target.(*ast.IdentExpr); ok {
+			sym := c.scope.Lookup(ident.Name)
+			if sym != nil && !sym.Mutable {
+				c.errorf(s.Pos(), "cannot assign to immutable variable '%s' (use 'var' instead of 'let')", ident.Name)
+			}
+			if sym != nil && sym.IsConst {
+				c.errorf(s.Pos(), "cannot assign to constant '%s'", ident.Name)
+			}
+		}
+		if !targetType.Equals(valueType) && valueType != TypeNil {
+			c.errorf(s.Pos(), "type mismatch: cannot assign %s to %s", valueType, targetType)
 		}
 	}
 	return TypeVoid
