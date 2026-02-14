@@ -1,0 +1,27 @@
+// Test "in" operator for array containment
+fn main() {
+    let nums = [10, 20, 30];
+    if 20 in nums {
+        println("found 20");
+    }
+    if 99 in nums {
+        println("found 99");
+    } else {
+        println("no 99");
+    }
+
+    let names = ["alice", "bob", "carol"];
+    if "bob" in names {
+        println("found bob");
+    }
+    if "dave" in names {
+        println("found dave");
+    } else {
+        println("no dave");
+    }
+
+    let flags = [true, false];
+    if true in flags {
+        println("found true");
+    }
+}

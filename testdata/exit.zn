@@ -1,0 +1,6 @@
+// Test exit() built-in
+fn main() {
+    println("before exit");
+    exit();
+    println("after exit");
+}
