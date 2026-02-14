@@ -91,6 +91,14 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "length.zn",
 			contains: []string{"len=2", "empty=0", "after=3"},
 		},
+		{
+			file:     "in_array.zn",
+			contains: []string{"found 20", "no 99", "found bob", "no dave", "found true"},
+		},
+		{
+			file:     "exit.zn",
+			contains: []string{"before exit"},
+		},
 	}
 
 	for _, tt := range tests {

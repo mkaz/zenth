@@ -19,7 +19,8 @@ type Generator struct {
 	needsRangei bool
 	needsPop    bool
 	needsAdd    bool
-	needsPush   bool
+	needsPush     bool
+	needsContains bool
 }
 
 // New creates a new code Generator.
@@ -136,6 +137,15 @@ func (g *Generator) Generate(prog *ast.Program) string {
 	if g.needsPush {
 		g.writeln("func zenth_push(s *[]interface{}, elem interface{}) {")
 		g.writeln("\t*s = append([]interface{}{elem}, *s...)")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsContains {
+		g.writeln("func zenth_contains(s []interface{}, elem interface{}) bool {")
+		g.writeln("\tfor _, v := range s {")
+		g.writeln("\t\tif v == elem { return true }")
+		g.writeln("\t}")
+		g.writeln("\treturn false")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -617,12 +627,21 @@ func (g *Generator) genExpr(node ast.Node) {
 	switch n := node.(type) {
 	case *ast.BinaryExpr:
 		if n.Op == token.In {
-			g.imports["strings"] = ""
-			g.write("strings.Contains(")
-			g.genExpr(n.Right)
-			g.write(", ")
-			g.genExpr(n.Left)
-			g.write(")")
+			if n.SliceContains {
+				g.needsContains = true
+				g.write("zenth_contains(")
+				g.genExpr(n.Right)
+				g.write(", ")
+				g.genExpr(n.Left)
+				g.write(")")
+			} else {
+				g.imports["strings"] = ""
+				g.write("strings.Contains(")
+				g.genExpr(n.Right)
+				g.write(", ")
+				g.genExpr(n.Left)
+				g.write(")")
+			}
 			break
 		}
 		if n.SliceConcat {
@@ -708,6 +727,16 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			g.write("fmt.Println(")
 			g.genArgList(c.Args)
 			g.write(")")
+			return
+		case "exit":
+			g.imports["os"] = ""
+			if len(c.Args) == 0 {
+				g.write("os.Exit(0)")
+			} else {
+				g.write("os.Exit(")
+				g.genArgList(c.Args)
+				g.write(")")
+			}
 			return
 		case "len":
 			g.write("len(")

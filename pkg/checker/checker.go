@@ -65,6 +65,12 @@ func New() *Checker {
 		Params: []ZType{TypeInt},
 		Return: TypeStr,
 	}
+	c.funcs["exit"] = &FuncInfo{
+		Name:        "exit",
+		Params:      []ZType{TypeInt},
+		Return:      TypeVoid,
+		NumRequired: 0,
+	}
 	c.funcs["range"] = &FuncInfo{
 		Name:   "range",
 		Params: []ZType{TypeInt, TypeInt},
@@ -564,6 +570,13 @@ func (c *Checker) checkBinaryExpr(e *ast.BinaryExpr) ZType {
 		return TypeBool
 
 	case token.In:
+		if st, ok := right.(*SliceType); ok {
+			if !left.Equals(st.Elem) {
+				c.errorf(e.Pos(), "'in' element type %s does not match slice element type %s", left, st.Elem)
+			}
+			e.SliceContains = true
+			return TypeBool
+		}
 		if !left.Equals(TypeStr) || !right.Equals(TypeStr) {
 			c.errorf(e.Pos(), "'in' requires str operands, got %s and %s", left, right)
 		}
