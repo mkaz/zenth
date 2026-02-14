@@ -20,6 +20,7 @@ type Generator struct {
 	needsPop    bool
 	needsAdd    bool
 	needsPush     bool
+	loopCounter   int
 	needsContains bool
 }
 
@@ -226,6 +227,8 @@ func (g *Generator) genNode(node ast.Node) {
 		g.genForStmt(n)
 	case *ast.ForInStmt:
 		g.genForInStmt(n)
+	case *ast.LoopStmt:
+		g.genLoopStmt(n)
 	case *ast.MatchStmt:
 		g.genMatchStmt(n)
 	case *ast.BreakStmt:
@@ -573,6 +576,21 @@ func (g *Generator) genForInStmt(s *ast.ForInStmt) {
 	g.write(" := range ")
 	g.genExpr(s.Iterable)
 	g.write(" {\n")
+	g.indent++
+	for _, stmt := range s.Body.Stmts {
+		g.genNode(stmt)
+	}
+	g.indent--
+	g.writeln("}")
+}
+
+func (g *Generator) genLoopStmt(s *ast.LoopStmt) {
+	v := fmt.Sprintf("_loop%d_", g.loopCounter)
+	g.loopCounter++
+	g.writeIndent()
+	g.writef("for %s := 0; %s < ", v, v)
+	g.genExpr(s.Count)
+	g.writef("; %s++ {\n", v)
 	g.indent++
 	for _, stmt := range s.Body.Stmts {
 		g.genNode(stmt)

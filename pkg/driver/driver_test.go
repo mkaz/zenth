@@ -99,6 +99,10 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "exit.zn",
 			contains: []string{"before exit"},
 		},
+		{
+			file:     "loop.zn",
+			contains: []string{"hello", "count=5"},
+		},
 	}
 
 	for _, tt := range tests {

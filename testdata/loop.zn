@@ -1,0 +1,13 @@
+// Test loop keyword
+fn main() {
+    loop 3 {
+        println("hello");
+    }
+
+    var count = 0;
+    let n = 5;
+    loop n {
+        count = count + 1;
+    }
+    println("count=" + str(count));
+}

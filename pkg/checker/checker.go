@@ -232,6 +232,8 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 		return c.checkForStmt(n)
 	case *ast.ForInStmt:
 		return c.checkForInStmt(n)
+	case *ast.LoopStmt:
+		return c.checkLoopStmt(n)
 	case *ast.MatchStmt:
 		return c.checkMatchStmt(n)
 	case *ast.BreakStmt, *ast.ContinueStmt:
@@ -496,6 +498,17 @@ func (c *Checker) checkForInStmt(s *ast.ForInStmt) ZType {
 		c.checkNode(stmt)
 	}
 	c.popScope()
+	return TypeVoid
+}
+
+func (c *Checker) checkLoopStmt(s *ast.LoopStmt) ZType {
+	countType := c.checkNode(s.Count)
+	if !countType.Equals(TypeInt) {
+		c.errorf(s.Count.Pos(), "loop count must be int, got %s", countType)
+	}
+	for _, stmt := range s.Body.Stmts {
+		c.checkNode(stmt)
+	}
 	return TypeVoid
 }
 

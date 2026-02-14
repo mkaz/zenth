@@ -66,6 +66,7 @@ const (
 	If
 	Else
 	For
+	Loop
 	In
 	Match
 	Obj
@@ -131,6 +132,7 @@ var typeNames = map[Type]string{
 	If:         "if",
 	Else:       "else",
 	For:        "for",
+	Loop:       "loop",
 	In:         "in",
 	Match:      "match",
 	Obj:        "obj",
@@ -166,6 +168,7 @@ var keywords = map[string]Type{
 	"if":        If,
 	"else":      Else,
 	"for":       For,
+	"loop":      Loop,
 	"in":        In,
 	"match":     Match,
 	"obj":       Obj,

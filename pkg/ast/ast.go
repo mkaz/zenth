@@ -229,6 +229,16 @@ type ForInStmt struct {
 func (f *ForInStmt) Pos() token.Pos { return f.TokenPos }
 func (f *ForInStmt) nodeMarker()    {}
 
+// LoopStmt represents: loop count { ... }
+type LoopStmt struct {
+	TokenPos token.Pos
+	Count    Node
+	Body     *Block
+}
+
+func (l *LoopStmt) Pos() token.Pos { return l.TokenPos }
+func (l *LoopStmt) nodeMarker()    {}
+
 // MatchStmt represents: match expr { arms }
 type MatchStmt struct {
 	TokenPos token.Pos

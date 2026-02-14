@@ -198,6 +198,8 @@ func (p *Parser) parseStmt() ast.Node {
 		return p.parseIfStmt()
 	case token.For:
 		return p.parseForStmt()
+	case token.Loop:
+		return p.parseLoopStmt()
 	case token.Match:
 		return p.parseMatchStmt()
 	case token.Break:
@@ -480,6 +482,13 @@ func (p *Parser) parseSimpleStmtNoSemicolon() ast.Node {
 		return &ast.IncDecStmt{TokenPos: op.Pos, Operand: expr, Op: op.Type}
 	}
 	return &ast.ExprStmt{Expr: expr}
+}
+
+func (p *Parser) parseLoopStmt() *ast.LoopStmt {
+	tok := p.expect(token.Loop)
+	count := p.parseExpr(0)
+	body := p.parseBlock()
+	return &ast.LoopStmt{TokenPos: tok.Pos, Count: count, Body: body}
 }
 
 func (p *Parser) parseMatchStmt() *ast.MatchStmt {
