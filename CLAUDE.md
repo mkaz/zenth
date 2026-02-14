@@ -4,8 +4,14 @@ A compiled programming language that blends Go's type discipline with Python's s
 
 ## Instructions
 
-- You MUST for every change set, increment the patch version number
-- For example: a change will increment 0.1.4 to 0.1.5
+For every change ALWAYS follow these directives:
+
+- For every language change, update the vim syntax in @extras/vim when relevant
+    - For example: if a new keyword, operator, or other language construct is added
+
+- For every change, increment the patch version number in @cmd/zenth/main.go
+    - For example: a change will increment 0.1.4 to 0.1.5
+
 
 ## Build
 
