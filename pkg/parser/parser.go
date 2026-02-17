@@ -57,7 +57,7 @@ func (p *Parser) expect(typ token.Type) token.Token {
 	return tok
 }
 
-func (p *Parser) errorf(pos token.Pos, format string, args ...interface{}) {
+func (p *Parser) errorf(pos token.Pos, format string, args ...any) {
 	msg := fmt.Sprintf("%s: %s", pos, fmt.Sprintf(format, args...))
 	p.errors = append(p.errors, msg)
 }
@@ -883,12 +883,12 @@ func (p *Parser) parseInterpString(tok token.Token) ast.Node {
 }
 
 func joinErrors(errs []string) string {
-	result := ""
+	var result strings.Builder
 	for i, e := range errs {
 		if i > 0 {
-			result += "\n"
+			result.WriteString("\n")
 		}
-		result += "  " + e
+		result.WriteString("  " + e)
 	}
-	return result
+	return result.String()
 }

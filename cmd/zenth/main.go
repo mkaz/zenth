@@ -70,7 +70,7 @@ func handleRun() {
 	opts := driver.Options{}
 
 	args := os.Args[2:]
-	for i := 0; i < len(args); i++ {
+	for i := range args {
 		switch args[i] {
 		case "-v", "--verbose":
 			opts.Verbose = true
@@ -125,7 +125,7 @@ Build flags:
   -v, --verbose   Verbose output`)
 }
 
-func fatal(format string, args ...interface{}) {
+func fatal(format string, args ...any) {
 	fmt.Fprintf(os.Stderr, "error: "+format+"\n", args...)
 	os.Exit(1)
 }

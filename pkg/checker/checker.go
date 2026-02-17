@@ -3,6 +3,7 @@ package checker
 import (
 	"fmt"
 	"path"
+	"strings"
 
 	"github.com/mkaz/zenth/pkg/ast"
 	"github.com/mkaz/zenth/pkg/token"
@@ -111,7 +112,7 @@ func New() *Checker {
 	return c
 }
 
-func (c *Checker) errorf(pos token.Pos, format string, args ...interface{}) {
+func (c *Checker) errorf(pos token.Pos, format string, args ...any) {
 	msg := fmt.Sprintf("%s: %s", pos, fmt.Sprintf(format, args...))
 	c.errors = append(c.errors, msg)
 }
@@ -144,11 +145,12 @@ func (c *Checker) Check(prog *ast.Program) error {
 	}
 
 	if len(c.errors) > 0 {
-		result := "type errors:\n"
+		var result strings.Builder
+		result.WriteString("type errors:\n")
 		for _, e := range c.errors {
-			result += "  " + e + "\n"
+			result.WriteString("  " + e + "\n")
 		}
-		return fmt.Errorf("%s", result)
+		return fmt.Errorf("%s", result.String())
 	}
 	return nil
 }

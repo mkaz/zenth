@@ -362,7 +362,7 @@ func (g *Generator) writeln(s string) {
 	g.buf.WriteString("\n")
 }
 
-func (g *Generator) writef(format string, args ...interface{}) {
+func (g *Generator) writef(format string, args ...any) {
 	g.writeIndent()
 	fmt.Fprintf(&g.buf, format, args...)
 }
