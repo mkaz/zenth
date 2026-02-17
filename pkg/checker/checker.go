@@ -81,6 +81,11 @@ func New() *Checker {
 		Params: []ZType{TypeInt, TypeInt},
 		Return: &SliceType{Elem: TypeInt},
 	}
+	c.funcs["file"] = &FuncInfo{
+		Name:   "file",
+		Params: []ZType{TypeStr},
+		Return: TypeFile,
+	}
 
 	return c
 }
@@ -688,6 +693,41 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.SliceMethod = true
 				return TypeInt
+			}
+		}
+		// Check for built-in file methods
+		if objType.Equals(TypeFile) {
+			switch field.Field {
+			case "exists":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "exists() takes no arguments, got %d", len(e.Args))
+				}
+				e.SliceMethod = true
+				return TypeBool
+			case "read":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "read() takes no arguments, got %d", len(e.Args))
+				}
+				e.SliceMethod = true
+				return TypeStr
+			case "lines":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "lines() takes no arguments, got %d", len(e.Args))
+				}
+				e.SliceMethod = true
+				return &SliceType{Elem: TypeStr}
+			case "name":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "name() takes no arguments, got %d", len(e.Args))
+				}
+				e.SliceMethod = true
+				return TypeStr
+			case "ext":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "ext() takes no arguments, got %d", len(e.Args))
+				}
+				e.SliceMethod = true
+				return TypeStr
 			}
 		}
 		// Check for imported module function call (e.g., fmt.println)

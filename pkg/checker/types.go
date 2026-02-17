@@ -41,6 +41,7 @@ var (
 	TypeVoid   = &BuiltinType{"void"}
 	TypeError  = &BuiltinType{"error"}
 	TypeNil    = &BuiltinType{"nil"}
+	TypeFile   = &BuiltinType{"file"}
 )
 
 // ObjType represents a user-defined obj type.

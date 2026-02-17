@@ -103,6 +103,10 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "loop.zn",
 			contains: []string{"hello", "count=5"},
 		},
+		{
+			file:     "file.zn",
+			contains: []string{"exists=true", "name=file.zn", "ext=.zn", "read=ok", "lines=ok", "nope=false"},
+		},
 	}
 
 	for _, tt := range tests {

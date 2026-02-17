@@ -19,7 +19,7 @@ syn keyword zenthType         int i8 i16 i32 i64 u8 u16 u32 u64
 syn keyword zenthType         f32 f64 bool str byte
 
 " Built-in functions
-syn keyword zenthBuiltin      print println len str append push pop
+syn keyword zenthBuiltin      print println len str append push pop file
 
 " Operators
 syn match zenthOperator       /[+\-*/%=<>!&|^~]/

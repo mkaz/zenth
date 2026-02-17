@@ -22,6 +22,7 @@ type Generator struct {
 	needsPush     bool
 	loopCounter   int
 	needsContains bool
+	needsFile     bool
 }
 
 // New creates a new code Generator.
@@ -72,6 +73,11 @@ func (g *Generator) Generate(prog *ast.Program) string {
 
 	// Always import fmt for print/println
 	g.imports["fmt"] = ""
+	if g.needsFile {
+		g.imports["os"] = ""
+		g.imports["strings"] = ""
+		g.imports["path/filepath"] = ""
+	}
 
 	if len(g.imports) > 0 {
 		g.writeln("import (")
@@ -148,6 +154,34 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\t}")
 		g.writeln("\treturn false")
 		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsFile {
+		g.writeln("type ZenthFile struct { Path string }")
+		g.writeln("")
+		g.writeln("func zenth_file(path string) ZenthFile { return ZenthFile{Path: path} }")
+		g.writeln("")
+		g.writeln("func zenth_file_exists(f ZenthFile) bool {")
+		g.writeln("\t_, err := os.Stat(f.Path)")
+		g.writeln("\treturn err == nil")
+		g.writeln("}")
+		g.writeln("")
+		g.writeln("func zenth_file_read(f ZenthFile) string {")
+		g.writeln("\tdata, err := os.ReadFile(f.Path)")
+		g.writeln("\tif err != nil {")
+		g.writeln("\t\tfmt.Fprintf(os.Stderr, \"error: %v\\n\", err)")
+		g.writeln("\t\tos.Exit(1)")
+		g.writeln("\t}")
+		g.writeln("\treturn string(data)")
+		g.writeln("}")
+		g.writeln("")
+		g.writeln("func zenth_file_lines(f ZenthFile) []string {")
+		g.writeln("\treturn strings.Split(strings.TrimRight(zenth_file_read(f), \"\\n\"), \"\\n\")")
+		g.writeln("}")
+		g.writeln("")
+		g.writeln("func zenth_file_name(f ZenthFile) string { return filepath.Base(f.Path) }")
+		g.writeln("")
+		g.writeln("func zenth_file_ext(f ZenthFile) string { return filepath.Ext(f.Path) }")
 		g.writeln("")
 	}
 
@@ -784,6 +818,12 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			}
 			g.write(")")
 			return
+		case "file":
+			g.needsFile = true
+			g.write("zenth_file(")
+			g.genArgList(c.Args)
+			g.write(")")
+			return
 		}
 	}
 
@@ -831,6 +871,36 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				return
 			case "length":
 				g.write("len(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "exists":
+				g.needsFile = true
+				g.write("zenth_file_exists(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "read":
+				g.needsFile = true
+				g.write("zenth_file_read(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "lines":
+				g.needsFile = true
+				g.write("zenth_file_lines(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "name":
+				g.needsFile = true
+				g.write("zenth_file_name(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "ext":
+				g.needsFile = true
+				g.write("zenth_file_ext(")
 				g.genExpr(field.Object)
 				g.write(")")
 				return
