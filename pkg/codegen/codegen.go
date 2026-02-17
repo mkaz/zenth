@@ -131,16 +131,22 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("")
 	}
 	if g.needsPop {
-		g.writeln("func zenth_pop(s *[]interface{}) interface{} {")
-		g.writeln("\tif len(*s) == 0 { return nil }")
+		g.writeln("func zenth_pop[T any](s *[]T) T {")
+		g.writeln("\tif len(*s) == 0 {")
+		g.writeln("\t\tvar zero T")
+		g.writeln("\t\treturn zero")
+		g.writeln("\t}")
 		g.writeln("\tn := len(*s) - 1")
 		g.writeln("\telem := (*s)[n]")
 		g.writeln("\t*s = (*s)[:n]")
 		g.writeln("\treturn elem")
 		g.writeln("}")
 		g.writeln("")
-		g.writeln("func zenth_pop_at(s *[]interface{}, i int) interface{} {")
-		g.writeln("\tif i < 0 || i >= len(*s) { return nil }")
+		g.writeln("func zenth_pop_at[T any](s *[]T, i int) T {")
+		g.writeln("\tif i < 0 || i >= len(*s) {")
+		g.writeln("\t\tvar zero T")
+		g.writeln("\t\treturn zero")
+		g.writeln("\t}")
 		g.writeln("\telem := (*s)[i]")
 		g.writeln("\t*s = append((*s)[:i], (*s)[i+1:]...)")
 		g.writeln("\treturn elem")
@@ -148,14 +154,14 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("")
 	}
 	if g.needsAdd {
-		g.writeln("func zenth_add(s *[]interface{}, elem interface{}) {")
+		g.writeln("func zenth_add[T any](s *[]T, elem T) {")
 		g.writeln("\t*s = append(*s, elem)")
 		g.writeln("}")
 		g.writeln("")
 	}
 	if g.needsPush {
-		g.writeln("func zenth_push(s *[]interface{}, elem interface{}) {")
-		g.writeln("\t*s = append([]interface{}{elem}, *s...)")
+		g.writeln("func zenth_push[T any](s *[]T, elem T) {")
+		g.writeln("\t*s = append([]T{elem}, *s...)")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -1238,7 +1244,10 @@ func (g *Generator) genArgList(args []ast.Node) {
 }
 
 func (g *Generator) genArrayLit(a *ast.ArrayLitExpr) {
-	// Try to infer element type from first element
+	if len(a.Elements) == 0 && a.GoType != "" {
+		g.write(a.GoType + "{}")
+		return
+	}
 	g.write("[]interface{}{")
 	for i, elem := range a.Elements {
 		if i > 0 {

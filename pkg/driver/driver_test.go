@@ -144,6 +144,10 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "debug_print.zn",
 			contains: []string{"This is debug code", "This is standard"},
 		},
+		{
+			file:     "object_array.zn",
+			contains: []string{"len=1", "x=1 y=2", "cleared=0"},
+		},
 	}
 
 	for _, tt := range tests {

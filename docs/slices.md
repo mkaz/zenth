@@ -17,6 +17,13 @@ With an explicit type annotation:
 let scores: []int = [100, 95, 87];
 ```
 
+An empty slice can use a type annotation:
+
+```zenth
+var points: []Point = [];
+points.add(Point(x=1, y=2));
+```
+
 ## Accessing Elements
 
 Use bracket indexing (zero-based):

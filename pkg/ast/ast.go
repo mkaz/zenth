@@ -409,6 +409,7 @@ func (n *NilExpr) nodeMarker()    {}
 type ArrayLitExpr struct {
 	TokenPos token.Pos
 	Elements []Node
+	GoType   string // optional concrete Go slice type for empty literals (set by checker)
 }
 
 func (a *ArrayLitExpr) Pos() token.Pos { return a.TokenPos }

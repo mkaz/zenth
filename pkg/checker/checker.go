@@ -371,7 +371,9 @@ func (c *Checker) checkLetStmt(s *ast.LetStmt) ZType {
 	valType := c.checkNode(s.Value)
 	if s.Type != nil {
 		declared := c.resolveTypeExpr(s.Type)
-		if !declared.Equals(valType) && valType != TypeNil {
+		if c.isTypedEmptySliceAssignment(s.Value, declared, valType) {
+			valType = declared
+		} else if !declared.Equals(valType) && valType != TypeNil {
 			c.errorf(s.Pos(), "type mismatch: cannot assign %s to %s", valType, declared)
 		}
 		valType = declared
@@ -384,7 +386,9 @@ func (c *Checker) checkVarStmt(s *ast.VarStmt) ZType {
 	valType := c.checkNode(s.Value)
 	if s.Type != nil {
 		declared := c.resolveTypeExpr(s.Type)
-		if !declared.Equals(valType) && valType != TypeNil {
+		if c.isTypedEmptySliceAssignment(s.Value, declared, valType) {
+			valType = declared
+		} else if !declared.Equals(valType) && valType != TypeNil {
 			c.errorf(s.Pos(), "type mismatch: cannot assign %s to %s", valType, declared)
 		}
 		valType = declared
@@ -397,7 +401,9 @@ func (c *Checker) checkConstStmt(s *ast.ConstStmt) ZType {
 	valType := c.checkNode(s.Value)
 	if s.Type != nil {
 		declared := c.resolveTypeExpr(s.Type)
-		if !declared.Equals(valType) && valType != TypeNil {
+		if c.isTypedEmptySliceAssignment(s.Value, declared, valType) {
+			valType = declared
+		} else if !declared.Equals(valType) && valType != TypeNil {
 			c.errorf(s.Pos(), "type mismatch: cannot assign %s to %s", valType, declared)
 		}
 		valType = declared
@@ -422,6 +428,9 @@ func (c *Checker) checkAssignStmt(s *ast.AssignStmt) ZType {
 	}
 
 	if s.Op == token.Assign {
+		if c.isTypedEmptySliceAssignment(s.Value, targetType, valueType) {
+			return TypeVoid
+		}
 		if !targetType.Equals(valueType) && valueType != TypeNil {
 			c.errorf(s.Pos(), "type mismatch: cannot assign %s to %s", valueType, targetType)
 		}
@@ -457,6 +466,9 @@ func (c *Checker) checkMultiAssignStmt(s *ast.MultiAssignStmt) ZType {
 			}
 		}
 		if !targetType.Equals(valueType) && valueType != TypeNil {
+			if c.isTypedEmptySliceAssignment(s.Values[i], targetType, valueType) {
+				continue
+			}
 			c.errorf(s.Pos(), "type mismatch: cannot assign %s to %s", valueType, targetType)
 		}
 	}
@@ -1118,6 +1130,26 @@ func (c *Checker) checkArrayLit(e *ast.ArrayLitExpr) ZType {
 	return &SliceType{Elem: firstType}
 }
 
+func (c *Checker) isTypedEmptySliceAssignment(value ast.Node, targetType ZType, valueType ZType) bool {
+	lit, ok := value.(*ast.ArrayLitExpr)
+	if !ok || len(lit.Elements) != 0 {
+		return false
+	}
+	targetSlice, ok := targetType.(*SliceType)
+	if !ok {
+		return false
+	}
+	valueSlice, ok := valueType.(*SliceType)
+	if !ok {
+		return false
+	}
+	if !valueSlice.Elem.Equals(TypeVoid) || targetSlice.Elem.Equals(TypeVoid) {
+		return false
+	}
+	lit.GoType = goTypeName(targetType)
+	return true
+}
+
 func (c *Checker) checkObjConstructor(e *ast.CallExpr, name string) ZType {
 	info := c.objs[name]
 
@@ -1210,7 +1242,7 @@ func goTypeName(t ZType) string {
 	case *SliceType:
 		return "[]" + goTypeName(ty.Elem)
 	case *ObjType:
-		return ty.Name
+		return "*" + ty.Name
 	default:
 		return "interface{}"
 	}

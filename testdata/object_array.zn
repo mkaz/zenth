@@ -1,0 +1,16 @@
+obj Point {
+    x: int;
+    y: int;
+}
+
+fn main() {
+    var grid: []Point = [];
+    let pt = Point(x=1, y=2);
+    grid.add(pt);
+
+    println("len=" + str(len(grid)));
+    println("x=" + str(grid[0].x) + " y=" + str(grid[0].y));
+
+    grid = [];
+    println("cleared=" + str(len(grid)));
+}
