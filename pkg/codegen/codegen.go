@@ -21,8 +21,13 @@ type Generator struct {
 	needsAdd    bool
 	needsPush     bool
 	loopCounter   int
-	needsContains bool
-	needsFile     bool
+	needsContains  bool
+	needsFile      bool
+	needsIntConv   bool
+	needsF64Conv   bool
+	needsSliceToInt bool
+	needsSliceToF64 bool
+	needsSliceToStr bool
 }
 
 // New creates a new code Generator.
@@ -77,6 +82,12 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.imports["os"] = ""
 		g.imports["strings"] = ""
 		g.imports["path/filepath"] = ""
+	}
+	if g.needsIntConv || g.needsF64Conv || g.needsSliceToInt || g.needsSliceToF64 {
+		g.imports["strconv"] = ""
+	}
+	if g.needsIntConv || g.needsF64Conv || g.needsSliceToInt || g.needsSliceToF64 || g.needsSliceToStr {
+		g.imports["os"] = ""
 	}
 
 	if len(g.imports) > 0 {
@@ -182,6 +193,127 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("func zenth_file_name(f ZenthFile) string { return filepath.Base(f.Path) }")
 		g.writeln("")
 		g.writeln("func zenth_file_ext(f ZenthFile) string { return filepath.Ext(f.Path) }")
+		g.writeln("")
+	}
+	if g.needsIntConv {
+		g.writeln("func zenth_int(v interface{}) int {")
+		g.writeln("\tswitch x := v.(type) {")
+		g.writeln("\tcase int:")
+		g.writeln("\t\treturn x")
+		g.writeln("\tcase float64:")
+		g.writeln("\t\treturn int(x)")
+		g.writeln("\tcase float32:")
+		g.writeln("\t\treturn int(x)")
+		g.writeln("\tcase bool:")
+		g.writeln("\t\tif x { return 1 }")
+		g.writeln("\t\treturn 0")
+		g.writeln("\tcase string:")
+		g.writeln("\t\tn, err := strconv.Atoi(x)")
+		g.writeln("\t\tif err != nil {")
+		g.writeln("\t\t\tfmt.Fprintf(os.Stderr, \"error: cannot convert %q to int\\n\", x)")
+		g.writeln("\t\t\tos.Exit(1)")
+		g.writeln("\t\t}")
+		g.writeln("\t\treturn n")
+		g.writeln("\tdefault:")
+		g.writeln("\t\tfmt.Fprintf(os.Stderr, \"error: cannot convert %T to int\\n\", v)")
+		g.writeln("\t\tos.Exit(1)")
+		g.writeln("\t\treturn 0")
+		g.writeln("\t}")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsF64Conv {
+		g.writeln("func zenth_f64(v interface{}) float64 {")
+		g.writeln("\tswitch x := v.(type) {")
+		g.writeln("\tcase float64:")
+		g.writeln("\t\treturn x")
+		g.writeln("\tcase float32:")
+		g.writeln("\t\treturn float64(x)")
+		g.writeln("\tcase int:")
+		g.writeln("\t\treturn float64(x)")
+		g.writeln("\tcase string:")
+		g.writeln("\t\tn, err := strconv.ParseFloat(x, 64)")
+		g.writeln("\t\tif err != nil {")
+		g.writeln("\t\t\tfmt.Fprintf(os.Stderr, \"error: cannot convert %q to f64\\n\", x)")
+		g.writeln("\t\t\tos.Exit(1)")
+		g.writeln("\t\t}")
+		g.writeln("\t\treturn n")
+		g.writeln("\tdefault:")
+		g.writeln("\t\tfmt.Fprintf(os.Stderr, \"error: cannot convert %T to f64\\n\", v)")
+		g.writeln("\t\tos.Exit(1)")
+		g.writeln("\t\treturn 0")
+		g.writeln("\t}")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsSliceToInt {
+		g.writeln("func zenth_slice_to_int(s interface{}) []int {")
+		g.writeln("\tvar result []int")
+		g.writeln("\tswitch xs := s.(type) {")
+		g.writeln("\tcase []interface{}:")
+		g.writeln("\t\tfor _, v := range xs {")
+		g.writeln("\t\t\tn, err := strconv.Atoi(fmt.Sprint(v))")
+		g.writeln("\t\t\tif err != nil {")
+		g.writeln("\t\t\t\tfmt.Fprintf(os.Stderr, \"error: cannot convert %q to int\\n\", fmt.Sprint(v))")
+		g.writeln("\t\t\t\tos.Exit(1)")
+		g.writeln("\t\t\t}")
+		g.writeln("\t\t\tresult = append(result, n)")
+		g.writeln("\t\t}")
+		g.writeln("\tcase []string:")
+		g.writeln("\t\tfor _, v := range xs {")
+		g.writeln("\t\t\tn, err := strconv.Atoi(v)")
+		g.writeln("\t\t\tif err != nil {")
+		g.writeln("\t\t\t\tfmt.Fprintf(os.Stderr, \"error: cannot convert %q to int\\n\", v)")
+		g.writeln("\t\t\t\tos.Exit(1)")
+		g.writeln("\t\t\t}")
+		g.writeln("\t\t\tresult = append(result, n)")
+		g.writeln("\t\t}")
+		g.writeln("\t}")
+		g.writeln("\treturn result")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsSliceToF64 {
+		g.writeln("func zenth_slice_to_f64(s interface{}) []float64 {")
+		g.writeln("\tvar result []float64")
+		g.writeln("\tswitch xs := s.(type) {")
+		g.writeln("\tcase []interface{}:")
+		g.writeln("\t\tfor _, v := range xs {")
+		g.writeln("\t\t\tn, err := strconv.ParseFloat(fmt.Sprint(v), 64)")
+		g.writeln("\t\t\tif err != nil {")
+		g.writeln("\t\t\t\tfmt.Fprintf(os.Stderr, \"error: cannot convert %q to f64\\n\", fmt.Sprint(v))")
+		g.writeln("\t\t\t\tos.Exit(1)")
+		g.writeln("\t\t\t}")
+		g.writeln("\t\t\tresult = append(result, n)")
+		g.writeln("\t\t}")
+		g.writeln("\tcase []string:")
+		g.writeln("\t\tfor _, v := range xs {")
+		g.writeln("\t\t\tn, err := strconv.ParseFloat(v, 64)")
+		g.writeln("\t\t\tif err != nil {")
+		g.writeln("\t\t\t\tfmt.Fprintf(os.Stderr, \"error: cannot convert %q to f64\\n\", v)")
+		g.writeln("\t\t\t\tos.Exit(1)")
+		g.writeln("\t\t\t}")
+		g.writeln("\t\t\tresult = append(result, n)")
+		g.writeln("\t\t}")
+		g.writeln("\t}")
+		g.writeln("\treturn result")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsSliceToStr {
+		g.writeln("func zenth_slice_to_str(s interface{}) []string {")
+		g.writeln("\tvar result []string")
+		g.writeln("\tswitch xs := s.(type) {")
+		g.writeln("\tcase []interface{}:")
+		g.writeln("\t\tfor _, v := range xs {")
+		g.writeln("\t\t\tresult = append(result, fmt.Sprint(v))")
+		g.writeln("\t\t}")
+		g.writeln("\tdefault:")
+		g.writeln("\t\tfmt.Fprintf(os.Stderr, \"error: cannot convert %T to []str\\n\", s)")
+		g.writeln("\t\tos.Exit(1)")
+		g.writeln("\t}")
+		g.writeln("\treturn result")
+		g.writeln("}")
 		g.writeln("")
 	}
 
@@ -824,6 +956,18 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			g.genArgList(c.Args)
 			g.write(")")
 			return
+		case "int":
+			g.needsIntConv = true
+			g.write("zenth_int(")
+			g.genArgList(c.Args)
+			g.write(")")
+			return
+		case "f64":
+			g.needsF64Conv = true
+			g.write("zenth_f64(")
+			g.genArgList(c.Args)
+			g.write(")")
+			return
 		}
 	}
 
@@ -901,6 +1045,38 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			case "ext":
 				g.needsFile = true
 				g.write("zenth_file_ext(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "to_int":
+				if c.SliceConvTarget == "" {
+					// Scalar: str.to_int()
+					g.needsIntConv = true
+					g.write("zenth_int(")
+				} else {
+					// Slice: []str.to_int()
+					g.needsSliceToInt = true
+					g.write("zenth_slice_to_int(")
+				}
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "to_f64":
+				if c.SliceConvTarget == "" {
+					// Scalar: str.to_f64()
+					g.needsF64Conv = true
+					g.write("zenth_f64(")
+				} else {
+					// Slice: []str.to_f64()
+					g.needsSliceToF64 = true
+					g.write("zenth_slice_to_f64(")
+				}
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "to_str":
+				g.needsSliceToStr = true
+				g.write("zenth_slice_to_str(")
 				g.genExpr(field.Object)
 				g.write(")")
 				return

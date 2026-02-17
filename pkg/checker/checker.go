@@ -86,6 +86,16 @@ func New() *Checker {
 		Params: []ZType{TypeStr},
 		Return: TypeFile,
 	}
+	c.funcs["int"] = &FuncInfo{
+		Name:   "int",
+		Params: []ZType{TypeInt},
+		Return: TypeInt,
+	}
+	c.funcs["f64"] = &FuncInfo{
+		Name:   "f64",
+		Params: []ZType{TypeF64},
+		Return: TypeF64,
+	}
 
 	return c
 }
@@ -640,6 +650,12 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 	// Handle method calls: obj.method(args)
 	if field, ok := e.Callee.(*ast.FieldExpr); ok {
 		objType := c.checkNode(field.Object)
+		if objType.Equals(TypeVoid) {
+			for _, arg := range e.Args {
+				c.checkNode(arg)
+			}
+			return TypeVoid
+		}
 		methodKey := ""
 		if st, ok := objType.(*ObjType); ok {
 			methodKey = st.Name + "." + field.Field
@@ -693,6 +709,36 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.SliceMethod = true
 				return TypeInt
+			case "to_int":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "to_int() takes no arguments, got %d", len(e.Args))
+				}
+				if !sliceType.Elem.Equals(TypeStr) {
+					c.errorf(e.Pos(), "to_int() requires []str, got %s", objType)
+				}
+				e.SliceMethod = true
+				e.SliceConvTarget = "int"
+				return &SliceType{Elem: TypeInt}
+			case "to_f64":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "to_f64() takes no arguments, got %d", len(e.Args))
+				}
+				if !sliceType.Elem.Equals(TypeStr) {
+					c.errorf(e.Pos(), "to_f64() requires []str, got %s", objType)
+				}
+				e.SliceMethod = true
+				e.SliceConvTarget = "float64"
+				return &SliceType{Elem: TypeF64}
+			case "to_str":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "to_str() takes no arguments, got %d", len(e.Args))
+				}
+				if !sliceType.Elem.Equals(TypeInt) && !sliceType.Elem.Equals(TypeF64) {
+					c.errorf(e.Pos(), "to_str() requires []int or []f64, got %s", objType)
+				}
+				e.SliceMethod = true
+				e.SliceConvTarget = "string"
+				return &SliceType{Elem: TypeStr}
 			}
 		}
 		// Check for built-in file methods
@@ -728,6 +774,23 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.SliceMethod = true
 				return TypeStr
+			}
+		}
+		// Check for built-in string methods
+		if objType.Equals(TypeStr) {
+			switch field.Field {
+			case "to_int":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "to_int() takes no arguments, got %d", len(e.Args))
+				}
+				e.SliceMethod = true
+				return TypeInt
+			case "to_f64":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "to_f64() takes no arguments, got %d", len(e.Args))
+				}
+				e.SliceMethod = true
+				return TypeF64
 			}
 		}
 		// Check for imported module function call (e.g., fmt.println)
@@ -781,6 +844,13 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 	if info.Name == "print" || info.Name == "println" {
 		return
 	}
+	// Conversion builtins accept any single arg
+	if info.Name == "int" || info.Name == "f64" || info.Name == "str" {
+		if len(e.Args) != 1 {
+			c.errorf(e.Pos(), "%s() expects exactly 1 argument, got %d", info.Name, len(e.Args))
+		}
+		return
+	}
 	// range/rangei accept 2 or 3 int args
 	if info.Name == "range" || info.Name == "rangei" {
 		if len(e.Args) < 2 || len(e.Args) > 3 {
@@ -798,13 +868,21 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 }
 
 func (c *Checker) checkFieldExpr(e *ast.FieldExpr) ZType {
+	if ident, ok := e.Object.(*ast.IdentExpr); ok && c.isModuleName(ident.Name) {
+		return TypeVoid
+	}
 	objType := c.checkNode(e.Object)
+	if objType.Equals(TypeVoid) {
+		return TypeVoid
+	}
 	if st, ok := objType.(*ObjType); ok {
 		if ft, ok := st.Fields[e.Field]; ok {
 			return ft
 		}
 		c.errorf(e.Pos(), "obj %s has no field '%s'", st.Name, e.Field)
+		return TypeVoid
 	}
+	c.errorf(e.Pos(), "cannot access field '%s' on %s", e.Field, objType)
 	return TypeVoid
 }
 
@@ -840,7 +918,10 @@ func (c *Checker) checkIdentExpr(e *ast.IdentExpr) ZType {
 	if _, ok := c.objs[e.Name]; ok {
 		return TypeVoid // struct names aren't values
 	}
-	// Allow unresolved idents for module names (fmt, math, etc.)
+	if c.isModuleName(e.Name) {
+		return TypeVoid
+	}
+	c.errorf(e.Pos(), "undefined identifier: %s", e.Name)
 	return TypeVoid
 }
 

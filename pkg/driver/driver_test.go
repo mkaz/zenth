@@ -107,6 +107,23 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "file.zn",
 			contains: []string{"exists=true", "name=file.zn", "ext=.zn", "read=ok", "lines=ok", "nope=false"},
 		},
+		{
+			file: "conversions.zn",
+			contains: []string{
+				"int_str=42",
+				"int_f64=3",
+				"int_true=1",
+				"int_false=0",
+				"f64_str=3.14",
+				"f64_int=42",
+				"to_int_len=3",
+				"to_int_first=1",
+				"to_int_last=3",
+				"to_f64_len=3",
+				"to_f64_first=1.5",
+				"to_str=10,20,30",
+			},
+		},
 	}
 
 	for _, tt := range tests {
