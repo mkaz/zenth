@@ -1,0 +1,21 @@
+obj Point {
+    x: int;
+    y: int;
+    val: str;
+}
+
+obj Label {
+    text: str;
+
+    fn string() -> str {
+        return "Label<{self.text}>";
+    }
+}
+
+fn main() {
+    let p = Point(x=1, y=2, val="#");
+    println(p);
+
+    let l = Label(text="demo");
+    println(l);
+}

@@ -473,10 +473,66 @@ func (g *Generator) genObjDecl(s *ast.ObjDecl) {
 	g.writeln("}")
 	g.writeln("")
 
+	if !objHasStringMethod(s) {
+		g.genDefaultObjStringMethod(s)
+	}
+
 	// Generate methods
 	for _, m := range s.Methods {
 		g.genFnDecl(m)
 	}
+}
+
+func (g *Generator) genDefaultObjStringMethod(s *ast.ObjDecl) {
+	g.writef("func (self *%s) String() string {\n", s.Name)
+	g.indent++
+	g.writeIndent()
+	g.writef("if self == nil { return %q }\n", s.Name+"(nil)")
+
+	if len(s.Fields) == 0 {
+		g.writeIndent()
+		g.writef("return %q\n", s.Name+"()")
+		g.indent--
+		g.writeln("}")
+		g.writeln("")
+		return
+	}
+
+	format := s.Name + "("
+	for i, f := range s.Fields {
+		if i > 0 {
+			format += ", "
+		}
+		format += f.Name + "=" + objFieldFormatVerb(f.Type)
+	}
+	format += ")"
+
+	g.writeIndent()
+	g.writef("return fmt.Sprintf(%q", format)
+	for _, f := range s.Fields {
+		g.write(", ")
+		g.write("self." + exportName(f.Name))
+	}
+	g.write(")\n")
+	g.indent--
+	g.writeln("}")
+	g.writeln("")
+}
+
+func objHasStringMethod(s *ast.ObjDecl) bool {
+	for _, m := range s.Methods {
+		if strings.EqualFold(m.Name, "string") {
+			return true
+		}
+	}
+	return false
+}
+
+func objFieldFormatVerb(t *ast.TypeExpr) string {
+	if t != nil && !t.IsSlice && t.Name == "str" {
+		return "%q"
+	}
+	return "%v"
 }
 
 func (g *Generator) genInterfaceDecl(iface *ast.InterfaceDecl) {

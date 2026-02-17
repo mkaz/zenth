@@ -101,7 +101,22 @@ obj Point {
 
 ## Returning Strings
 
-A common pattern is to define a `string()` method for display:
+By default, printing an object uses constructor-like output:
+
+```zenth
+obj Point {
+    x: int;
+    y: int;
+    val: str;
+}
+
+fn main() {
+    let p = Point(x=1, y=2, val="#");
+    println(p);  // Point(x=1, y=2, val="#")
+}
+```
+
+You can override this by defining a `string()` method:
 
 ```zenth
 obj Point {

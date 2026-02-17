@@ -148,6 +148,10 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "object_array.zn",
 			contains: []string{"len=1", "x=1 y=2", "cleared=0"},
 		},
+		{
+			file:     "object_print.zn",
+			contains: []string{"Point(x=1, y=2, val=\"#\")", "Label<demo>"},
+		},
 	}
 
 	for _, tt := range tests {
