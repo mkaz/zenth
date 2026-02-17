@@ -67,8 +67,8 @@ Zenth provides several built-in functions that are always available:
 
 | Function | Description |
 |----------|-------------|
-| `print(...)` | Print values without a newline |
-| `println(...)` | Print values followed by a newline |
+| `print(x, [enabled])` | Print `x` without a newline; print only when `enabled` is `true` (default) |
+| `println(x, [enabled])` | Print `x` with a newline; print only when `enabled` is `true` (default) |
 | `len(x)` | Return the length of a string or slice |
 | `str(x)` | Convert any value to its string representation |
 
@@ -76,6 +76,8 @@ Zenth provides several built-in functions that are always available:
 fn main() {
     println("hello");      // prints "hello\n"
     print("no newline");   // prints without newline
+    let debug = false;
+    println("debug line", debug); // prints only when debug is true
     println(str(len("abc")));  // prints "3"
     println(str(42));      // prints "42"
 }

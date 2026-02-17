@@ -140,6 +140,10 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "string_index.zn",
 			contains: []string{"ch=b", "u1=é"},
 		},
+		{
+			file:     "debug_print.zn",
+			contains: []string{"This is debug code", "This is standard"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -211,6 +215,14 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/split_bad_arg.zn",
 			errMsg: "split() separator must be str, got int",
+		},
+		{
+			file:   "errors/print_bad_flag.zn",
+			errMsg: "second argument to println must be bool, got int",
+		},
+		{
+			file:   "errors/print_too_many_args.zn",
+			errMsg: "println() expects 1 or 2 arguments, got 3",
 		},
 	}
 

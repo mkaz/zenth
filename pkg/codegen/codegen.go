@@ -935,14 +935,30 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 	if ident, ok := c.Callee.(*ast.IdentExpr); ok {
 		switch ident.Name {
 		case "print":
-			g.write("fmt.Print(")
-			g.genArgList(c.Args)
-			g.write(")")
+			if len(c.Args) == 2 {
+				g.write("if ")
+				g.genExpr(c.Args[1])
+				g.write(" { fmt.Print(")
+				g.genExpr(c.Args[0])
+				g.write(") }")
+			} else {
+				g.write("fmt.Print(")
+				g.genArgList(c.Args)
+				g.write(")")
+			}
 			return
 		case "println":
-			g.write("fmt.Println(")
-			g.genArgList(c.Args)
-			g.write(")")
+			if len(c.Args) == 2 {
+				g.write("if ")
+				g.genExpr(c.Args[1])
+				g.write(" { fmt.Println(")
+				g.genExpr(c.Args[0])
+				g.write(") }")
+			} else {
+				g.write("fmt.Println(")
+				g.genArgList(c.Args)
+				g.write(")")
+			}
 			return
 		case "exit":
 			g.imports["os"] = ""

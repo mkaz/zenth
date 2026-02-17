@@ -1,0 +1,9 @@
+fn main() {
+    let debug = true;
+    println("This is debug code", debug);
+    println("This is standard");
+
+    let off = false;
+    println("hidden", off);
+    print("hidden2", off);
+}

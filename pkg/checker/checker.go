@@ -885,13 +885,37 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 	// Flexible arg count for variadic builtins (print, println, etc.)
 	if info.Name == "print" || info.Name == "println" {
-		for _, arg := range e.Args {
-			if named, ok := arg.(*ast.NamedArgExpr); ok {
-				c.errorf(named.Pos(), "named arguments are not supported for %s()", info.Name)
-				c.checkNode(named.Value)
-				continue
+		if len(e.Args) < 1 || len(e.Args) > 2 {
+			c.errorf(e.Pos(), "%s() expects 1 or 2 arguments, got %d", info.Name, len(e.Args))
+			for _, arg := range e.Args {
+				if named, ok := arg.(*ast.NamedArgExpr); ok {
+					c.errorf(named.Pos(), "named arguments are not supported for %s()", info.Name)
+					c.checkNode(named.Value)
+					continue
+				}
+				c.checkNode(arg)
 			}
-			c.checkNode(arg)
+			return
+		}
+		if named, ok := e.Args[0].(*ast.NamedArgExpr); ok {
+			c.errorf(named.Pos(), "named arguments are not supported for %s()", info.Name)
+			c.checkNode(named.Value)
+		} else {
+			c.checkNode(e.Args[0])
+		}
+		if len(e.Args) == 2 {
+			if named, ok := e.Args[1].(*ast.NamedArgExpr); ok {
+				c.errorf(named.Pos(), "named arguments are not supported for %s()", info.Name)
+				argType := c.checkNode(named.Value)
+				if !argType.Equals(TypeBool) {
+					c.errorf(named.Pos(), "second argument to %s must be bool, got %s", info.Name, argType)
+				}
+			} else {
+				argType := c.checkNode(e.Args[1])
+				if !argType.Equals(TypeBool) {
+					c.errorf(e.Args[1].Pos(), "second argument to %s must be bool, got %s", info.Name, argType)
+				}
+			}
 		}
 		return
 	}
