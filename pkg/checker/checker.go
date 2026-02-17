@@ -525,6 +525,7 @@ func (c *Checker) checkForInStmt(s *ast.ForInStmt) ZType {
 		c.scope.Define(&Symbol{Name: s.Value, Type: t.Elem})
 	default:
 		if iterType.Equals(TypeStr) {
+			s.IterStr = true
 			if s.Index != "" {
 				c.scope.Define(&Symbol{Name: s.Index, Type: TypeInt})
 			}
@@ -833,6 +834,24 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 			}
 		}
 
+		// Check for built-in string methods
+		if objType.Equals(TypeStr) {
+			switch field.Field {
+			case "split":
+				if len(e.Args) > 1 {
+					c.errorf(e.Pos(), "split() takes 0 or 1 arguments, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !argType.Equals(TypeStr) {
+						c.errorf(e.Args[0].Pos(), "split() separator must be str, got %s", argType)
+					}
+				}
+				e.StringMethod = "split"
+				return &SliceType{Elem: TypeStr}
+			}
+		}
+
 		// Unknown method call on a typed value should be a semantic error.
 		for _, arg := range e.Args {
 			c.checkNode(arg)
@@ -1032,7 +1051,8 @@ func (c *Checker) checkIndexExpr(e *ast.IndexExpr) ZType {
 		return t.Elem
 	default:
 		if objType.Equals(TypeStr) {
-			return TypeByte
+			e.StrIndex = true
+			return TypeStr
 		}
 		c.errorf(e.Pos(), "cannot index %s", objType)
 		return TypeVoid

@@ -224,6 +224,7 @@ type ForInStmt struct {
 	Value    string
 	Iterable Node
 	Body     *Block
+	IterStr  bool // set by checker when iterating over a string
 }
 
 func (f *ForInStmt) Pos() token.Pos { return f.TokenPos }
@@ -323,6 +324,7 @@ type CallExpr struct {
 	Args            []Node
 	SliceMethod     bool   // set by checker for built-in slice methods
 	SliceConvTarget string // set by checker for to_int/to_f64/to_str ("int", "float64", "string")
+	StringMethod    string // set by checker for built-in string methods (e.g. "split")
 	ResolvedFunc    string // set by checker: function key ("name" or "Type.method")
 }
 
@@ -334,6 +336,7 @@ type IndexExpr struct {
 	TokenPos token.Pos
 	Object   Node
 	Index    Node
+	StrIndex bool // set by checker when indexing a string
 }
 
 func (i *IndexExpr) Pos() token.Pos { return i.TokenPos }

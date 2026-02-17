@@ -66,7 +66,7 @@ The `byte` type represents a single byte (alias for `u8`):
 let b: byte = 65;
 ```
 
-Indexing into a string returns a `byte`.
+Indexing into a string returns a one-character `str`.
 
 ## Nil
 

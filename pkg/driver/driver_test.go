@@ -132,6 +132,14 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "method_defaults.zn",
 			contains: []string{"Hello, world", "Hello, Alice"},
 		},
+		{
+			file:     "split.zn",
+			contains: []string{"n1=3", "this|a|dog", "n2=4", "my|dog|has|fleas"},
+		},
+		{
+			file:     "string_index.zn",
+			contains: []string{"ch=b", "u1=é"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -199,6 +207,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/unknown_method.zn",
 			errMsg: "type int has no method 'foo'",
+		},
+		{
+			file:   "errors/split_bad_arg.zn",
+			errMsg: "split() separator must be str, got int",
 		},
 	}
 

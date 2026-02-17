@@ -120,9 +120,9 @@ println(str(len(s)));  // 5
 
 ## Indexing
 
-Indexing a string returns a `byte`:
+Indexing a string returns a one-character `str`:
 
 ```zenth
 let s = "hello";
-let first = s[0];  // byte value of 'h'
+let first = s[0];  // "h"
 ```

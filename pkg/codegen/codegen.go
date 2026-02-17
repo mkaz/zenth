@@ -28,6 +28,7 @@ type Generator struct {
 	needsSliceToInt bool
 	needsSliceToF64 bool
 	needsSliceToStr bool
+	needsStrIndex   bool
 }
 
 // New creates a new code Generator.
@@ -313,6 +314,13 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\t\tos.Exit(1)")
 		g.writeln("\t}")
 		g.writeln("\treturn result")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsStrIndex {
+		g.writeln("func zenth_str_index(s string, i int) string {")
+		g.writeln("\tr := []rune(s)")
+		g.writeln("\treturn string(r[i])")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -731,18 +739,33 @@ func (g *Generator) genForClause(node ast.Node) {
 
 func (g *Generator) genForInStmt(s *ast.ForInStmt) {
 	g.writeIndent()
-	g.write("for ")
-	if s.Index != "" {
-		g.write(s.Index)
+	if s.IterStr {
+		// Go's range over string yields (index, rune); wrap value in string().
+		g.write("for ")
+		if s.Index != "" {
+			g.write(s.Index)
+		} else {
+			g.write("_")
+		}
+		g.write(", _rune := range ")
+		g.genExpr(s.Iterable)
+		g.write(" {\n")
+		g.indent++
+		g.writef("%s := string(_rune)\n", s.Value)
 	} else {
-		g.write("_")
+		g.write("for ")
+		if s.Index != "" {
+			g.write(s.Index)
+		} else {
+			g.write("_")
+		}
+		g.write(", ")
+		g.write(s.Value)
+		g.write(" := range ")
+		g.genExpr(s.Iterable)
+		g.write(" {\n")
+		g.indent++
 	}
-	g.write(", ")
-	g.write(s.Value)
-	g.write(" := range ")
-	g.genExpr(s.Iterable)
-	g.write(" {\n")
-	g.indent++
 	for _, stmt := range s.Body.Stmts {
 		g.genNode(stmt)
 	}
@@ -857,10 +880,19 @@ func (g *Generator) genExpr(node ast.Node) {
 	case *ast.CallExpr:
 		g.genCallExpr(n)
 	case *ast.IndexExpr:
-		g.genExpr(n.Object)
-		g.write("[")
-		g.genExpr(n.Index)
-		g.write("]")
+		if n.StrIndex {
+			g.needsStrIndex = true
+			g.write("zenth_str_index(")
+			g.genExpr(n.Object)
+			g.write(", ")
+			g.genExpr(n.Index)
+			g.write(")")
+		} else {
+			g.genExpr(n.Object)
+			g.write("[")
+			g.genExpr(n.Index)
+			g.write("]")
+		}
 	case *ast.FieldExpr:
 		g.genExpr(n.Object)
 		g.write(".")
@@ -1079,6 +1111,28 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write("zenth_slice_to_str(")
 				g.genExpr(field.Object)
 				g.write(")")
+				return
+			}
+		}
+	}
+
+	// Handle built-in string methods
+	if c.StringMethod != "" {
+		if field, ok := c.Callee.(*ast.FieldExpr); ok {
+			switch c.StringMethod {
+			case "split":
+				g.imports["strings"] = ""
+				if len(c.Args) == 0 {
+					g.write("strings.Fields(")
+					g.genExpr(field.Object)
+					g.write(")")
+				} else {
+					g.write("strings.Split(")
+					g.genExpr(field.Object)
+					g.write(", ")
+					g.genExpr(c.Args[0])
+					g.write(")")
+				}
 				return
 			}
 		}
