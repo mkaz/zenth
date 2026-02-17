@@ -2,6 +2,7 @@ package checker
 
 import (
 	"fmt"
+	"path"
 
 	"github.com/mkaz/zenth/pkg/ast"
 	"github.com/mkaz/zenth/pkg/token"
@@ -21,16 +22,17 @@ type FuncInfo struct {
 type ObjInfo struct {
 	Name     string
 	Fields   map[string]ZType
-	Order    []string          // field order for codegen
-	Defaults map[string]bool   // fields that have default values
+	Order    []string        // field order for codegen
+	Defaults map[string]bool // fields that have default values
 }
 
 // Checker performs type checking and semantic analysis on a Zenth AST.
 type Checker struct {
-	scope   *Scope
-	funcs   map[string]*FuncInfo   // "name" or "Type.name"
-	objs    map[string]*ObjInfo
-	errors  []string
+	scope       *Scope
+	funcs       map[string]*FuncInfo // "name" or "Type.name"
+	objs        map[string]*ObjInfo
+	modules     map[string]bool
+	errors      []string
 	currentFunc *FuncInfo // for checking return types
 }
 
@@ -42,7 +44,16 @@ func New() *Checker {
 		scope:   global,
 		funcs:   make(map[string]*FuncInfo),
 		objs:    make(map[string]*ObjInfo),
+		modules: make(map[string]bool),
 	}
+
+	// Known module names for qualified calls (fmt.println, math.sqrt, etc.).
+	c.modules["fmt"] = true
+	c.modules["math"] = true
+	c.modules["os"] = true
+	c.modules["strings"] = true
+	c.modules["str"] = true
+	c.modules["io"] = true
 
 	// Register built-in functions
 	c.funcs["print"] = &FuncInfo{
@@ -122,6 +133,8 @@ func (c *Checker) Check(prog *ast.Program) error {
 			c.registerObj(s)
 		case *ast.FnDecl:
 			c.registerFunc(s)
+		case *ast.ImportDecl:
+			c.registerImport(s)
 		}
 	}
 
@@ -194,6 +207,18 @@ func (c *Checker) registerFunc(f *ast.FnDecl) {
 	} else {
 		c.funcs[f.Name] = info
 	}
+}
+
+func (c *Checker) registerImport(imp *ast.ImportDecl) {
+	if imp.Alias != "" {
+		c.modules[imp.Alias] = true
+		return
+	}
+	c.modules[path.Base(imp.Path)] = true
+}
+
+func (c *Checker) isModuleName(name string) bool {
+	return c.modules[name]
 }
 
 func (c *Checker) resolveTypeExpr(t *ast.TypeExpr) ZType {
@@ -649,6 +674,19 @@ func (c *Checker) checkUnaryExpr(e *ast.UnaryExpr) ZType {
 func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 	// Handle method calls: obj.method(args)
 	if field, ok := e.Callee.(*ast.FieldExpr); ok {
+		// Module function call (fmt.println, math.sqrt, etc.)
+		if ident, ok := field.Object.(*ast.IdentExpr); ok && c.isModuleName(ident.Name) {
+			for _, arg := range e.Args {
+				if named, ok := arg.(*ast.NamedArgExpr); ok {
+					c.errorf(named.Pos(), "named arguments are not supported for module call %s.%s", ident.Name, field.Field)
+					c.checkNode(named.Value)
+					continue
+				}
+				c.checkNode(arg)
+			}
+			return TypeVoid
+		}
+
 		objType := c.checkNode(field.Object)
 		if objType.Equals(TypeVoid) {
 			for _, arg := range e.Args {
@@ -661,6 +699,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 			methodKey = st.Name + "." + field.Field
 		}
 		if info, ok := c.funcs[methodKey]; ok {
+			e.ResolvedFunc = methodKey
 			c.checkArgs(e, info)
 			return info.Return
 		}
@@ -793,18 +832,12 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				return TypeF64
 			}
 		}
-		// Check for imported module function call (e.g., fmt.println)
-		if ident, ok := field.Object.(*ast.IdentExpr); ok {
-			qualName := ident.Name + "." + field.Field
-			if info, ok := c.funcs[qualName]; ok {
-				c.checkArgs(e, info)
-				return info.Return
-			}
-		}
-		// Allow any method call for now (stdlib calls we haven't registered)
+
+		// Unknown method call on a typed value should be a semantic error.
 		for _, arg := range e.Args {
 			c.checkNode(arg)
 		}
+		c.errorf(e.Pos(), "type %s has no method '%s'", objType, field.Field)
 		return TypeVoid
 	}
 
@@ -815,15 +848,9 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 			return c.checkObjConstructor(e, ident.Name)
 		}
 		if info, ok := c.funcs[ident.Name]; ok {
+			e.ResolvedFunc = ident.Name
 			c.checkArgs(e, info)
 			return info.Return
-		}
-		// Built-in print/println accept any args
-		if ident.Name == "print" || ident.Name == "println" {
-			for _, arg := range e.Args {
-				c.checkNode(arg)
-			}
-			return TypeVoid
 		}
 		c.errorf(e.Pos(), "undefined function: %s", ident.Name)
 		return TypeVoid
@@ -837,32 +864,138 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 }
 
 func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
-	for _, arg := range e.Args {
-		c.checkNode(arg)
-	}
 	// Flexible arg count for variadic builtins (print, println, etc.)
 	if info.Name == "print" || info.Name == "println" {
+		for _, arg := range e.Args {
+			if named, ok := arg.(*ast.NamedArgExpr); ok {
+				c.errorf(named.Pos(), "named arguments are not supported for %s()", info.Name)
+				c.checkNode(named.Value)
+				continue
+			}
+			c.checkNode(arg)
+		}
 		return
 	}
 	// Conversion builtins accept any single arg
 	if info.Name == "int" || info.Name == "f64" || info.Name == "str" {
+		for _, arg := range e.Args {
+			if named, ok := arg.(*ast.NamedArgExpr); ok {
+				c.errorf(named.Pos(), "named arguments are not supported for %s()", info.Name)
+				c.checkNode(named.Value)
+				continue
+			}
+			c.checkNode(arg)
+		}
 		if len(e.Args) != 1 {
 			c.errorf(e.Pos(), "%s() expects exactly 1 argument, got %d", info.Name, len(e.Args))
 		}
 		return
 	}
+	if info.Name == "len" {
+		for _, arg := range e.Args {
+			if named, ok := arg.(*ast.NamedArgExpr); ok {
+				c.errorf(named.Pos(), "named arguments are not supported for len()")
+				c.checkNode(named.Value)
+				continue
+			}
+		}
+		if len(e.Args) != 1 {
+			c.errorf(e.Pos(), "len() expects exactly 1 argument, got %d", len(e.Args))
+			return
+		}
+		argType := c.checkNode(e.Args[0])
+		if _, ok := argType.(*SliceType); !ok && !argType.Equals(TypeStr) {
+			c.errorf(e.Args[0].Pos(), "argument 1 to len has type %s, expected str or slice", argType)
+		}
+		return
+	}
 	// range/rangei accept 2 or 3 int args
 	if info.Name == "range" || info.Name == "rangei" {
+		for i, arg := range e.Args {
+			if named, ok := arg.(*ast.NamedArgExpr); ok {
+				c.errorf(named.Pos(), "named arguments are not supported for %s()", info.Name)
+				c.checkNode(named.Value)
+				continue
+			}
+			argType := c.checkNode(arg)
+			if !IsInteger(argType) {
+				c.errorf(arg.Pos(), "argument %d to %s must be int, got %s", i+1, info.Name, argType)
+			}
+		}
 		if len(e.Args) < 2 || len(e.Args) > 3 {
 			c.errorf(e.Pos(), "%s expects 2 or 3 arguments, got %d", info.Name, len(e.Args))
 		}
 		return
 	}
-	if len(e.Args) < info.NumRequired || len(e.Args) > len(info.Params) {
+
+	resolved := make([]ast.Node, len(info.Params))
+	assigned := make([]bool, len(info.Params))
+	positionalIndex := 0
+	seenNamed := false
+
+	for _, arg := range e.Args {
+		if named, ok := arg.(*ast.NamedArgExpr); ok {
+			seenNamed = true
+			idx := -1
+			for i, name := range info.ParamNames {
+				if name == named.Name {
+					idx = i
+					break
+				}
+			}
+			if idx < 0 {
+				c.errorf(named.Pos(), "%s() has no parameter named '%s'", info.Name, named.Name)
+				c.checkNode(named.Value)
+				continue
+			}
+			if assigned[idx] {
+				c.errorf(named.Pos(), "duplicate argument for parameter '%s' in %s()", named.Name, info.Name)
+				c.checkNode(named.Value)
+				continue
+			}
+			valType := c.checkNode(named.Value)
+			if !info.Params[idx].Equals(valType) && valType != TypeNil {
+				c.errorf(named.Pos(), "argument '%s' to %s has type %s, expected %s", named.Name, info.Name, valType, info.Params[idx])
+			}
+			resolved[idx] = named.Value
+			assigned[idx] = true
+			continue
+		}
+
+		if seenNamed {
+			c.errorf(arg.Pos(), "positional argument cannot follow named arguments in %s()", info.Name)
+		}
+		if positionalIndex >= len(info.Params) {
+			c.checkNode(arg)
+			positionalIndex++
+			continue
+		}
+		valType := c.checkNode(arg)
+		if !info.Params[positionalIndex].Equals(valType) && valType != TypeNil {
+			c.errorf(arg.Pos(), "argument %d to %s has type %s, expected %s", positionalIndex+1, info.Name, valType, info.Params[positionalIndex])
+		}
+		resolved[positionalIndex] = arg
+		assigned[positionalIndex] = true
+		positionalIndex++
+	}
+
+	providedCount := 0
+	for _, ok := range assigned {
+		if ok {
+			providedCount++
+		}
+	}
+	if providedCount < info.NumRequired || providedCount > len(info.Params) {
 		if info.NumRequired == len(info.Params) {
-			c.errorf(e.Pos(), "%s expects %d arguments, got %d", info.Name, len(info.Params), len(e.Args))
+			c.errorf(e.Pos(), "%s expects %d arguments, got %d", info.Name, len(info.Params), providedCount)
 		} else {
-			c.errorf(e.Pos(), "%s expects %d to %d arguments, got %d", info.Name, info.NumRequired, len(info.Params), len(e.Args))
+			c.errorf(e.Pos(), "%s expects %d to %d arguments, got %d", info.Name, info.NumRequired, len(info.Params), providedCount)
+		}
+		return
+	}
+	for i := 0; i < info.NumRequired; i++ {
+		if !assigned[i] {
+			c.errorf(e.Pos(), "%s missing required argument '%s'", info.Name, info.ParamNames[i])
 		}
 	}
 }

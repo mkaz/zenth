@@ -1,0 +1,7 @@
+fn takes_int(x: int) {
+    println(str(x));
+}
+
+fn main() {
+    takes_int("oops");
+}

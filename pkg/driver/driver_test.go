@@ -124,6 +124,14 @@ func TestBuildAndRun(t *testing.T) {
 				"to_str=10,20,30",
 			},
 		},
+		{
+			file:     "named_args_func.zn",
+			contains: []string{"1,2,3", "5,6,7"},
+		},
+		{
+			file:     "method_defaults.zn",
+			contains: []string{"Hello, world", "Hello, Alice"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -165,8 +173,8 @@ func TestBuildAndRun(t *testing.T) {
 
 func TestCompileErrors(t *testing.T) {
 	tests := []struct {
-		file     string
-		errMsg   string
+		file   string
+		errMsg string
 	}{
 		{
 			file:   "errors/type_mismatch.zn",
@@ -179,6 +187,18 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/pop_too_many_args.zn",
 			errMsg: "pop() takes 0 or 1 arguments",
+		},
+		{
+			file:   "errors/arg_type_mismatch.zn",
+			errMsg: "argument 1 to takes_int has type str, expected int",
+		},
+		{
+			file:   "errors/undefined_identifier.zn",
+			errMsg: "undefined identifier: y",
+		},
+		{
+			file:   "errors/unknown_method.zn",
+			errMsg: "type int has no method 'foo'",
 		},
 	}
 

@@ -30,7 +30,7 @@ type FnDecl struct {
 	Params     []Param
 	ReturnType *TypeExpr // nil means no return
 	Body       *Block
-	OwnerObj string // non-empty for methods defined inside an obj
+	OwnerObj   string // non-empty for methods defined inside an obj
 }
 
 func (f *FnDecl) Pos() token.Pos { return f.TokenPos }
@@ -93,12 +93,12 @@ func (i *ImportDecl) nodeMarker()    {}
 // TypeExpr represents a type expression.
 type TypeExpr struct {
 	TokenPos token.Pos
-	Name     string   // "int", "str", "bool", etc. or a user type name
+	Name     string      // "int", "str", "bool", etc. or a user type name
 	Params   []*TypeExpr // for generics like map[K]V or []T
-	IsSlice  bool     // []T
-	IsMap    bool     // map[K]V
-	IsArray  bool     // [N]T
-	ArrayLen int      // for fixed arrays
+	IsSlice  bool        // []T
+	IsMap    bool        // map[K]V
+	IsArray  bool        // [N]T
+	ArrayLen int         // for fixed arrays
 }
 
 func (t *TypeExpr) Pos() token.Pos { return t.TokenPos }
@@ -154,7 +154,7 @@ func (c *ConstStmt) nodeMarker()    {}
 // AssignStmt represents: target = expr; or target += expr; etc.
 type AssignStmt struct {
 	TokenPos token.Pos
-	Target   Node   // IdentExpr, IndexExpr, or FieldExpr
+	Target   Node       // IdentExpr, IndexExpr, or FieldExpr
 	Op       token.Type // Assign, PlusAssign, MinusAssign, etc.
 	Value    Node
 }
@@ -251,8 +251,8 @@ func (m *MatchStmt) nodeMarker()    {}
 
 // MatchArm represents: pattern => stmt or { block }
 type MatchArm struct {
-	Pattern  Node // expression or _ (IdentExpr with name "_")
-	Body     Node // single statement or Block
+	Pattern Node // expression or _ (IdentExpr with name "_")
+	Body    Node // single statement or Block
 }
 
 // BreakStmt represents: break;
@@ -293,14 +293,14 @@ func (i *IncDecStmt) nodeMarker()    {}
 
 // BinaryExpr represents: left op right
 type BinaryExpr struct {
-	TokenPos     token.Pos
-	Left         Node
-	Op           token.Type
-	Right        Node
-	PromoteLeft  string // Go type to cast left operand to (set by checker)
-	PromoteRight string // Go type to cast right operand to (set by checker)
-	SliceConcat    bool // true when + means slice concatenation (set by checker)
-	SliceContains  bool // true when "in" means slice containment (set by checker)
+	TokenPos      token.Pos
+	Left          Node
+	Op            token.Type
+	Right         Node
+	PromoteLeft   string // Go type to cast left operand to (set by checker)
+	PromoteRight  string // Go type to cast right operand to (set by checker)
+	SliceConcat   bool   // true when + means slice concatenation (set by checker)
+	SliceContains bool   // true when "in" means slice containment (set by checker)
 }
 
 func (b *BinaryExpr) Pos() token.Pos { return b.TokenPos }
@@ -318,11 +318,12 @@ func (u *UnaryExpr) nodeMarker()    {}
 
 // CallExpr represents: callee(args)
 type CallExpr struct {
-	TokenPos       token.Pos
-	Callee         Node
-	Args           []Node
-	SliceMethod    bool   // set by checker for built-in slice methods
+	TokenPos        token.Pos
+	Callee          Node
+	Args            []Node
+	SliceMethod     bool   // set by checker for built-in slice methods
 	SliceConvTarget string // set by checker for to_int/to_f64/to_str ("int", "float64", "string")
+	ResolvedFunc    string // set by checker: function key ("name" or "Type.method")
 }
 
 func (c *CallExpr) Pos() token.Pos { return c.TokenPos }

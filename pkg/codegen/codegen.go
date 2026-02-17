@@ -10,21 +10,21 @@ import (
 
 // Generator translates a Zenth AST to Go source code.
 type Generator struct {
-	buf         strings.Builder
-	indent      int
-	imports     map[string]string // Go import path -> alias (or empty)
-	objs        map[string]*ast.ObjDecl
-	funcs       map[string]*ast.FnDecl // "name" or "StructName.methodName"
-	needsRange  bool
-	needsRangei bool
-	needsPop    bool
-	needsAdd    bool
-	needsPush     bool
-	loopCounter   int
-	needsContains  bool
-	needsFile      bool
-	needsIntConv   bool
-	needsF64Conv   bool
+	buf             strings.Builder
+	indent          int
+	imports         map[string]string // Go import path -> alias (or empty)
+	objs            map[string]*ast.ObjDecl
+	funcs           map[string]*ast.FnDecl // "name" or "StructName.methodName"
+	needsRange      bool
+	needsRangei     bool
+	needsPop        bool
+	needsAdd        bool
+	needsPush       bool
+	loopCounter     int
+	needsContains   bool
+	needsFile       bool
+	needsIntConv    bool
+	needsF64Conv    bool
 	needsSliceToInt bool
 	needsSliceToF64 bool
 	needsSliceToStr bool
@@ -34,7 +34,7 @@ type Generator struct {
 func New() *Generator {
 	return &Generator{
 		imports: make(map[string]string),
-		objs: make(map[string]*ast.ObjDecl),
+		objs:    make(map[string]*ast.ObjDecl),
 		funcs:   make(map[string]*ast.FnDecl),
 	}
 }
@@ -1098,20 +1098,9 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 		}
 	}
 
-	// Fill in default args for user-defined functions
 	args := c.Args
-	if ident, ok := c.Callee.(*ast.IdentExpr); ok {
-		if decl, ok := g.funcs[ident.Name]; ok && len(args) < len(decl.Params) {
-			args = g.fillDefaults(args, decl)
-		}
-	} else if field, ok := c.Callee.(*ast.FieldExpr); ok {
-		// Check for struct method calls
-		if ident, ok := field.Object.(*ast.IdentExpr); ok {
-			key := ident.Name + "." + field.Field
-			if decl, ok := g.funcs[key]; ok && len(args) < len(decl.Params) {
-				args = g.fillDefaults(args, decl)
-			}
-		}
+	if decl := g.resolveCallDecl(c); decl != nil {
+		args = g.arrangeCallArgs(c.Args, decl)
 	}
 
 	g.genExpr(c.Callee)
@@ -1120,15 +1109,53 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 	g.write(")")
 }
 
-func (g *Generator) fillDefaults(args []ast.Node, decl *ast.FnDecl) []ast.Node {
-	filled := make([]ast.Node, len(args))
-	copy(filled, args)
-	for i := len(args); i < len(decl.Params); i++ {
-		if decl.Params[i].Default != nil {
-			filled = append(filled, decl.Params[i].Default)
+func (g *Generator) resolveCallDecl(c *ast.CallExpr) *ast.FnDecl {
+	if c.ResolvedFunc != "" {
+		if decl, ok := g.funcs[c.ResolvedFunc]; ok {
+			return decl
 		}
 	}
-	return filled
+	if ident, ok := c.Callee.(*ast.IdentExpr); ok {
+		if decl, ok := g.funcs[ident.Name]; ok {
+			return decl
+		}
+	}
+	return nil
+}
+
+func (g *Generator) arrangeCallArgs(args []ast.Node, decl *ast.FnDecl) []ast.Node {
+	ordered := make([]ast.Node, len(decl.Params))
+	nextPositional := 0
+	for _, arg := range args {
+		if named, ok := arg.(*ast.NamedArgExpr); ok {
+			for i, p := range decl.Params {
+				if p.Name == named.Name {
+					ordered[i] = named.Value
+					break
+				}
+			}
+			continue
+		}
+		if nextPositional < len(ordered) {
+			ordered[nextPositional] = arg
+		}
+		nextPositional++
+	}
+	// Fill missing optional parameters with defaults.
+	for i, p := range decl.Params {
+		if ordered[i] == nil {
+			ordered[i] = p.Default
+		}
+	}
+	// Keep only the leading arguments that are present.
+	result := make([]ast.Node, 0, len(ordered))
+	for _, arg := range ordered {
+		if arg == nil {
+			break
+		}
+		result = append(result, arg)
+	}
+	return result
 }
 
 func (g *Generator) genArgList(args []ast.Node) {

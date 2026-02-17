@@ -1,0 +1,8 @@
+fn pair(a: int, b: int, c: int = 3) {
+    println("{a},{b},{c}");
+}
+
+fn main() {
+    pair(b=2, a=1);
+    pair(a=5, b=6, c=7);
+}

@@ -1,0 +1,11 @@
+obj Greeter {
+    fn hello(name: str = "world") {
+        println("Hello, " + name);
+    }
+}
+
+fn main() {
+    let g = Greeter();
+    g.hello();
+    g.hello("Alice");
+}
