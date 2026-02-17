@@ -16,7 +16,7 @@ Conditions must be `bool` -- there is no truthy/falsy coercion. Parentheses arou
 
 ## For Loops
 
-`for` is the only loop keyword in Zenth. It supports four styles.
+`for` is the only loop keyword in Zenth. It supports five styles.
 
 ### C-Style For
 
@@ -35,6 +35,23 @@ for let start = 0; start < 5; start++ {
     println(str(start));
 }
 ```
+
+### For-Range Count
+
+Run a loop body a fixed number of times:
+
+```zenth
+for range 3 {
+    println("tick");
+}
+
+let n = 5;
+for range n {
+    println("count");
+}
+```
+
+The count expression must be `int`.
 
 ### While-Style
 

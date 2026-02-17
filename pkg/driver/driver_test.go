@@ -224,6 +224,10 @@ func TestCompileErrors(t *testing.T) {
 			file:   "errors/print_too_many_args.zn",
 			errMsg: "println() expects 1 or 2 arguments, got 3",
 		},
+		{
+			file:   "errors/for_range_count_type.zn",
+			errMsg: "for-range count must be int",
+		},
 	}
 
 	for _, tt := range tests {

@@ -322,6 +322,11 @@ func (p *Parser) parseForStmt() ast.Node {
 		return &ast.ForStmt{TokenPos: tok.Pos, Body: body}
 	}
 
+	// for range count { ... } -- count-style
+	if p.isForRangeCount() {
+		return p.parseForRangeCountStmt(tok)
+	}
+
 	// Try to detect for...in: look for `ident in` or `ident, ident in`
 	if p.isForIn() {
 		return p.parseForInStmt(tok)
@@ -330,6 +335,17 @@ func (p *Parser) parseForStmt() ast.Node {
 	// for condition { ... } -- while-style
 	// or for init; cond; post { ... } -- C-style
 	return p.parseCStyleFor(tok)
+}
+
+func (p *Parser) isForRangeCount() bool {
+	return p.peek() == token.Ident && p.cur().Literal == "range" && p.peekAt(1) != token.LParen
+}
+
+func (p *Parser) parseForRangeCountStmt(tok token.Token) *ast.LoopStmt {
+	p.advance() // consume "range"
+	count := p.parseExpr(0)
+	body := p.parseBlock()
+	return &ast.LoopStmt{TokenPos: tok.Pos, Count: count, Body: body}
 }
 
 func (p *Parser) isForIn() bool {

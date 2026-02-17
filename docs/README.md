@@ -27,5 +27,5 @@ fn main() {
 - **No whitespace sensitivity** -- curly braces `{}` and semicolons `;` define structure
 - **Immutable by default** -- `let` is immutable, `var` is mutable
 - **Strongly typed with inference** -- function signatures require explicit types, locals are inferred
-- **One loop keyword** -- `for` handles C-style, for-in, while-style, and infinite loops
+- **One loop keyword** -- `for` handles C-style, for-in, for-range-count, while-style, and infinite loops
 - **Compiles to native binaries** -- via Go as a backend, inheriting its GC and cross-compilation

@@ -87,7 +87,7 @@ zenth build hello.zn
 
 - **Immutable by default** -- `let` is immutable, `var` is mutable, caught at compile time
 - **Type inference** -- locals are inferred, function signatures are explicit
-- **One loop keyword** -- `for` does C-style, for-in, while-style, and infinite loops
+- **One loop keyword** -- `for` does C-style, for-in, for-range-count, while-style, and infinite loops
 - **Objects with methods** -- define methods inside the object, use `self`
 - **`match` over switch** -- with `_` as the wildcard
 - **Compiles to native binaries** -- via Go, so it's fast and portable

@@ -547,7 +547,7 @@ func (c *Checker) checkForInStmt(s *ast.ForInStmt) ZType {
 func (c *Checker) checkLoopStmt(s *ast.LoopStmt) ZType {
 	countType := c.checkNode(s.Count)
 	if !countType.Equals(TypeInt) {
-		c.errorf(s.Count.Pos(), "loop count must be int, got %s", countType)
+		c.errorf(s.Count.Pos(), "for-range count must be int, got %s", countType)
 	}
 	for _, stmt := range s.Body.Stmts {
 		c.checkNode(stmt)

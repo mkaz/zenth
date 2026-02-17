@@ -1,12 +1,12 @@
-// Test loop keyword
+// Test for-range count loops
 fn main() {
-    loop 3 {
+    for range 3 {
         println("hello");
     }
 
     var count = 0;
     let n = 5;
-    loop n {
+    for range n {
         count = count + 1;
     }
     println("count=" + str(count));

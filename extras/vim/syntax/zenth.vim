@@ -7,7 +7,7 @@ if exists("b:current_syntax")
 endif
 
 " Keywords
-syn keyword zenthKeyword      fn let var const return if else for in match
+syn keyword zenthKeyword      fn let var const return if else for in match range
 syn keyword zenthKeyword      obj enum interface import from as break continue
 
 " Constants
