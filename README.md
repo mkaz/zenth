@@ -1,4 +1,4 @@
-# Zenth
+# <img src="extras/branding/zenth-enso-trans.png" alt="Zenth logo" width="48" /> Zenth
 
 A programming language built to match my personal tastes.
 
