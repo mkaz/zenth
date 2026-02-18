@@ -869,6 +869,12 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.StringMethod = "split"
 				return &SliceType{Elem: TypeStr}
+			case "length":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "length() takes no arguments, got %d", len(e.Args))
+				}
+				e.StringMethod = "length"
+				return TypeInt
 			}
 		}
 

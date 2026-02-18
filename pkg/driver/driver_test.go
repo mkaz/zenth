@@ -141,6 +141,10 @@ func TestBuildAndRun(t *testing.T) {
 			contains: []string{"ch=b", "u1=é"},
 		},
 		{
+			file:     "string_length.zn",
+			contains: []string{"m=5", "f=5"},
+		},
+		{
 			file:     "debug_print.zn",
 			contains: []string{"This is debug code", "This is standard"},
 		},
@@ -243,6 +247,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/map_type_arg.zn",
 			errMsg: "map() type arguments must be type names",
+		},
+		{
+			file:   "errors/string_length_args.zn",
+			errMsg: "length() takes no arguments, got 1",
 		},
 	}
 

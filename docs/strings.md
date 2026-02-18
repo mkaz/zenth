@@ -111,11 +111,12 @@ Inside interpolated strings, conversion is automatic -- `str()` is only needed w
 
 ## String Length
 
-Use `len()` to get the length of a string:
+Use `len()` or `.length()` to get the length of a string:
 
 ```zenth
 let s = "hello";
 println(str(len(s)));  // 5
+println(str(s.length())); // 5
 ```
 
 ## Indexing

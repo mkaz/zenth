@@ -1237,6 +1237,11 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 					g.write(")")
 				}
 				return
+			case "length":
+				g.write("len(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
 			}
 		}
 	}

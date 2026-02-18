@@ -1,0 +1,5 @@
+fn main() {
+    let s = "hello";
+    println("m=" + str(s.length()));
+    println("f=" + str(len(s)));
+}
