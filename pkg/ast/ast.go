@@ -325,6 +325,9 @@ type CallExpr struct {
 	SliceMethod     bool   // set by checker for built-in slice methods
 	SliceConvTarget string // set by checker for to_int/to_f64/to_str ("int", "float64", "string")
 	StringMethod    string // set by checker for built-in string methods (e.g. "split")
+	MapCtor         bool   // set by checker for map(K, V) constructor
+	MapKeyGoType    string // concrete Go key type for map constructor
+	MapValGoType    string // concrete Go value type for map constructor
 	ResolvedFunc    string // set by checker: function key ("name" or "Type.method")
 }
 

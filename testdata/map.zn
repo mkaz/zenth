@@ -1,0 +1,13 @@
+obj Point {
+    x: int;
+    y: int;
+}
+
+fn main() {
+    let pt = Point(x=1, y=2);
+    var grid = map(Point, str);
+    grid[pt] = "#";
+
+    println("val=" + grid[pt]);
+    println("len=" + str(len(grid)));
+}

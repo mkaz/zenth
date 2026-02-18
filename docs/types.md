@@ -88,6 +88,21 @@ let numbers: []int = [1, 2, 3, 4, 5];
 
 See [Slices](slices.md) for more details.
 
+### Maps
+
+Maps are key/value collections. Create an empty map with `map(KeyType, ValueType)`:
+
+```zenth
+obj Point {
+    x: int;
+    y: int;
+}
+
+var grid = map(Point, str);
+let pt = Point(x=1, y=2);
+grid[pt] = "#";
+```
+
 ### Structs
 
 User-defined types with named fields:

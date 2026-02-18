@@ -1078,6 +1078,17 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			g.genArgList(c.Args)
 			g.write(")")
 			return
+		case "map":
+			if c.MapCtor {
+				g.write("make(map[")
+				g.write(c.MapKeyGoType)
+				g.write("]")
+				g.write(c.MapValGoType)
+				g.write(")")
+			} else {
+				g.write("/* invalid map() */")
+			}
+			return
 		}
 	}
 
@@ -1438,6 +1449,9 @@ func goOp(op token.Type) string {
 func genTypeExpr(t *ast.TypeExpr) string {
 	if t == nil {
 		return ""
+	}
+	if t.IsMap && len(t.Params) == 2 {
+		return "map[" + genTypeExpr(t.Params[0]) + "]" + genTypeExpr(t.Params[1])
 	}
 	if t.IsSlice && len(t.Params) > 0 {
 		return "[]" + genTypeExpr(t.Params[0])

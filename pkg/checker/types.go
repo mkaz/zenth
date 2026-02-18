@@ -14,7 +14,7 @@ type BuiltinType struct {
 	Name string
 }
 
-func (b *BuiltinType) String() string         { return b.Name }
+func (b *BuiltinType) String() string { return b.Name }
 func (b *BuiltinType) Equals(other ZType) bool {
 	if o, ok := other.(*BuiltinType); ok {
 		return b.Name == o.Name
@@ -24,24 +24,24 @@ func (b *BuiltinType) Equals(other ZType) bool {
 func (b *BuiltinType) typeMarker() {}
 
 var (
-	TypeInt    = &BuiltinType{"int"}
-	TypeI8     = &BuiltinType{"i8"}
-	TypeI16    = &BuiltinType{"i16"}
-	TypeI32    = &BuiltinType{"i32"}
-	TypeI64    = &BuiltinType{"i64"}
-	TypeU8     = &BuiltinType{"u8"}
-	TypeU16    = &BuiltinType{"u16"}
-	TypeU32    = &BuiltinType{"u32"}
-	TypeU64    = &BuiltinType{"u64"}
-	TypeF32    = &BuiltinType{"f32"}
-	TypeF64    = &BuiltinType{"f64"}
-	TypeBool   = &BuiltinType{"bool"}
-	TypeStr    = &BuiltinType{"str"}
-	TypeByte   = &BuiltinType{"byte"}
-	TypeVoid   = &BuiltinType{"void"}
-	TypeError  = &BuiltinType{"error"}
-	TypeNil    = &BuiltinType{"nil"}
-	TypeFile   = &BuiltinType{"file"}
+	TypeInt   = &BuiltinType{"int"}
+	TypeI8    = &BuiltinType{"i8"}
+	TypeI16   = &BuiltinType{"i16"}
+	TypeI32   = &BuiltinType{"i32"}
+	TypeI64   = &BuiltinType{"i64"}
+	TypeU8    = &BuiltinType{"u8"}
+	TypeU16   = &BuiltinType{"u16"}
+	TypeU32   = &BuiltinType{"u32"}
+	TypeU64   = &BuiltinType{"u64"}
+	TypeF32   = &BuiltinType{"f32"}
+	TypeF64   = &BuiltinType{"f64"}
+	TypeBool  = &BuiltinType{"bool"}
+	TypeStr   = &BuiltinType{"str"}
+	TypeByte  = &BuiltinType{"byte"}
+	TypeVoid  = &BuiltinType{"void"}
+	TypeError = &BuiltinType{"error"}
+	TypeNil   = &BuiltinType{"nil"}
+	TypeFile  = &BuiltinType{"file"}
 )
 
 // ObjType represents a user-defined obj type.
@@ -72,6 +72,21 @@ func (s *SliceType) Equals(other ZType) bool {
 	return false
 }
 func (s *SliceType) typeMarker() {}
+
+// MapType represents a map[K]V type.
+type MapType struct {
+	Key   ZType
+	Value ZType
+}
+
+func (m *MapType) String() string { return fmt.Sprintf("map[%s]%s", m.Key, m.Value) }
+func (m *MapType) Equals(other ZType) bool {
+	if o, ok := other.(*MapType); ok {
+		return m.Key.Equals(o.Key) && m.Value.Equals(o.Value)
+	}
+	return false
+}
+func (m *MapType) typeMarker() {}
 
 // FuncType represents a function type (for passing functions as values).
 type FuncType struct {

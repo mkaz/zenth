@@ -159,6 +159,16 @@ func (p *Parser) parseParams() []ast.Param {
 func (p *Parser) parseTypeExpr() *ast.TypeExpr {
 	pos := p.cur().Pos
 
+	// Map type: map[K]V
+	if p.peek() == token.Ident && p.cur().Literal == "map" && p.peekAt(1) == token.LBracket {
+		p.advance() // map
+		p.advance() // [
+		key := p.parseTypeExpr()
+		p.expect(token.RBracket)
+		val := p.parseTypeExpr()
+		return &ast.TypeExpr{TokenPos: pos, Name: "map", IsMap: true, Params: []*ast.TypeExpr{key, val}}
+	}
+
 	// Slice type: []Type
 	if p.peek() == token.LBracket && p.peekAt(1) == token.RBracket {
 		p.advance() // [

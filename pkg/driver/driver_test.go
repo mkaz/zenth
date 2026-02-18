@@ -152,6 +152,10 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "object_print.zn",
 			contains: []string{"Point(x=1, y=2, val=\"#\")", "Label<demo>"},
 		},
+		{
+			file:     "map.zn",
+			contains: []string{"val=#", "len=1"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -235,6 +239,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/for_range_count_type.zn",
 			errMsg: "for-range count must be int",
+		},
+		{
+			file:   "errors/map_type_arg.zn",
+			errMsg: "map() type arguments must be type names",
 		},
 	}
 
