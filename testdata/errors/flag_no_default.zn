@@ -1,0 +1,4 @@
+fn main() {
+    let x = flag();
+    println(str(x));
+}

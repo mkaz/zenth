@@ -29,12 +29,13 @@ type ObjInfo struct {
 
 // Checker performs type checking and semantic analysis on a Zenth AST.
 type Checker struct {
-	scope       *Scope
-	funcs       map[string]*FuncInfo // "name" or "Type.name"
-	objs        map[string]*ObjInfo
-	modules     map[string]bool
-	errors      []string
-	currentFunc *FuncInfo // for checking return types
+	scope           *Scope
+	funcs           map[string]*FuncInfo // "name" or "Type.name"
+	objs            map[string]*ObjInfo
+	modules         map[string]bool
+	errors          []string
+	currentFunc     *FuncInfo // for checking return types
+	pendingFlagName string    // set before checking a let/var value for flag()
 }
 
 // New creates a new Checker.
@@ -107,6 +108,13 @@ func New() *Checker {
 		Name:   "f64",
 		Params: []ZType{TypeF64},
 		Return: TypeF64,
+	}
+	c.funcs["flag"] = &FuncInfo{
+		Name:        "flag",
+		Params:      []ZType{TypeVoid}, // placeholder; actual type inferred from default
+		ParamNames:  []string{"default"},
+		Return:      TypeVoid, // return type set dynamically
+		NumRequired: 1,
 	}
 
 	return c
@@ -374,7 +382,9 @@ func (c *Checker) checkBlock(b *ast.Block) ZType {
 }
 
 func (c *Checker) checkLetStmt(s *ast.LetStmt) ZType {
+	c.pendingFlagName = s.Name
 	valType := c.checkNode(s.Value)
+	c.pendingFlagName = ""
 	if s.Type != nil {
 		declared := c.resolveTypeExpr(s.Type)
 		if c.isTypedEmptySliceAssignment(s.Value, declared, valType) {
@@ -389,7 +399,9 @@ func (c *Checker) checkLetStmt(s *ast.LetStmt) ZType {
 }
 
 func (c *Checker) checkVarStmt(s *ast.VarStmt) ZType {
+	c.pendingFlagName = s.Name
 	valType := c.checkNode(s.Value)
+	c.pendingFlagName = ""
 	if s.Type != nil {
 		declared := c.resolveTypeExpr(s.Type)
 		if c.isTypedEmptySliceAssignment(s.Value, declared, valType) {
@@ -891,6 +903,9 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 		if ident.Name == "map" {
 			return c.checkMapConstructor(e)
 		}
+		if ident.Name == "flag" {
+			return c.checkFlagCall(e)
+		}
 		// Check if this is an obj constructor call
 		if _, ok := c.objs[ident.Name]; ok {
 			return c.checkObjConstructor(e, ident.Name)
@@ -1267,6 +1282,49 @@ func (c *Checker) checkObjConstructor(e *ast.CallExpr, name string) ZType {
 	}
 
 	return &ObjType{Name: info.Name, Fields: info.Fields}
+}
+
+func (c *Checker) checkFlagCall(e *ast.CallExpr) ZType {
+	if c.pendingFlagName == "" {
+		c.errorf(e.Pos(), "flag() must be assigned to a variable (let x = flag(default=...))")
+		return TypeVoid
+	}
+
+	// Find the "default" named arg
+	var defaultNode ast.Node
+	for _, arg := range e.Args {
+		if named, ok := arg.(*ast.NamedArgExpr); ok {
+			if named.Name == "default" {
+				defaultNode = named.Value
+			} else {
+				c.errorf(named.Pos(), "flag() has no parameter named '%s'", named.Name)
+			}
+		} else {
+			c.errorf(arg.Pos(), "flag() requires named argument: default=<value>")
+		}
+	}
+	if defaultNode == nil {
+		c.errorf(e.Pos(), "flag() requires a 'default' argument")
+		return TypeVoid
+	}
+
+	valType := c.checkNode(defaultNode)
+	var goType string
+	switch {
+	case valType.Equals(TypeBool):
+		goType = "bool"
+	case valType.Equals(TypeInt):
+		goType = "int"
+	case valType.Equals(TypeStr):
+		goType = "string"
+	default:
+		c.errorf(e.Pos(), "flag() default must be bool, int, or str, got %s", valType)
+		return TypeVoid
+	}
+
+	e.FlagName = c.pendingFlagName
+	e.FlagGoType = goType
+	return valType
 }
 
 func (c *Checker) checkIfExpr(e *ast.IfExpr) ZType {

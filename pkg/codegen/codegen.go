@@ -30,6 +30,14 @@ type Generator struct {
 	needsSliceToStr bool
 	needsStrIndex   bool
 	needsMapObjKey  bool
+	needsFlag       bool
+	flagDecls       []flagDecl
+}
+
+type flagDecl struct {
+	name       string // variable name
+	goType     string // "bool", "int", "string"
+	defaultVal string // Go expression for default value
 }
 
 // New creates a new code Generator.
@@ -91,6 +99,9 @@ func (g *Generator) Generate(prog *ast.Program) string {
 	if g.needsIntConv || g.needsF64Conv || g.needsSliceToInt || g.needsSliceToF64 || g.needsSliceToStr {
 		g.imports["os"] = ""
 	}
+	if g.needsFlag {
+		g.imports["flag"] = ""
+	}
 
 	if len(g.imports) > 0 {
 		g.writeln("import (")
@@ -104,6 +115,21 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		}
 		g.indent--
 		g.writeln(")")
+		g.writeln("")
+	}
+
+	// Emit package-level flag variable declarations
+	for _, fd := range g.flagDecls {
+		switch fd.goType {
+		case "bool":
+			g.writef("var _zflag_%s = flag.Bool(%q, %s, \"\")\n", fd.name, fd.name, fd.defaultVal)
+		case "int":
+			g.writef("var _zflag_%s = flag.Int(%q, %s, \"\")\n", fd.name, fd.name, fd.defaultVal)
+		case "string":
+			g.writef("var _zflag_%s = flag.String(%q, %s, \"\")\n", fd.name, fd.name, fd.defaultVal)
+		}
+	}
+	if len(g.flagDecls) > 0 {
 		g.writeln("")
 	}
 
@@ -460,9 +486,26 @@ func (g *Generator) genFnDecl(f *ast.FnDecl) {
 	}
 	g.write(" {\n")
 	g.indent++
-	if f.Body != nil {
-		for _, stmt := range f.Body.Stmts {
-			g.genNode(stmt)
+	if f.Name == "main" && f.OwnerObj == "" {
+		// Generate body into temp buffer so we know if flag() was used
+		oldBuf := g.buf
+		g.buf = strings.Builder{}
+		if f.Body != nil {
+			for _, stmt := range f.Body.Stmts {
+				g.genNode(stmt)
+			}
+		}
+		bodyStr := g.buf.String()
+		g.buf = oldBuf
+		if g.needsFlag {
+			g.writeln("flag.Parse()")
+		}
+		g.buf.WriteString(bodyStr)
+	} else {
+		if f.Body != nil {
+			for _, stmt := range f.Body.Stmts {
+				g.genNode(stmt)
+			}
 		}
 	}
 	g.indent--
@@ -1103,6 +1146,9 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write("/* invalid map() */")
 			}
 			return
+		case "flag":
+			g.genFlagCall(c)
+			return
 		}
 	}
 
@@ -1269,6 +1315,32 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 	g.write("(")
 	g.genArgList(args)
 	g.write(")")
+}
+
+func (g *Generator) genFlagCall(c *ast.CallExpr) {
+	// Capture the default value as a Go expression
+	var defaultBuf strings.Builder
+	oldBuf := g.buf
+	g.buf = defaultBuf
+	// Find the default named arg
+	for _, arg := range c.Args {
+		if named, ok := arg.(*ast.NamedArgExpr); ok && named.Name == "default" {
+			g.genExpr(named.Value)
+			break
+		}
+	}
+	defaultExpr := g.buf.String()
+	g.buf = oldBuf
+
+	g.needsFlag = true
+	g.flagDecls = append(g.flagDecls, flagDecl{
+		name:       c.FlagName,
+		goType:     c.FlagGoType,
+		defaultVal: defaultExpr,
+	})
+
+	// Emit the dereference expression inline
+	g.write("*_zflag_" + c.FlagName)
 }
 
 func (g *Generator) resolveCallDecl(c *ast.CallExpr) *ast.FnDecl {

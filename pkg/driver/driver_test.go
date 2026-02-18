@@ -160,6 +160,10 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "map.zn",
 			contains: []string{"val=#", "len=1"},
 		},
+		{
+			file:     "flag.zn",
+			contains: []string{"debug=false", "times=5", "msg=Hello"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -251,6 +255,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/string_length_args.zn",
 			errMsg: "length() takes no arguments, got 1",
+		},
+		{
+			file:   "errors/flag_no_default.zn",
+			errMsg: "flag() requires a 'default' argument",
 		},
 	}
 

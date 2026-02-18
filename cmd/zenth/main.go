@@ -7,7 +7,7 @@ import (
 	"github.com/mkaz/zenth/pkg/driver"
 )
 
-const version = "0.1.26"
+const version = "0.1.27"
 
 func main() {
 	if len(os.Args) < 2 {
@@ -70,15 +70,22 @@ func handleRun() {
 	opts := driver.Options{}
 
 	args := os.Args[2:]
-	for i := range args {
+	var remainingArgs []string
+	for i := 0; i < len(args); i++ {
 		switch args[i] {
 		case "-v", "--verbose":
 			opts.Verbose = true
 		default:
-			if args[i][0] == '-' {
-				fatal("unknown flag: %s", args[i])
+			if opts.Input == "" {
+				if args[i][0] == '-' {
+					fatal("unknown flag: %s", args[i])
+				}
+				opts.Input = args[i]
+			} else {
+				// Everything after the .zn file is passed to the program
+				remainingArgs = args[i:]
+				i = len(args) // break out of loop
 			}
-			opts.Input = args[i]
 		}
 	}
 
@@ -100,8 +107,8 @@ func handleRun() {
 		os.Exit(1)
 	}
 
-	// Run the binary
-	cmd := execCommand(tmpFile.Name())
+	// Run the binary, forwarding remaining args
+	cmd := execCommand(tmpFile.Name(), remainingArgs...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin

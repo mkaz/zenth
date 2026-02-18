@@ -150,7 +150,7 @@ Composite: `[]int` (slice), obj literals `Point{ x: 1.0, y: 2.0 }`
 
 ### Built-in Functions
 
-`print(...)`, `println(...)`, `len(x)`, `str(x)`
+`print(...)`, `println(...)`, `len(x)`, `str(x)`, `flag(default=val)`
 
 ### Imports
 

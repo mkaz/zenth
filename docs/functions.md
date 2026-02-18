@@ -71,6 +71,7 @@ Zenth provides several built-in functions that are always available:
 | `println(x, [enabled])` | Print `x` with a newline; print only when `enabled` is `true` (default) |
 | `len(x)` | Return the length of a string or slice |
 | `str(x)` | Convert any value to its string representation |
+| `flag(default=val)` | Declare a command-line flag with a default value |
 
 ```zenth
 fn main() {
@@ -82,6 +83,37 @@ fn main() {
     println(str(42));      // prints "42"
 }
 ```
+
+## Command-Line Flags
+
+The `flag()` built-in declares command-line flags. The flag name is inferred from the variable name, and the type is inferred from the default value (`bool`, `int`, or `str`).
+
+```zenth
+fn main() {
+    let debug = flag(default=false);   // --debug
+    let times = flag(default=5);       // --times 10
+    let msg = flag(default="Hello");   // --msg "world"
+
+    for var i = 0; i < times; i++ {
+        println(msg, !debug);
+    }
+}
+```
+
+Build and run with flags:
+
+```sh
+zenth build -o greet greet.zn
+./greet --debug --times 3 --msg "Hi"
+```
+
+Or pass flags directly with `zenth run`:
+
+```sh
+zenth run greet.zn --times 3 --msg "Hi"
+```
+
+When no flags are provided, the default values are used. Boolean flags are set to `true` by passing `--name` with no value.
 
 ## Methods
 

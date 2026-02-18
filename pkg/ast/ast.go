@@ -330,6 +330,8 @@ type CallExpr struct {
 	MapKeyGoType    string // concrete Go key type for map constructor
 	MapValGoType    string // concrete Go value type for map constructor
 	ResolvedFunc    string // set by checker: function key ("name" or "Type.method")
+	FlagName        string // set by checker: variable name for flag() calls
+	FlagGoType      string // set by checker: "bool", "int", "string" for flag() calls
 }
 
 func (c *CallExpr) Pos() token.Pos { return c.TokenPos }
