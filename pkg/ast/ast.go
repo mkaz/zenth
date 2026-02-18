@@ -326,6 +326,7 @@ type CallExpr struct {
 	SliceConvTarget string // set by checker for to_int/to_f64/to_str ("int", "float64", "string")
 	StringMethod    string // set by checker for built-in string methods (e.g. "split")
 	MapCtor         bool   // set by checker for map(K, V) constructor
+	MapObjKey       bool   // set by checker when map key type is an obj (value-based keying)
 	MapKeyGoType    string // concrete Go key type for map constructor
 	MapValGoType    string // concrete Go value type for map constructor
 	ResolvedFunc    string // set by checker: function key ("name" or "Type.method")
@@ -336,10 +337,11 @@ func (c *CallExpr) nodeMarker()    {}
 
 // IndexExpr represents: object[index]
 type IndexExpr struct {
-	TokenPos token.Pos
-	Object   Node
-	Index    Node
-	StrIndex bool // set by checker when indexing a string
+	TokenPos  token.Pos
+	Object    Node
+	Index     Node
+	StrIndex  bool // set by checker when indexing a string
+	MapObjKey bool // set by checker when indexing a map with obj keys
 }
 
 func (i *IndexExpr) Pos() token.Pos { return i.TokenPos }

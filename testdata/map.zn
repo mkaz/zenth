@@ -5,9 +5,10 @@ obj Point {
 
 fn main() {
     let pt = Point(x=1, y=2);
+    let same = Point(x=1, y=2);
     var grid = map(Point, str);
     grid[pt] = "#";
 
-    println("val=" + grid[pt]);
+    println("val=" + grid[same]);
     println("len=" + str(len(grid)));
 }

@@ -103,6 +103,8 @@ let pt = Point(x=1, y=2);
 grid[pt] = "#";
 ```
 
+For object keys, map lookup is value-based: another `Point(x=1, y=2)` resolves the same entry.
+
 ### Structs
 
 User-defined types with named fields:

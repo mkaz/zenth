@@ -1101,6 +1101,9 @@ func (c *Checker) checkIndexExpr(e *ast.IndexExpr) ZType {
 		if !t.Key.Equals(idxType) {
 			c.errorf(e.Pos(), "map key type mismatch: expected %s, got %s", t.Key, idxType)
 		}
+		if _, ok := t.Key.(*ObjType); ok {
+			e.MapObjKey = true
+		}
 		return t.Value
 	default:
 		if objType.Equals(TypeStr) {
@@ -1168,7 +1171,12 @@ func (c *Checker) checkMapConstructor(e *ast.CallExpr) ZType {
 	}
 
 	e.MapCtor = true
-	e.MapKeyGoType = goTypeName(keyType)
+	if _, ok := keyType.(*ObjType); ok {
+		e.MapObjKey = true
+		e.MapKeyGoType = "string"
+	} else {
+		e.MapKeyGoType = goTypeName(keyType)
+	}
 	e.MapValGoType = goTypeName(valType)
 	return &MapType{Key: keyType, Value: valType}
 }

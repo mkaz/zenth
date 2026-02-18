@@ -29,6 +29,7 @@ type Generator struct {
 	needsSliceToF64 bool
 	needsSliceToStr bool
 	needsStrIndex   bool
+	needsMapObjKey  bool
 }
 
 // New creates a new code Generator.
@@ -327,6 +328,12 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("func zenth_str_index(s string, i int) string {")
 		g.writeln("\tr := []rune(s)")
 		g.writeln("\treturn string(r[i])")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsMapObjKey {
+		g.writeln("func zenth_map_obj_key(v interface{}) string {")
+		g.writeln("\treturn fmt.Sprintf(\"%#v\", v)")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -952,7 +959,14 @@ func (g *Generator) genExpr(node ast.Node) {
 		} else {
 			g.genExpr(n.Object)
 			g.write("[")
-			g.genExpr(n.Index)
+			if n.MapObjKey {
+				g.needsMapObjKey = true
+				g.write("zenth_map_obj_key(")
+				g.genExpr(n.Index)
+				g.write(")")
+			} else {
+				g.genExpr(n.Index)
+			}
 			g.write("]")
 		}
 	case *ast.FieldExpr:
