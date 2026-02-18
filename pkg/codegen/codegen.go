@@ -548,17 +548,18 @@ func (g *Generator) genDefaultObjStringMethod(s *ast.ObjDecl) {
 		return
 	}
 
-	format := s.Name + "("
+	var format strings.Builder
+	format.WriteString(s.Name + "(")
 	for i, f := range s.Fields {
 		if i > 0 {
-			format += ", "
+			format.WriteString(", ")
 		}
-		format += f.Name + "=" + objFieldFormatVerb(f.Type)
+		format.WriteString(f.Name + "=" + objFieldFormatVerb(f.Type))
 	}
-	format += ")"
+	format.WriteString(")")
 
 	g.writeIndent()
-	g.writef("return fmt.Sprintf(%q", format)
+	g.writef("return fmt.Sprintf(%q", format.String())
 	for _, f := range s.Fields {
 		g.write(", ")
 		g.write("self." + exportName(f.Name))

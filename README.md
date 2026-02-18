@@ -54,7 +54,7 @@ fn main() {
 
 ## Quick start
 
-You need [Go](https://go.dev/dl/) 1.21+ and optionally [just](https://github.com/casey/just).
+You need [Go](https://go.dev/dl/) 1.26+ and optionally [just](https://github.com/casey/just).
 
 ```sh
 git clone https://github.com/mkaz/zenth.git
