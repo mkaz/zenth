@@ -1,4 +1,4 @@
-# <img src="extras/branding/zenth-enso-trans.png" alt="Zenth logo" width="48" /> Zenth
+<h1><img src="extras/branding/zenth-enso-trans.png" alt="Zenth logo" width="48" align="middle" />&nbsp;Zenth</h1>
 
 A programming language built to match my personal tastes.
 
