@@ -141,6 +141,26 @@ for var i = 0; i < 100; i++ {
 }
 ```
 
+## If Expressions
+
+`if` can be used as an expression to produce a value. Both branches must be present and return the same type:
+
+```zenth
+let label = if x > 5 { "big" } else { "small" };
+```
+
+Else-if chains work too:
+
+```zenth
+let grade = if x > 9 { "A" } else if x > 7 { "B" } else { "C" };
+```
+
+If expressions can be used inline:
+
+```zenth
+println(if done { "yes" } else { "no" });
+```
+
 ## Match
 
 `match` selects a branch based on a value, similar to `switch` in other languages:
