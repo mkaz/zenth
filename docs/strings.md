@@ -119,6 +119,17 @@ println(str(len(s)));  // 5
 println(str(s.length())); // 5
 ```
 
+## Containment
+
+Use `.contains()` to check if a string contains a substring:
+
+```zenth
+let s = "hello world";
+if s.contains("world") {
+    println("found it");
+}
+```
+
 ## Indexing
 
 Indexing a string returns a one-character `str`:

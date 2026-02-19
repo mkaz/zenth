@@ -656,16 +656,7 @@ func (c *Checker) checkBinaryExpr(e *ast.BinaryExpr) ZType {
 		return TypeBool
 
 	case token.In:
-		if st, ok := right.(*SliceType); ok {
-			if !left.Equals(st.Elem) {
-				c.errorf(e.Pos(), "'in' element type %s does not match slice element type %s", left, st.Elem)
-			}
-			e.SliceContains = true
-			return TypeBool
-		}
-		if !left.Equals(TypeStr) || !right.Equals(TypeStr) {
-			c.errorf(e.Pos(), "'in' requires str operands, got %s and %s", left, right)
-		}
+		c.errorf(e.Pos(), "'in' is not a binary operator; use .exists() for slices and .contains() for strings")
 		return TypeBool
 
 	case token.And, token.Or:
@@ -781,6 +772,18 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.SliceMethod = true
 				return TypeInt
+			case "exists":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "exists() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !sliceType.Elem.Equals(argType) {
+						c.errorf(e.Args[0].Pos(), "exists() argument type %s does not match slice element type %s", argType, sliceType.Elem)
+					}
+				}
+				e.SliceMethod = true
+				return TypeBool
 			case "to_int":
 				if len(e.Args) != 0 {
 					c.errorf(e.Pos(), "to_int() takes no arguments, got %d", len(e.Args))
@@ -887,6 +890,18 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.StringMethod = "length"
 				return TypeInt
+			case "contains":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "contains() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !argType.Equals(TypeStr) {
+						c.errorf(e.Args[0].Pos(), "contains() argument must be str, got %s", argType)
+					}
+				}
+				e.StringMethod = "contains"
+				return TypeBool
 			}
 		}
 

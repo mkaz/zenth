@@ -164,6 +164,10 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "flag.zn",
 			contains: []string{"debug=false", "times=5", "msg=Hello"},
 		},
+		{
+			file:     "str_contains.zn",
+			contains: []string{"found world", "no xyz"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -259,6 +263,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/flag_no_default.zn",
 			errMsg: "flag() requires a 'default' argument",
+		},
+		{
+			file:   "errors/in_not_operator.zn",
+			errMsg: "expected {, got in",
 		},
 	}
 

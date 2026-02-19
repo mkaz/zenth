@@ -61,6 +61,17 @@ for i, fruit in fruits {
 }
 ```
 
+## Containment
+
+Use `.exists()` to check if a slice contains a value:
+
+```zenth
+let nums = [10, 20, 30];
+if nums.exists(20) {
+    println("found 20");
+}
+```
+
 ## Example
 
 ```zenth

@@ -1,0 +1,11 @@
+fn main() {
+    let s = "hello world";
+    if s.contains("world") {
+        println("found world");
+    }
+    if s.contains("xyz") {
+        println("found xyz");
+    } else {
+        println("no xyz");
+    }
+}

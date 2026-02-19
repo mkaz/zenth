@@ -193,7 +193,7 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("")
 	}
 	if g.needsContains {
-		g.writeln("func zenth_contains(s []interface{}, elem interface{}) bool {")
+		g.writeln("func zenth_contains[T comparable](s []T, elem T) bool {")
 		g.writeln("\tfor _, v := range s {")
 		g.writeln("\t\tif v == elem { return true }")
 		g.writeln("\t}")
@@ -946,24 +946,6 @@ func (g *Generator) genIncDecStmt(s *ast.IncDecStmt) {
 func (g *Generator) genExpr(node ast.Node) {
 	switch n := node.(type) {
 	case *ast.BinaryExpr:
-		if n.Op == token.In {
-			if n.SliceContains {
-				g.needsContains = true
-				g.write("zenth_contains(")
-				g.genExpr(n.Right)
-				g.write(", ")
-				g.genExpr(n.Left)
-				g.write(")")
-			} else {
-				g.imports["strings"] = ""
-				g.write("strings.Contains(")
-				g.genExpr(n.Right)
-				g.write(", ")
-				g.genExpr(n.Left)
-				g.write(")")
-			}
-			break
-		}
 		if n.SliceConcat {
 			g.write("append(")
 			g.genExpr(n.Left)
@@ -1201,10 +1183,21 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write(")")
 				return
 			case "exists":
-				g.needsFile = true
-				g.write("zenth_file_exists(")
-				g.genExpr(field.Object)
-				g.write(")")
+				if len(c.Args) == 1 {
+					// Slice .exists(elem)
+					g.needsContains = true
+					g.write("zenth_contains(")
+					g.genExpr(field.Object)
+					g.write(", ")
+					g.genExpr(c.Args[0])
+					g.write(")")
+				} else {
+					// File .exists()
+					g.needsFile = true
+					g.write("zenth_file_exists(")
+					g.genExpr(field.Object)
+					g.write(")")
+				}
 				return
 			case "read":
 				g.needsFile = true
@@ -1287,6 +1280,14 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			case "length":
 				g.write("len(")
 				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "contains":
+				g.imports["strings"] = ""
+				g.write("strings.Contains(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
 				g.write(")")
 				return
 			}
