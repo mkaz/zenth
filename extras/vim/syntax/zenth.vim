@@ -31,6 +31,7 @@ syn match zenthFloat          /\<\d\+\.\d*\>/
 
 " Strings
 syn region zenthString        start=/"/ skip=/\\"/ end=/"/
+syn region zenthString        start=/'/ skip=/\\'/ end=/'/
 
 " Comments
 syn region zenthComment       start="//" end="$"
