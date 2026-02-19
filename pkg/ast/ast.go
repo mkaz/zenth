@@ -256,6 +256,24 @@ type MatchArm struct {
 	Body    Node // single statement or Block
 }
 
+// MatchExpr represents a match expression (used as a value).
+// Each arm maps a pattern to a single expression.
+type MatchExpr struct {
+	TokenPos token.Pos
+	Subject  Node
+	Arms     []MatchExprArm
+	GoType   string // set by checker for codegen
+}
+
+func (m *MatchExpr) Pos() token.Pos { return m.TokenPos }
+func (m *MatchExpr) nodeMarker()    {}
+
+// MatchExprArm represents: pattern => expr
+type MatchExprArm struct {
+	Pattern Node // expression or _ wildcard
+	Value   Node // single expression
+}
+
 // BreakStmt represents: break;
 type BreakStmt struct {
 	TokenPos token.Pos

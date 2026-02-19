@@ -1025,6 +1025,8 @@ func (g *Generator) genExpr(node ast.Node) {
 		g.genExpr(n.Value)
 	case *ast.IfExpr:
 		g.genIfExpr(n)
+	case *ast.MatchExpr:
+		g.genMatchExpr(n)
 	case *ast.InterpStringExpr:
 		g.genInterpString(n)
 	default:
@@ -1500,6 +1502,32 @@ func (g *Generator) genIfExprBody(e *ast.IfExpr) {
 		g.genExpr(e.Else)
 		g.write(" }")
 	}
+}
+
+func (g *Generator) genMatchExpr(e *ast.MatchExpr) {
+	goType := e.GoType
+	if goType == "" {
+		goType = "interface{}"
+	}
+	g.write("func() " + goType + " {\n")
+	g.write("switch ")
+	g.genExpr(e.Subject)
+	g.write(" {\n")
+	for _, arm := range e.Arms {
+		if ident, ok := arm.Pattern.(*ast.IdentExpr); ok && ident.Name == "_" {
+			g.write("default:\n")
+		} else {
+			g.write("case ")
+			g.genExpr(arm.Pattern)
+			g.write(":\n")
+		}
+		g.write("return ")
+		g.genExpr(arm.Value)
+		g.write("\n")
+	}
+	g.write("}\n")
+	g.write("return *new(" + goType + ")\n")
+	g.write("}()")
 }
 
 // ---------- Helpers ----------

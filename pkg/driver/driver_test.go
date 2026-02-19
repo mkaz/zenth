@@ -39,6 +39,10 @@ func TestBuildAndRun(t *testing.T) {
 			contains: []string{"Fizz", "Buzz", "FizzBuzz", "Wednesday"},
 		},
 		{
+			file:     "matchexpr.zn",
+			contains: []string{"two", "default", "Monday", "Wednesday", "Other", "2"},
+		},
+		{
 			file: "range.zn",
 			contains: []string{
 				"range(0,5): 5",

@@ -330,6 +330,8 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 		return c.checkNode(n.Value)
 	case *ast.IfExpr:
 		return c.checkIfExpr(n)
+	case *ast.MatchExpr:
+		return c.checkMatchExpr(n)
 	case *ast.InterpStringExpr:
 		for _, part := range n.Parts {
 			if part.IsExpr {
@@ -1357,6 +1359,26 @@ func (c *Checker) checkIfExpr(e *ast.IfExpr) ZType {
 
 	e.GoType = goTypeName(thenType)
 	return thenType
+}
+
+func (c *Checker) checkMatchExpr(e *ast.MatchExpr) ZType {
+	c.checkNode(e.Subject)
+	if len(e.Arms) == 0 {
+		c.errorf(e.Pos(), "match expression must have at least one arm")
+		return TypeVoid
+	}
+	var firstType ZType
+	for i, arm := range e.Arms {
+		c.checkNode(arm.Pattern)
+		armType := c.checkNode(arm.Value)
+		if i == 0 {
+			firstType = armType
+		} else if !armType.Equals(firstType) {
+			c.errorf(arm.Value.Pos(), "match expression arms must have same type: first arm is %s, this arm is %s", firstType, armType)
+		}
+	}
+	e.GoType = goTypeName(firstType)
+	return firstType
 }
 
 func goTypeName(t ZType) string {

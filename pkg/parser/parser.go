@@ -733,6 +733,9 @@ func (p *Parser) parsePrimary() ast.Node {
 	case token.If:
 		return p.parseIfExpr()
 
+	case token.Match:
+		return p.parseMatchExpr()
+
 	default:
 		p.errorf(tok.Pos, "unexpected token: %s (%q)", tok.Type, tok.Literal)
 		p.advance()
@@ -764,6 +767,22 @@ func (p *Parser) parseIfExpr() *ast.IfExpr {
 		p.expect(token.RBrace)
 	}
 
+	return expr
+}
+
+func (p *Parser) parseMatchExpr() *ast.MatchExpr {
+	tok := p.expect(token.Match)
+	expr := &ast.MatchExpr{TokenPos: tok.Pos}
+	expr.Subject = p.parseExpr(0)
+	p.expect(token.LBrace)
+	for p.peek() != token.RBrace && p.peek() != token.EOF {
+		var arm ast.MatchExprArm
+		arm.Pattern = p.parseExpr(0)
+		p.expect(token.FatArrow)
+		arm.Value = p.parseExpr(0)
+		expr.Arms = append(expr.Arms, arm)
+	}
+	p.expect(token.RBrace)
 	return expr
 }
 

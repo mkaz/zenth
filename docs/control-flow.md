@@ -194,6 +194,30 @@ match status {
 }
 ```
 
+### Match Expressions
+
+`match` can also be used as an expression that returns a value. Each arm uses `=>` followed by a single expression (no semicolons between arms):
+
+```zenth
+let label = match x {
+    1 => "one"
+    2 => "two"
+    _ => "other"
+};
+```
+
+Match expressions can be used anywhere an expression is expected:
+
+```zenth
+println(match status {
+    200 => "OK"
+    404 => "Not Found"
+    _ => "Unknown"
+});
+```
+
+All arms must return the same type.
+
 ### Practical Example: FizzBuzz
 
 ```zenth
