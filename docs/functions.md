@@ -48,6 +48,35 @@ fn clamp(value: int, low: int, high: int) -> int {
 }
 ```
 
+## Default Arguments
+
+Function parameters can specify default values using `=`. If a caller omits a default parameter, the default value is used:
+
+```zenth
+fn greet(name: str = "World") {
+    println("Hello, {name}!");
+}
+
+fn main() {
+    greet();          // Hello, World!
+    greet("Zenth");   // Hello, Zenth!
+}
+```
+
+## Named Arguments
+
+When calling a function, you can provide arguments by name, which allows you to pass them in any order. This is especially useful for functions with many parameters or default values:
+
+```zenth
+fn draw_rect(x: int, y: int, width: int, height: int = 10) {
+    // ...
+}
+
+fn main() {
+    draw_rect(width=20, x=5, y=5); // y=5, x=5, width=20, height=10
+}
+```
+
 ## Recursion
 
 Functions can call themselves:

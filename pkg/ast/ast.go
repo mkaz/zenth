@@ -366,6 +366,18 @@ type IndexExpr struct {
 func (i *IndexExpr) Pos() token.Pos { return i.TokenPos }
 func (i *IndexExpr) nodeMarker()    {}
 
+// SliceExpr represents: object[low:high]
+type SliceExpr struct {
+	TokenPos token.Pos
+	Object   Node
+	Low      Node // nil if omitted ([:high])
+	High     Node // nil if omitted ([low:])
+	StrSlice bool // set by checker when slicing a string
+}
+
+func (s *SliceExpr) Pos() token.Pos { return s.TokenPos }
+func (s *SliceExpr) nodeMarker()    {}
+
 // FieldExpr represents: object.field
 type FieldExpr struct {
 	TokenPos token.Pos

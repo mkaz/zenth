@@ -72,6 +72,32 @@ if nums.exists(20) {
 }
 ```
 
+## Modifying Slices
+
+Zenth provides methods to append, prepend, and remove elements from a slice. The slice must be assigned to a mutable `var` to use these methods.
+
+### Adding Elements
+
+- `.add(value)` appends an element to the end of the slice.
+- `.push(value)` prepends an element to the beginning of the slice.
+
+```zenth
+var items = [2, 3];
+items.add(4);   // [2, 3, 4]
+items.push(1);  // [1, 2, 3, 4]
+```
+
+### Removing Elements
+
+- `.pop()` removes and returns the last element of the slice.
+- `.pop(index)` removes and returns the element at the specified index.
+
+```zenth
+var letters = ["a", "b", "c", "d"];
+let last = letters.pop();    // "d", letters is now ["a", "b", "c"]
+let first = letters.pop(0);  // "a", letters is now ["b", "c"]
+```
+
 ## Example
 
 ```zenth

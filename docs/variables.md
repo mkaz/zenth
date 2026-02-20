@@ -75,6 +75,16 @@ n *= 2;   // n is now 24
 n /= 4;   // n is now 6
 ```
 
+## Multiple Assignment
+
+You can assign to multiple variables in a single statement. This is often used to swap values without needing a temporary variable:
+
+```zenth
+var x = 1;
+var y = 2;
+x, y = y, x;  // x becomes 2, y becomes 1
+```
+
 ## Increment and Decrement
 
 ```zenth

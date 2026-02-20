@@ -29,6 +29,7 @@ type Generator struct {
 	needsSliceToF64 bool
 	needsSliceToStr bool
 	needsStrIndex   bool
+	needsStrSlice   bool
 	needsMapObjKey  bool
 	needsFlag       bool
 	flagDecls       []flagDecl
@@ -354,6 +355,14 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("func zenth_str_index(s string, i int) string {")
 		g.writeln("\tr := []rune(s)")
 		g.writeln("\treturn string(r[i])")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsStrSlice {
+		g.writeln("func zenth_str_slice(s string, lo, hi int) string {")
+		g.writeln("\tr := []rune(s)")
+		g.writeln("\tif hi < 0 { hi = len(r) }")
+		g.writeln("\treturn string(r[lo:hi])")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -992,6 +1001,36 @@ func (g *Generator) genExpr(node ast.Node) {
 				g.write(")")
 			} else {
 				g.genExpr(n.Index)
+			}
+			g.write("]")
+		}
+	case *ast.SliceExpr:
+		if n.StrSlice {
+			g.needsStrSlice = true
+			g.write("zenth_str_slice(")
+			g.genExpr(n.Object)
+			g.write(", ")
+			if n.Low != nil {
+				g.genExpr(n.Low)
+			} else {
+				g.write("0")
+			}
+			g.write(", ")
+			if n.High != nil {
+				g.genExpr(n.High)
+			} else {
+				g.write("-1")
+			}
+			g.write(")")
+		} else {
+			g.genExpr(n.Object)
+			g.write("[")
+			if n.Low != nil {
+				g.genExpr(n.Low)
+			}
+			g.write(":")
+			if n.High != nil {
+				g.genExpr(n.High)
 			}
 			g.write("]")
 		}

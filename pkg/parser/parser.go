@@ -641,9 +641,32 @@ func (p *Parser) parsePostfix() ast.Node {
 			expr = p.parseCallExpr(expr)
 		case token.LBracket:
 			tok := p.advance()
-			index := p.parseExpr(0)
-			p.expect(token.RBracket)
-			expr = &ast.IndexExpr{TokenPos: tok.Pos, Object: expr, Index: index}
+			// [:high] — slice with no low
+			if p.peek() == token.Colon {
+				p.advance()
+				var high ast.Node
+				if p.peek() != token.RBracket {
+					high = p.parseExpr(0)
+				}
+				p.expect(token.RBracket)
+				expr = &ast.SliceExpr{TokenPos: tok.Pos, Object: expr, High: high}
+			} else {
+				index := p.parseExpr(0)
+				if p.peek() == token.Colon {
+					// [low:] or [low:high] — slice
+					p.advance()
+					var high ast.Node
+					if p.peek() != token.RBracket {
+						high = p.parseExpr(0)
+					}
+					p.expect(token.RBracket)
+					expr = &ast.SliceExpr{TokenPos: tok.Pos, Object: expr, Low: index, High: high}
+				} else {
+					// [index] — plain index
+					p.expect(token.RBracket)
+					expr = &ast.IndexExpr{TokenPos: tok.Pos, Object: expr, Index: index}
+				}
+			}
 		case token.Dot:
 			tok := p.advance()
 			field := p.expect(token.Ident).Literal
@@ -781,6 +804,12 @@ func (p *Parser) parseMatchExpr() *ast.MatchExpr {
 		p.expect(token.FatArrow)
 		arm.Value = p.parseExpr(0)
 		expr.Arms = append(expr.Arms, arm)
+		// Require comma between arms, optional trailing comma
+		if p.peek() == token.Comma {
+			p.advance()
+		} else if p.peek() != token.RBrace {
+			p.expect(token.Comma)
+		}
 	}
 	p.expect(token.RBrace)
 	return expr

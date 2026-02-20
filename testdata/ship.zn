@@ -1,0 +1,21 @@
+obj Ship {
+    x: int;
+    y: int;
+    facing: str;
+
+    fn rotateLeft() {
+        self.facing = match self.facing {
+            "N" => "W",
+            "E" => "N",
+            "S" => "E",
+            "W" => "S",
+            _ => "ERROR"
+        };
+    }
+}
+
+fn main() {
+    let s = Ship(x=0, y=0, facing="N");
+    s.rotateLeft();
+    println(s.facing);
+}

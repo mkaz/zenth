@@ -1,9 +1,9 @@
 // Match expressions (match as a value)
 fn day_name(d: int) -> str {
     return match d {
-        1 => "Monday"
-        2 => "Tuesday"
-        3 => "Wednesday"
+        1 => "Monday",
+        2 => "Tuesday",
+        3 => "Wednesday",
         _ => "Other"
     };
 }
@@ -11,16 +11,16 @@ fn day_name(d: int) -> str {
 fn main() {
     // Assignment from match expression
     let label = match 2 {
-        1 => "one"
-        2 => "two"
-        3 => "three"
+        1 => "one",
+        2 => "two",
+        3 => "three",
         _ => "other"
     };
     println(label);
 
     // Inline in function call
     println(match 99 {
-        1 => "first"
+        1 => "first",
         _ => "default"
     });
 
@@ -31,8 +31,8 @@ fn main() {
 
     // Integer match expression
     let val = match "hi" {
-        "hello" => 1
-        "hi" => 2
+        "hello" => 1,
+        "hi" => 2,
         _ => 0
     };
     println(str(val));

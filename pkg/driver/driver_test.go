@@ -172,6 +172,10 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "str_contains.zn",
 			contains: []string{"found world", "no xyz"},
 		},
+		{
+			file:     "strslice.zn",
+			contains: []string{"bcde", "ab", "bc", "3", "30", "3", "30", "3", "20"},
+		},
 	}
 
 	for _, tt := range tests {

@@ -312,6 +312,8 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 		return c.checkFieldExpr(n)
 	case *ast.IndexExpr:
 		return c.checkIndexExpr(n)
+	case *ast.SliceExpr:
+		return c.checkSliceExpr(n)
 	case *ast.IdentExpr:
 		return c.checkIdentExpr(n)
 	case *ast.IntLitExpr:
@@ -1154,6 +1156,31 @@ func (c *Checker) checkIndexExpr(e *ast.IndexExpr) ZType {
 		c.errorf(e.Pos(), "cannot index %s", objType)
 		return TypeVoid
 	}
+}
+
+func (c *Checker) checkSliceExpr(e *ast.SliceExpr) ZType {
+	objType := c.checkNode(e.Object)
+	if e.Low != nil {
+		lowType := c.checkNode(e.Low)
+		if !IsInteger(lowType) {
+			c.errorf(e.Pos(), "slice index must be integer, got %s", lowType)
+		}
+	}
+	if e.High != nil {
+		highType := c.checkNode(e.High)
+		if !IsInteger(highType) {
+			c.errorf(e.Pos(), "slice index must be integer, got %s", highType)
+		}
+	}
+	if objType.Equals(TypeStr) {
+		e.StrSlice = true
+		return TypeStr
+	}
+	if _, ok := objType.(*SliceType); ok {
+		return objType
+	}
+	c.errorf(e.Pos(), "cannot slice %s", objType)
+	return TypeVoid
 }
 
 func (c *Checker) checkIdentExpr(e *ast.IdentExpr) ZType {

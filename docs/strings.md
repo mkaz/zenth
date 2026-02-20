@@ -130,6 +130,19 @@ if s.contains("world") {
 }
 ```
 
+## Splitting Strings
+
+Use the `.split()` method to divide a string into a slice of substrings (`[]str`). 
+By default, `.split()` splits on whitespace. You can also pass a delimiter string:
+
+```zenth
+let words = "this is zenth".split();
+println(words[0]); // "this"
+
+let parts = "a-b-c".split("-");
+println(parts[1]); // "b"
+```
+
 ## Indexing
 
 Indexing a string returns a one-character `str`:
@@ -138,3 +151,16 @@ Indexing a string returns a one-character `str`:
 let s = "hello";
 let first = s[0];  // "h"
 ```
+
+## Slicing
+
+Use slice syntax to extract a substring:
+
+```zenth
+let s = "hello";
+let tail = s[1:];    // "ello"
+let head = s[:3];    // "hel"
+let mid = s[1:4];    // "ell"
+```
+
+String slicing is Unicode-aware (operates on runes, not bytes).
