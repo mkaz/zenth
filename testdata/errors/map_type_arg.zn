@@ -1,5 +1,0 @@
-// Should fail: map() expects type names
-fn main() {
-    var bad = map(1, str);
-    println(str(len(bad)));
-}

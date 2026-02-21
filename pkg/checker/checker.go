@@ -235,8 +235,8 @@ func (c *Checker) resolveTypeExpr(t *ast.TypeExpr) ZType {
 	if t == nil {
 		return TypeVoid
 	}
-	if t.IsMap && len(t.Params) == 2 {
-		return &MapType{
+	if t.IsHashmap && len(t.Params) == 2 {
+		return &HashmapType{
 			Key:   c.resolveTypeExpr(t.Params[0]),
 			Value: c.resolveTypeExpr(t.Params[1]),
 		}
@@ -958,8 +958,8 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 
 	// Handle free function calls
 	if ident, ok := e.Callee.(*ast.IdentExpr); ok {
-		if ident.Name == "map" {
-			return c.checkMapConstructor(e)
+		if ident.Name == "hashmap" {
+			return c.checkHashmapConstructor(e)
 		}
 		if ident.Name == "flag" {
 			return c.checkFlagCall(e)
@@ -1071,8 +1071,8 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 		}
 		argType := c.checkNode(e.Args[0])
 		if _, ok := argType.(*SliceType); !ok && !argType.Equals(TypeStr) {
-			if _, ok := argType.(*MapType); !ok {
-				c.errorf(e.Args[0].Pos(), "argument 1 to len has type %s, expected str, slice, or map", argType)
+			if _, ok := argType.(*HashmapType); !ok {
+				c.errorf(e.Args[0].Pos(), "argument 1 to len has type %s, expected str, slice, or hashmap", argType)
 			}
 		}
 		return
@@ -1197,12 +1197,12 @@ func (c *Checker) checkIndexExpr(e *ast.IndexExpr) ZType {
 			c.errorf(e.Pos(), "index must be integer, got %s", idxType)
 		}
 		return t.Elem
-	case *MapType:
+	case *HashmapType:
 		if !t.Key.Equals(idxType) {
-			c.errorf(e.Pos(), "map key type mismatch: expected %s, got %s", t.Key, idxType)
+			c.errorf(e.Pos(), "hashmap key type mismatch: expected %s, got %s", t.Key, idxType)
 		}
 		if _, ok := t.Key.(*ObjType); ok {
-			e.MapObjKey = true
+			e.HashmapObjKey = true
 		}
 		return t.Value
 	default:
@@ -1278,10 +1278,10 @@ func (c *Checker) checkArrayLit(e *ast.ArrayLitExpr) ZType {
 	return sliceType
 }
 
-func (c *Checker) checkMapConstructor(e *ast.CallExpr) ZType {
+func (c *Checker) checkHashmapConstructor(e *ast.CallExpr) ZType {
 	if len(e.Args) != 2 {
-		c.errorf(e.Pos(), "map() expects exactly 2 type arguments, got %d", len(e.Args))
-		return &MapType{Key: TypeVoid, Value: TypeVoid}
+		c.errorf(e.Pos(), "hashmap() expects exactly 2 type arguments, got %d", len(e.Args))
+		return &HashmapType{Key: TypeVoid, Value: TypeVoid}
 	}
 
 	keyType := c.resolveTypeRefArg(e.Args[0])
@@ -1293,25 +1293,25 @@ func (c *Checker) checkMapConstructor(e *ast.CallExpr) ZType {
 	if valType == nil {
 		valType = TypeVoid
 	}
-	if !isMapKeyType(keyType) && !keyType.Equals(TypeVoid) {
-		c.errorf(e.Args[0].Pos(), "invalid map key type: %s", keyType)
+	if !isHashmapKeyType(keyType) && !keyType.Equals(TypeVoid) {
+		c.errorf(e.Args[0].Pos(), "invalid hashmap key type: %s", keyType)
 	}
 
-	e.MapCtor = true
+	e.HashmapCtor = true
 	if _, ok := keyType.(*ObjType); ok {
-		e.MapObjKey = true
-		e.MapKeyGoType = "string"
+		e.HashmapObjKey = true
+		e.HashmapKeyGoType = "string"
 	} else {
-		e.MapKeyGoType = goTypeName(keyType)
+		e.HashmapKeyGoType = goTypeName(keyType)
 	}
-	e.MapValGoType = goTypeName(valType)
-	return &MapType{Key: keyType, Value: valType}
+	e.HashmapValGoType = goTypeName(valType)
+	return &HashmapType{Key: keyType, Value: valType}
 }
 
 func (c *Checker) resolveTypeRefArg(arg ast.Node) ZType {
 	ident, ok := arg.(*ast.IdentExpr)
 	if !ok {
-		c.errorf(arg.Pos(), "map() type arguments must be type names, got %T", arg)
+		c.errorf(arg.Pos(), "hashmap() type arguments must be type names, got %T", arg)
 		return nil
 	}
 	if bt := LookupBuiltinType(ident.Name); bt != nil {
@@ -1324,7 +1324,7 @@ func (c *Checker) resolveTypeRefArg(arg ast.Node) ZType {
 	return nil
 }
 
-func isMapKeyType(t ZType) bool {
+func isHashmapKeyType(t ZType) bool {
 	switch t.(type) {
 	case *BuiltinType, *ObjType:
 		return true
@@ -1560,7 +1560,7 @@ func goTypeName(t ZType) string {
 		}
 	case *SliceType:
 		return "[]" + goTypeName(ty.Elem)
-	case *MapType:
+	case *HashmapType:
 		return "map[" + goTypeName(ty.Key) + "]" + goTypeName(ty.Value)
 	case *ObjType:
 		return "*" + ty.Name

@@ -92,13 +92,13 @@ func (i *ImportDecl) nodeMarker()    {}
 
 // TypeExpr represents a type expression.
 type TypeExpr struct {
-	TokenPos token.Pos
-	Name     string      // "int", "str", "bool", etc. or a user type name
-	Params   []*TypeExpr // for generics like map[K]V or []T
-	IsSlice  bool        // []T
-	IsMap    bool        // map[K]V
-	IsArray  bool        // [N]T
-	ArrayLen int         // for fixed arrays
+	TokenPos  token.Pos
+	Name      string      // "int", "str", "bool", etc. or a user type name
+	Params    []*TypeExpr // for generics like hashmap[K]V or []T
+	IsSlice   bool        // []T
+	IsHashmap bool        // hashmap[K]V
+	IsArray   bool        // [N]T
+	ArrayLen  int         // for fixed arrays
 }
 
 func (t *TypeExpr) Pos() token.Pos { return t.TokenPos }
@@ -312,13 +312,13 @@ func (i *IncDecStmt) nodeMarker()    {}
 
 // BinaryExpr represents: left op right
 type BinaryExpr struct {
-	TokenPos      token.Pos
-	Left          Node
-	Op            token.Type
-	Right         Node
-	PromoteLeft   string // Go type to cast left operand to (set by checker)
-	PromoteRight  string // Go type to cast right operand to (set by checker)
-	SliceConcat bool // true when + means slice concatenation (set by checker)
+	TokenPos     token.Pos
+	Left         Node
+	Op           token.Type
+	Right        Node
+	PromoteLeft  string // Go type to cast left operand to (set by checker)
+	PromoteRight string // Go type to cast right operand to (set by checker)
+	SliceConcat  bool   // true when + means slice concatenation (set by checker)
 }
 
 func (b *BinaryExpr) Pos() token.Pos { return b.TokenPos }
@@ -336,20 +336,20 @@ func (u *UnaryExpr) nodeMarker()    {}
 
 // CallExpr represents: callee(args)
 type CallExpr struct {
-	TokenPos        token.Pos
-	Callee          Node
-	Args            []Node
-	SliceMethod     bool   // set by checker for built-in slice methods
-	SliceConvTarget string // set by checker for to_int/to_f64/to_str ("int", "float64", "string")
-	SliceConvFunc   string // set by checker when int()/f64()/str() is called on a slice
-	StringMethod    string // set by checker for built-in string methods (e.g. "split")
-	MapCtor         bool   // set by checker for map(K, V) constructor
-	MapObjKey       bool   // set by checker when map key type is an obj (value-based keying)
-	MapKeyGoType    string // concrete Go key type for map constructor
-	MapValGoType    string // concrete Go value type for map constructor
-	ResolvedFunc    string // set by checker: function key ("name" or "Type.method")
-	FlagName        string // set by checker: variable name for flag() calls
-	FlagGoType      string // set by checker: "bool", "int", "string" for flag() calls
+	TokenPos         token.Pos
+	Callee           Node
+	Args             []Node
+	SliceMethod      bool   // set by checker for built-in slice methods
+	SliceConvTarget  string // set by checker for to_int/to_f64/to_str ("int", "float64", "string")
+	SliceConvFunc    string // set by checker when int()/f64()/str() is called on a slice
+	StringMethod     string // set by checker for built-in string methods (e.g. "split")
+	HashmapCtor      bool   // set by checker for hashmap(K, V) constructor
+	HashmapObjKey    bool   // set by checker when hashmap key type is an obj (value-based keying)
+	HashmapKeyGoType string // concrete Go key type for hashmap constructor
+	HashmapValGoType string // concrete Go value type for hashmap constructor
+	ResolvedFunc     string // set by checker: function key ("name" or "Type.method")
+	FlagName         string // set by checker: variable name for flag() calls
+	FlagGoType       string // set by checker: "bool", "int", "string" for flag() calls
 }
 
 func (c *CallExpr) Pos() token.Pos { return c.TokenPos }
@@ -357,11 +357,11 @@ func (c *CallExpr) nodeMarker()    {}
 
 // IndexExpr represents: object[index]
 type IndexExpr struct {
-	TokenPos  token.Pos
-	Object    Node
-	Index     Node
-	StrIndex  bool // set by checker when indexing a string
-	MapObjKey bool // set by checker when indexing a map with obj keys
+	TokenPos      token.Pos
+	Object        Node
+	Index         Node
+	StrIndex      bool // set by checker when indexing a string
+	HashmapObjKey bool // set by checker when indexing a hashmap with obj keys
 }
 
 func (i *IndexExpr) Pos() token.Pos { return i.TokenPos }

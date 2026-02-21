@@ -19,7 +19,7 @@ fn main() {
 - [Control Flow](control-flow.md) -- `if`/`else`, `for` loops, and `match`
 - [Objects](objects.md) -- Objects, methods, and `self`
 - [Slices](slices.md) -- Dynamic arrays
-- [Maps](maps.md) -- Key-value collections
+- [Hashmaps](hashmaps.md) -- Key-value collections
 - [Files](files.md) -- Reading files and file paths
 - [Imports](imports.md) -- Using standard library modules
 

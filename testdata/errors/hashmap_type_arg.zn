@@ -1,0 +1,5 @@
+// Should fail: hashmap() expects type names
+fn main() {
+    var bad = hashmap(1, str);
+    println(str(len(bad)));
+}

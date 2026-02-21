@@ -73,20 +73,20 @@ func (s *SliceType) Equals(other ZType) bool {
 }
 func (s *SliceType) typeMarker() {}
 
-// MapType represents a map[K]V type.
-type MapType struct {
+// HashmapType represents a hashmap[K]V type.
+type HashmapType struct {
 	Key   ZType
 	Value ZType
 }
 
-func (m *MapType) String() string { return fmt.Sprintf("map[%s]%s", m.Key, m.Value) }
-func (m *MapType) Equals(other ZType) bool {
-	if o, ok := other.(*MapType); ok {
+func (m *HashmapType) String() string { return fmt.Sprintf("hashmap[%s]%s", m.Key, m.Value) }
+func (m *HashmapType) Equals(other ZType) bool {
+	if o, ok := other.(*HashmapType); ok {
 		return m.Key.Equals(o.Key) && m.Value.Equals(o.Value)
 	}
 	return false
 }
-func (m *MapType) typeMarker() {}
+func (m *HashmapType) typeMarker() {}
 
 // FuncType represents a function type (for passing functions as values).
 type FuncType struct {

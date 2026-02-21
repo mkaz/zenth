@@ -161,7 +161,7 @@ func TestBuildAndRun(t *testing.T) {
 			contains: []string{"Point(x=1, y=2, val=\"#\")", "Label<demo>"},
 		},
 		{
-			file:     "map.zn",
+			file:     "hashmap.zn",
 			contains: []string{"val=#", "len=1"},
 		},
 		{
@@ -273,8 +273,8 @@ func TestCompileErrors(t *testing.T) {
 			errMsg: "for-range count must be int",
 		},
 		{
-			file:   "errors/map_type_arg.zn",
-			errMsg: "map() type arguments must be type names",
+			file:   "errors/hashmap_type_arg.zn",
+			errMsg: "hashmap() type arguments must be type names",
 		},
 		{
 			file:   "errors/string_length_args.zn",

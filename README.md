@@ -90,7 +90,7 @@ zenth build hello.zn
 - **One loop keyword** -- `for` does C-style, for-in, for-range-count, while-style, and infinite loops
 - **Objects with methods** -- define methods inside the object, use `self`
 - **Useful object printing** -- objects print as constructor-like values by default
-- **Typed maps** -- create maps with `map(KeyType, ValueType)`
+- **Typed hashmaps** -- create hashmaps with `hashmap(KeyType, ValueType)`
 - **`match` over switch** -- with `_` as the wildcard
 - **Compiles to native binaries** -- via Go, so it's fast and portable
 

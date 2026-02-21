@@ -88,9 +88,9 @@ let numbers: []int = [1, 2, 3, 4, 5];
 
 See [Slices](slices.md) for more details.
 
-### Maps
+### Hashmaps
 
-Maps are key/value collections. Create an empty map with `map(KeyType, ValueType)`:
+Hashmaps are key/value collections. Create an empty hashmap with `hashmap(KeyType, ValueType)`:
 
 ```zenth
 obj Point {
@@ -98,12 +98,12 @@ obj Point {
     y: int;
 }
 
-var grid = map(Point, str);
+var grid = hashmap(Point, str);
 let pt = Point(x=1, y=2);
 grid[pt] = "#";
 ```
 
-For object keys, map lookup is value-based: another `Point(x=1, y=2)` resolves the same entry.
+For object keys, hashmap lookup is value-based: another `Point(x=1, y=2)` resolves the same entry.
 
 ### Structs
 

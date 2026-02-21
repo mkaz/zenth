@@ -10,31 +10,31 @@ import (
 
 // Generator translates a Zenth AST to Go source code.
 type Generator struct {
-	buf             strings.Builder
-	indent          int
-	imports         map[string]string // Go import path -> alias (or empty)
-	objs            map[string]*ast.ObjDecl
-	funcs           map[string]*ast.FnDecl // "name" or "StructName.methodName"
-	needsRange      bool
-	needsRangei     bool
-	needsPop        bool
-	needsAdd        bool
-	needsPush       bool
-	loopCounter     int
-	needsContains   bool
-	needsFile       bool
-	needsIntConv    bool
-	needsF64Conv    bool
-	needsSliceToInt bool
-	needsSliceToF64 bool
-	needsSliceToStr bool
-	needsStrIndex   bool
-	needsStrSlice   bool
-	needsMapObjKey  bool
-	needsMap        bool
-	needsFilter     bool
-	needsFlag       bool
-	flagDecls       []flagDecl
+	buf                strings.Builder
+	indent             int
+	imports            map[string]string // Go import path -> alias (or empty)
+	objs               map[string]*ast.ObjDecl
+	funcs              map[string]*ast.FnDecl // "name" or "StructName.methodName"
+	needsRange         bool
+	needsRangei        bool
+	needsPop           bool
+	needsAdd           bool
+	needsPush          bool
+	loopCounter        int
+	needsContains      bool
+	needsFile          bool
+	needsIntConv       bool
+	needsF64Conv       bool
+	needsSliceToInt    bool
+	needsSliceToF64    bool
+	needsSliceToStr    bool
+	needsStrIndex      bool
+	needsStrSlice      bool
+	needsHashmapObjKey bool
+	needsMap           bool
+	needsFilter        bool
+	needsFlag          bool
+	flagDecls          []flagDecl
 }
 
 type flagDecl struct {
@@ -376,8 +376,8 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("}")
 		g.writeln("")
 	}
-	if g.needsMapObjKey {
-		g.writeln("func zenth_map_obj_key(v interface{}) string {")
+	if g.needsHashmapObjKey {
+		g.writeln("func zenth_hashmap_obj_key(v interface{}) string {")
 		g.writeln("\treturn fmt.Sprintf(\"%#v\", v)")
 		g.writeln("}")
 		g.writeln("")
@@ -1020,9 +1020,9 @@ func (g *Generator) genExpr(node ast.Node) {
 		} else {
 			g.genExpr(n.Object)
 			g.write("[")
-			if n.MapObjKey {
-				g.needsMapObjKey = true
-				g.write("zenth_map_obj_key(")
+			if n.HashmapObjKey {
+				g.needsHashmapObjKey = true
+				g.write("zenth_hashmap_obj_key(")
 				g.genExpr(n.Index)
 				g.write(")")
 			} else {
@@ -1202,15 +1202,15 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			g.genArgList(c.Args)
 			g.write(")")
 			return
-		case "map":
-			if c.MapCtor {
+		case "hashmap":
+			if c.HashmapCtor {
 				g.write("make(map[")
-				g.write(c.MapKeyGoType)
+				g.write(c.HashmapKeyGoType)
 				g.write("]")
-				g.write(c.MapValGoType)
+				g.write(c.HashmapValGoType)
 				g.write(")")
 			} else {
-				g.write("/* invalid map() */")
+				g.write("/* invalid hashmap() */")
 			}
 			return
 		case "flag":
@@ -1693,7 +1693,7 @@ func genTypeExpr(t *ast.TypeExpr) string {
 	if t == nil {
 		return ""
 	}
-	if t.IsMap && len(t.Params) == 2 {
+	if t.IsHashmap && len(t.Params) == 2 {
 		return "map[" + genTypeExpr(t.Params[0]) + "]" + genTypeExpr(t.Params[1])
 	}
 	if t.IsSlice && len(t.Params) > 0 {
