@@ -176,6 +176,18 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "strslice.zn",
 			contains: []string{"bcde", "ab", "bc", "3", "30", "3", "30", "3", "20"},
 		},
+		{
+			file: "closures.zn",
+			contains: []string{
+				"doubled: 2,4,6,8,10",
+				"evens: 2,4",
+				"chained: 30,40,50",
+				"lengths: 5,3,7",
+				"processed: 11,21,31",
+				"typed: 3,6,9",
+				"big: 20,15",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -275,6 +287,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/in_not_operator.zn",
 			errMsg: "expected {, got in",
+		},
+		{
+			file:   "errors/closure_filter_bool.zn",
+			errMsg: "filter() closure must return bool",
 		},
 	}
 

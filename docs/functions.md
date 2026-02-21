@@ -144,6 +144,30 @@ zenth run greet.zn --times 3 --msg "Hi"
 
 When no flags are provided, the default values are used. Boolean flags are set to `true` by passing `--name` with no value.
 
+## Closures
+
+Closures are anonymous functions declared with `fn` in expression position. They are used with slice methods like `.map()` and `.filter()`:
+
+```zenth
+let doubled = [1, 2, 3].map(fn(x) x * 2);
+let evens = [1, 2, 3, 4].filter(fn(x) x % 2 == 0);
+```
+
+Parameter types are inferred from context when used with `.map()` or `.filter()`. You can also provide explicit types:
+
+```zenth
+fn(x: int) -> int x * 2
+```
+
+Block body closures use explicit `return`:
+
+```zenth
+let processed = nums.map(fn(x: int) -> int {
+    let y = x + 10;
+    return y;
+});
+```
+
 ## Methods
 
 Functions can be defined inside objects to act as methods. See [Objects](objects.md) for details.

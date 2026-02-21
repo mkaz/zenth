@@ -98,6 +98,35 @@ let last = letters.pop();    // "d", letters is now ["a", "b", "c"]
 let first = letters.pop(0);  // "a", letters is now ["b", "c"]
 ```
 
+## Transforming Slices
+
+Use `.map()` to transform each element and `.filter()` to select elements:
+
+```zenth
+let numbers = [1, 2, 3, 4, 5];
+
+// Double each element
+let doubled = numbers.map(fn(x) x * 2);
+// [2, 4, 6, 8, 10]
+
+// Keep only even numbers
+let evens = numbers.filter(fn(x) x % 2 == 0);
+// [2, 4]
+
+// Chaining
+let result = numbers.filter(fn(x) x > 2).map(fn(x) x * 10);
+// [30, 40, 50]
+```
+
+Closures with a block body use explicit `return`:
+
+```zenth
+let processed = numbers.map(fn(x: int) -> int {
+    let y = x + 10;
+    return y;
+});
+```
+
 ## Example
 
 ```zenth

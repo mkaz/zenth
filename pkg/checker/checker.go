@@ -334,6 +334,8 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 		return c.checkIfExpr(n)
 	case *ast.MatchExpr:
 		return c.checkMatchExpr(n)
+	case *ast.ClosureExpr:
+		return c.checkClosureExpr(n, nil)
 	case *ast.InterpStringExpr:
 		for _, part := range n.Parts {
 			if part.IsExpr {
@@ -788,6 +790,43 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.SliceMethod = true
 				return TypeBool
+			case "map":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "map() takes exactly 1 argument, got %d", len(e.Args))
+					return &SliceType{Elem: TypeVoid}
+				}
+				closure, ok := e.Args[0].(*ast.ClosureExpr)
+				if !ok {
+					c.errorf(e.Args[0].Pos(), "map() argument must be a closure")
+					c.checkNode(e.Args[0])
+					return &SliceType{Elem: TypeVoid}
+				}
+				closureType := c.checkClosureExpr(closure, sliceType.Elem)
+				ft, ok := closureType.(*FuncType)
+				if !ok {
+					return &SliceType{Elem: TypeVoid}
+				}
+				e.SliceMethod = true
+				return &SliceType{Elem: ft.Returns}
+			case "filter":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "filter() takes exactly 1 argument, got %d", len(e.Args))
+					return sliceType
+				}
+				closure, ok := e.Args[0].(*ast.ClosureExpr)
+				if !ok {
+					c.errorf(e.Args[0].Pos(), "filter() argument must be a closure")
+					c.checkNode(e.Args[0])
+					return sliceType
+				}
+				closureType := c.checkClosureExpr(closure, sliceType.Elem)
+				if ft, ok := closureType.(*FuncType); ok {
+					if !ft.Returns.Equals(TypeBool) {
+						c.errorf(e.Args[0].Pos(), "filter() closure must return bool, got %s", ft.Returns)
+					}
+				}
+				e.SliceMethod = true
+				return sliceType
 			case "to_int":
 				if len(e.Args) != 0 {
 					c.errorf(e.Pos(), "to_int() takes no arguments, got %d", len(e.Args))
@@ -932,6 +971,27 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 		if info, ok := c.funcs[ident.Name]; ok {
 			e.ResolvedFunc = ident.Name
 			c.checkArgs(e, info)
+			// Conversion builtins on slices: int([]str) -> []int, etc.
+			if (info.Name == "int" || info.Name == "f64" || info.Name == "str") && len(e.Args) == 1 {
+				argType := c.checkNode(e.Args[0])
+				if st, ok := argType.(*SliceType); ok {
+					switch info.Name {
+					case "int":
+						if st.Elem.Equals(TypeStr) {
+							e.SliceConvFunc = "int"
+							return &SliceType{Elem: TypeInt}
+						}
+					case "f64":
+						if st.Elem.Equals(TypeStr) {
+							e.SliceConvFunc = "f64"
+							return &SliceType{Elem: TypeF64}
+						}
+					case "str":
+						e.SliceConvFunc = "str"
+						return &SliceType{Elem: TypeStr}
+					}
+				}
+			}
 			return info.Return
 		}
 		c.errorf(e.Pos(), "undefined function: %s", ident.Name)
@@ -1213,7 +1273,9 @@ func (c *Checker) checkArrayLit(e *ast.ArrayLitExpr) ZType {
 			c.errorf(e.Elements[i].Pos(), "array element type mismatch: expected %s, got %s", firstType, elemType)
 		}
 	}
-	return &SliceType{Elem: firstType}
+	sliceType := &SliceType{Elem: firstType}
+	e.GoType = goTypeName(sliceType)
+	return sliceType
 }
 
 func (c *Checker) checkMapConstructor(e *ast.CallExpr) ZType {
@@ -1369,6 +1431,59 @@ func (c *Checker) checkFlagCall(e *ast.CallExpr) ZType {
 	e.FlagName = c.pendingFlagName
 	e.FlagGoType = goType
 	return valType
+}
+
+func (c *Checker) checkClosureExpr(e *ast.ClosureExpr, expectedParamType ZType) ZType {
+	c.pushScope()
+	defer c.popScope()
+
+	var paramTypes []ZType
+	var goParams []string
+
+	for _, p := range e.Params {
+		var pType ZType
+		if p.Type != nil {
+			pType = c.resolveTypeExpr(p.Type)
+		} else if expectedParamType != nil {
+			pType = expectedParamType
+		} else {
+			c.errorf(e.Pos(), "closure parameter '%s' requires a type annotation (no context to infer from)", p.Name)
+			pType = TypeVoid
+		}
+		paramTypes = append(paramTypes, pType)
+		c.scope.Define(&Symbol{Name: p.Name, Type: pType})
+		goParams = append(goParams, p.Name+" "+goTypeName(pType))
+	}
+
+	var retType ZType
+	if _, isBlock := e.Body.(*ast.Block); isBlock {
+		// Block body: use return type annotation or infer void
+		if e.ReturnType != nil {
+			retType = c.resolveTypeExpr(e.ReturnType)
+		} else {
+			retType = TypeVoid
+		}
+		// Set up a temporary FuncInfo so return statements can be checked
+		prev := c.currentFunc
+		c.currentFunc = &FuncInfo{Name: "<closure>", Return: retType}
+		c.checkNode(e.Body)
+		c.currentFunc = prev
+	} else {
+		// Single expression: implicit return
+		retType = c.checkNode(e.Body)
+		if e.ReturnType != nil {
+			declared := c.resolveTypeExpr(e.ReturnType)
+			if !declared.Equals(retType) {
+				c.errorf(e.Pos(), "closure return type mismatch: declared %s, body returns %s", declared, retType)
+			}
+			retType = declared
+		}
+	}
+
+	e.GoParams = strings.Join(goParams, ", ")
+	e.GoReturn = goTypeName(retType)
+
+	return &FuncType{Params: paramTypes, Returns: retType}
 }
 
 func (c *Checker) checkIfExpr(e *ast.IfExpr) ZType {

@@ -31,6 +31,8 @@ type Generator struct {
 	needsStrIndex   bool
 	needsStrSlice   bool
 	needsMapObjKey  bool
+	needsMap        bool
+	needsFilter     bool
 	needsFlag       bool
 	flagDecls       []flagDecl
 }
@@ -343,6 +345,14 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\t\tfor _, v := range xs {")
 		g.writeln("\t\t\tresult = append(result, fmt.Sprint(v))")
 		g.writeln("\t\t}")
+		g.writeln("\tcase []int:")
+		g.writeln("\t\tfor _, v := range xs {")
+		g.writeln("\t\t\tresult = append(result, fmt.Sprint(v))")
+		g.writeln("\t\t}")
+		g.writeln("\tcase []float64:")
+		g.writeln("\t\tfor _, v := range xs {")
+		g.writeln("\t\t\tresult = append(result, fmt.Sprint(v))")
+		g.writeln("\t\t}")
 		g.writeln("\tdefault:")
 		g.writeln("\t\tfmt.Fprintf(os.Stderr, \"error: cannot convert %T to []str\\n\", s)")
 		g.writeln("\t\tos.Exit(1)")
@@ -369,6 +379,22 @@ func (g *Generator) Generate(prog *ast.Program) string {
 	if g.needsMapObjKey {
 		g.writeln("func zenth_map_obj_key(v interface{}) string {")
 		g.writeln("\treturn fmt.Sprintf(\"%#v\", v)")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsMap {
+		g.writeln("func zenth_map[T any, U any](s []T, f func(T) U) []U {")
+		g.writeln("\tr := make([]U, len(s))")
+		g.writeln("\tfor i, v := range s { r[i] = f(v) }")
+		g.writeln("\treturn r")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsFilter {
+		g.writeln("func zenth_filter[T any](s []T, f func(T) bool) []T {")
+		g.writeln("\tvar r []T")
+		g.writeln("\tfor _, v := range s { if f(v) { r = append(r, v) } }")
+		g.writeln("\treturn r")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -1066,6 +1092,8 @@ func (g *Generator) genExpr(node ast.Node) {
 		g.genIfExpr(n)
 	case *ast.MatchExpr:
 		g.genMatchExpr(n)
+	case *ast.ClosureExpr:
+		g.genClosureExpr(n)
 	case *ast.InterpStringExpr:
 		g.genInterpString(n)
 	default:
@@ -1119,7 +1147,12 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			g.write(")")
 			return
 		case "str":
-			g.write("fmt.Sprint(")
+			if c.SliceConvFunc == "str" {
+				g.needsSliceToStr = true
+				g.write("zenth_slice_to_str(")
+			} else {
+				g.write("fmt.Sprint(")
+			}
 			g.genArgList(c.Args)
 			g.write(")")
 			return
@@ -1148,14 +1181,24 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			g.write(")")
 			return
 		case "int":
-			g.needsIntConv = true
-			g.write("zenth_int(")
+			if c.SliceConvFunc == "int" {
+				g.needsSliceToInt = true
+				g.write("zenth_slice_to_int(")
+			} else {
+				g.needsIntConv = true
+				g.write("zenth_int(")
+			}
 			g.genArgList(c.Args)
 			g.write(")")
 			return
 		case "f64":
-			g.needsF64Conv = true
-			g.write("zenth_f64(")
+			if c.SliceConvFunc == "f64" {
+				g.needsSliceToF64 = true
+				g.write("zenth_slice_to_f64(")
+			} else {
+				g.needsF64Conv = true
+				g.write("zenth_f64(")
+			}
 			g.genArgList(c.Args)
 			g.write(")")
 			return
@@ -1262,6 +1305,22 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.needsFile = true
 				g.write("zenth_file_ext(")
 				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "map":
+				g.needsMap = true
+				g.write("zenth_map(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(")")
+				return
+			case "filter":
+				g.needsFilter = true
+				g.write("zenth_filter(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
 				g.write(")")
 				return
 			case "to_int":
@@ -1445,11 +1504,11 @@ func (g *Generator) genArgList(args []ast.Node) {
 }
 
 func (g *Generator) genArrayLit(a *ast.ArrayLitExpr) {
-	if len(a.Elements) == 0 && a.GoType != "" {
-		g.write(a.GoType + "{}")
-		return
+	if a.GoType != "" {
+		g.write(a.GoType + "{")
+	} else {
+		g.write("[]interface{}{")
 	}
-	g.write("[]interface{}{")
 	for i, elem := range a.Elements {
 		if i > 0 {
 			g.write(", ")
@@ -1486,6 +1545,30 @@ func (g *Generator) genObjConstructor(decl *ast.ObjDecl, args []ast.Node) {
 		g.genExpr(val)
 	}
 	g.write("}")
+}
+
+func (g *Generator) genClosureExpr(c *ast.ClosureExpr) {
+	g.write("func(")
+	g.write(c.GoParams)
+	g.write(")")
+	if c.GoReturn != "" && c.GoReturn != "interface{}" {
+		g.write(" " + c.GoReturn)
+	}
+	if _, isBlock := c.Body.(*ast.Block); isBlock {
+		g.write(" {\n")
+		g.indent++
+		block := c.Body.(*ast.Block)
+		for _, stmt := range block.Stmts {
+			g.genNode(stmt)
+		}
+		g.indent--
+		g.writeIndent()
+		g.write("}")
+	} else {
+		g.write(" { return ")
+		g.genExpr(c.Body)
+		g.write(" }")
+	}
 }
 
 func (g *Generator) genInterpString(s *ast.InterpStringExpr) {

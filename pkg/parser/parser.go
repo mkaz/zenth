@@ -759,6 +759,15 @@ func (p *Parser) parsePrimary() ast.Node {
 	case token.Match:
 		return p.parseMatchExpr()
 
+	case token.Fn:
+		// fn( starts a closure expression
+		if p.peekAt(1) == token.LParen {
+			return p.parseClosureExpr()
+		}
+		p.errorf(tok.Pos, "unexpected fn in expression position")
+		p.advance()
+		return &ast.IdentExpr{TokenPos: tok.Pos, Name: "<error>"}
+
 	default:
 		p.errorf(tok.Pos, "unexpected token: %s (%q)", tok.Type, tok.Literal)
 		p.advance()
@@ -954,6 +963,52 @@ func (p *Parser) parseInterpString(tok token.Token) ast.Node {
 	}
 
 	return &ast.InterpStringExpr{TokenPos: tok.Pos, Parts: parts}
+}
+
+func (p *Parser) parseClosureExpr() *ast.ClosureExpr {
+	tok := p.expect(token.Fn)
+	expr := &ast.ClosureExpr{TokenPos: tok.Pos}
+
+	// Parameters (with optional types)
+	p.expect(token.LParen)
+	expr.Params = p.parseClosureParams()
+	p.expect(token.RParen)
+
+	// Optional return type
+	if p.peek() == token.Arrow {
+		p.advance()
+		expr.ReturnType = p.parseTypeExpr()
+	}
+
+	// Body: block or single expression
+	if p.peek() == token.LBrace {
+		expr.Body = p.parseBlock()
+	} else {
+		expr.Body = p.parseExpr(0)
+	}
+
+	return expr
+}
+
+func (p *Parser) parseClosureParams() []ast.Param {
+	var params []ast.Param
+	if p.peek() == token.RParen {
+		return params
+	}
+	for {
+		name := p.expect(token.Ident).Literal
+		var typ *ast.TypeExpr
+		if p.peek() == token.Colon {
+			p.advance()
+			typ = p.parseTypeExpr()
+		}
+		params = append(params, ast.Param{Name: name, Type: typ})
+		if p.peek() != token.Comma {
+			break
+		}
+		p.advance()
+	}
+	return params
 }
 
 func joinErrors(errs []string) string {

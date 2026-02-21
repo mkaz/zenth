@@ -341,6 +341,7 @@ type CallExpr struct {
 	Args            []Node
 	SliceMethod     bool   // set by checker for built-in slice methods
 	SliceConvTarget string // set by checker for to_int/to_f64/to_str ("int", "float64", "string")
+	SliceConvFunc   string // set by checker when int()/f64()/str() is called on a slice
 	StringMethod    string // set by checker for built-in string methods (e.g. "split")
 	MapCtor         bool   // set by checker for map(K, V) constructor
 	MapObjKey       bool   // set by checker when map key type is an obj (value-based keying)
@@ -469,6 +470,19 @@ type InterpStringExpr struct {
 
 func (s *InterpStringExpr) Pos() token.Pos { return s.TokenPos }
 func (s *InterpStringExpr) nodeMarker()    {}
+
+// ClosureExpr represents an anonymous function: fn(params) [-> type] expr|block
+type ClosureExpr struct {
+	TokenPos   token.Pos
+	Params     []Param
+	ReturnType *TypeExpr // nil = infer
+	Body       Node      // single expr or *Block
+	GoParams   string    // set by checker: "x int"
+	GoReturn   string    // set by checker: "int"
+}
+
+func (c *ClosureExpr) Pos() token.Pos { return c.TokenPos }
+func (c *ClosureExpr) nodeMarker()    {}
 
 // InterpPart is one segment of an interpolated string.
 type InterpPart struct {

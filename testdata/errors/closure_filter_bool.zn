@@ -1,0 +1,4 @@
+fn main() {
+    let nums = [1, 2, 3];
+    let bad = nums.filter(fn(x) x * 2);
+}
