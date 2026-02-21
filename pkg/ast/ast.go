@@ -94,9 +94,10 @@ func (i *ImportDecl) nodeMarker()    {}
 type TypeExpr struct {
 	TokenPos  token.Pos
 	Name      string      // "int", "str", "bool", etc. or a user type name
-	Params    []*TypeExpr // for generics like hashmap[K]V or []T
-	IsSlice   bool        // []T
+	Params    []*TypeExpr // for parametric types like hashmap[K]V, array(T), tuple(T1, T2)
+	IsSlice   bool        // array(T)
 	IsHashmap bool        // hashmap[K]V
+	IsTuple   bool        // tuple(T1, T2, ...)
 	IsArray   bool        // [N]T
 	ArrayLen  int         // for fixed arrays
 }
@@ -150,6 +151,18 @@ type ConstStmt struct {
 
 func (c *ConstStmt) Pos() token.Pos { return c.TokenPos }
 func (c *ConstStmt) nodeMarker()    {}
+
+// TupleDestructStmt represents: let|var|const (a, b, ...) = expr;
+type TupleDestructStmt struct {
+	TokenPos    token.Pos
+	Kind        token.Type // Let, Var, or Const
+	Names       []string
+	Value       Node
+	ElemGoTypes []string // set by checker; concrete Go types for tuple elements
+}
+
+func (t *TupleDestructStmt) Pos() token.Pos { return t.TokenPos }
+func (t *TupleDestructStmt) nodeMarker()    {}
 
 // AssignStmt represents: target = expr; or target += expr; etc.
 type AssignStmt struct {
@@ -381,13 +394,25 @@ func (s *SliceExpr) nodeMarker()    {}
 
 // FieldExpr represents: object.field
 type FieldExpr struct {
-	TokenPos token.Pos
-	Object   Node
-	Field    string
+	TokenPos        token.Pos
+	Object          Node
+	Field           string
+	TupleAccess     bool   // set by checker when accessing tuple elements with .N
+	TupleIndex      int    // tuple element index for .N access
+	TupleElemGoType string // concrete Go type for tuple element assertions
 }
 
 func (f *FieldExpr) Pos() token.Pos { return f.TokenPos }
 func (f *FieldExpr) nodeMarker()    {}
+
+// TupleLitExpr represents: (expr, expr, ...)
+type TupleLitExpr struct {
+	TokenPos token.Pos
+	Elements []Node
+}
+
+func (t *TupleLitExpr) Pos() token.Pos { return t.TokenPos }
+func (t *TupleLitExpr) nodeMarker()    {}
 
 // IdentExpr represents a variable reference.
 type IdentExpr struct {

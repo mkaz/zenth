@@ -85,6 +85,22 @@ var y = 2;
 x, y = y, x;  // x becomes 2, y becomes 1
 ```
 
+## Tuple Destructuring
+
+You can destructure tuples directly in `let`, `var`, and `const` declarations:
+
+```zenth
+let (cmd, raw) = "forward 10".split_once(" ");
+let value = int(raw);
+```
+
+Destructuring arity must match the tuple size:
+
+```zenth
+let (a, b) = (1, 2);      // ok
+let (x, y, z) = (1, 2);   // error
+```
+
 ## Increment and Decrement
 
 ```zenth

@@ -80,10 +80,10 @@ let nothing = nil;
 
 ### Slices
 
-Dynamic arrays use `[]Type` syntax:
+Dynamic arrays use `array(Type)` syntax:
 
 ```zenth
-let numbers: []int = [1, 2, 3, 4, 5];
+let numbers: array(int) = [1, 2, 3, 4, 5];
 ```
 
 See [Slices](slices.md) for more details.
@@ -104,6 +104,24 @@ grid[pt] = "#";
 ```
 
 For object keys, hashmap lookup is value-based: another `Point(x=1, y=2)` resolves the same entry.
+
+### Tuples
+
+Tuples are fixed-size ordered values that can hold mixed types. Use parentheses for values and `tuple(...)` for type annotations:
+
+```zenth
+let t = ("a", 1);
+println(t.0);      // "a"
+println(str(t.1)); // 1
+
+let pair: tuple(str, str) = ("left", "right");
+```
+
+Nested with arrays:
+
+```zenth
+let pairs: array(tuple(str, str)) = [];
+```
 
 ### Structs
 

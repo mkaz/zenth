@@ -1,0 +1,4 @@
+fn main() {
+    let t = "a b".split_once(1);
+    println(t.0);
+}

@@ -177,6 +177,14 @@ func TestBuildAndRun(t *testing.T) {
 			contains: []string{"bcde", "ab", "bc", "3", "30", "3", "30", "3", "20"},
 		},
 		{
+			file:     "tuple.zn",
+			contains: []string{"a", "1", "1-x-true", "left:right", "forward:10"},
+		},
+		{
+			file:     "commands_tuple.zn",
+			contains: []string{"Found: 3", "forward=1"},
+		},
+		{
 			file: "closures.zn",
 			contains: []string{
 				"doubled: 2,4,6,8,10",
@@ -291,6 +299,26 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/closure_filter_bool.zn",
 			errMsg: "filter() closure must return bool",
+		},
+		{
+			file:   "errors/tuple_field_name.zn",
+			errMsg: "tuple field must be numeric index",
+		},
+		{
+			file:   "errors/tuple_type_mismatch.zn",
+			errMsg: "type mismatch",
+		},
+		{
+			file:   "errors/tuple_destructure_non_tuple.zn",
+			errMsg: "tuple destructuring requires tuple value",
+		},
+		{
+			file:   "errors/tuple_destructure_arity.zn",
+			errMsg: "tuple destructuring arity mismatch",
+		},
+		{
+			file:   "errors/split_once_bad_arg.zn",
+			errMsg: "split_once() separator must be str",
 		},
 	}
 

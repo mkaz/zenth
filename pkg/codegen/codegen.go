@@ -33,8 +33,10 @@ type Generator struct {
 	needsHashmapObjKey bool
 	needsMap           bool
 	needsFilter        bool
+	needsSplitOnce     bool
 	needsFlag          bool
 	flagDecls          []flagDecl
+	tempCounter        int
 }
 
 type flagDecl struct {
@@ -398,6 +400,16 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("}")
 		g.writeln("")
 	}
+	if g.needsSplitOnce {
+		g.writeln("func zenth_split_once(s, sep string) []interface{} {")
+		g.writeln("\tparts := strings.SplitN(s, sep, 2)")
+		g.writeln("\tif len(parts) == 1 {")
+		g.writeln("\t\treturn []interface{}{parts[0], \"\"}")
+		g.writeln("\t}")
+		g.writeln("\treturn []interface{}{parts[0], parts[1]}")
+		g.writeln("}")
+		g.writeln("")
+	}
 
 	g.buf.WriteString(body.String())
 
@@ -463,6 +475,8 @@ func (g *Generator) genNode(node ast.Node) {
 		g.genVarStmt(n)
 	case *ast.ConstStmt:
 		g.genConstStmt(n)
+	case *ast.TupleDestructStmt:
+		g.genTupleDestructStmt(n)
 	case *ast.AssignStmt:
 		g.genAssignStmt(n)
 	case *ast.MultiAssignStmt:
@@ -686,6 +700,34 @@ func (g *Generator) genConstStmt(s *ast.ConstStmt) {
 	g.genExpr(s.Value)
 	g.write("\n")
 	g.writef("_ = %s\n", s.Name)
+}
+
+func (g *Generator) genTupleDestructStmt(s *ast.TupleDestructStmt) {
+	tmp := fmt.Sprintf("__ztuple%d", g.tempCounter)
+	g.tempCounter++
+	g.writeIndent()
+	g.write(tmp + " := ")
+	g.genExpr(s.Value)
+	g.write("\n")
+	for i, name := range s.Names {
+		if name == "_" {
+			continue
+		}
+		g.writeIndent()
+		if s.Kind == token.Var {
+			g.write("var " + name + " = ")
+		} else {
+			g.write(name + " := ")
+		}
+		g.write(fmt.Sprintf("%s[%d]", tmp, i))
+		if i < len(s.ElemGoTypes) && s.ElemGoTypes[i] != "" && s.ElemGoTypes[i] != "interface{}" {
+			g.write(".(" + s.ElemGoTypes[i] + ")")
+		}
+		g.write("\n")
+		if s.Kind != token.Var {
+			g.writef("_ = %s\n", name)
+		}
+	}
 }
 
 func (g *Generator) genAssignStmt(s *ast.AssignStmt) {
@@ -1061,9 +1103,23 @@ func (g *Generator) genExpr(node ast.Node) {
 			g.write("]")
 		}
 	case *ast.FieldExpr:
-		g.genExpr(n.Object)
-		g.write(".")
-		g.write(goFieldName(n.Field, n.Object))
+		if n.TupleAccess {
+			g.write("(")
+			g.genExpr(n.Object)
+			g.write("[")
+			g.write(fmt.Sprintf("%d", n.TupleIndex))
+			g.write("]")
+			if n.TupleElemGoType != "" && n.TupleElemGoType != "interface{}" {
+				g.write(".(")
+				g.write(n.TupleElemGoType)
+				g.write(")")
+			}
+			g.write(")")
+		} else {
+			g.genExpr(n.Object)
+			g.write(".")
+			g.write(goFieldName(n.Field, n.Object))
+		}
 	case *ast.IdentExpr:
 		g.write(n.Name)
 	case *ast.IntLitExpr:
@@ -1086,6 +1142,15 @@ func (g *Generator) genExpr(node ast.Node) {
 		g.write("nil")
 	case *ast.ArrayLitExpr:
 		g.genArrayLit(n)
+	case *ast.TupleLitExpr:
+		g.write("[]interface{}{")
+		for i, elem := range n.Elements {
+			if i > 0 {
+				g.write(", ")
+			}
+			g.genExpr(elem)
+		}
+		g.write("}")
 	case *ast.NamedArgExpr:
 		g.genExpr(n.Value)
 	case *ast.IfExpr:
@@ -1376,6 +1441,15 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 					g.genExpr(c.Args[0])
 					g.write(")")
 				}
+				return
+			case "split_once":
+				g.imports["strings"] = ""
+				g.needsSplitOnce = true
+				g.write("zenth_split_once(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(")")
 				return
 			case "length":
 				g.write("len(")
@@ -1695,6 +1769,9 @@ func genTypeExpr(t *ast.TypeExpr) string {
 	}
 	if t.IsHashmap && len(t.Params) == 2 {
 		return "map[" + genTypeExpr(t.Params[0]) + "]" + genTypeExpr(t.Params[1])
+	}
+	if t.IsTuple {
+		return "[]interface{}"
 	}
 	if t.IsSlice && len(t.Params) > 0 {
 		return "[]" + genTypeExpr(t.Params[0])

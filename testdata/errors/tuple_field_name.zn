@@ -1,0 +1,4 @@
+fn main() {
+    let t = ("a", 1);
+    println(str(t.x));
+}

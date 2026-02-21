@@ -146,7 +146,7 @@ match day {
 
 Built-in: `int`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`, `f32`, `f64`, `bool`, `str`, `byte`
 
-Composite: `[]int` (slice), obj literals `Point{ x: 1.0, y: 2.0 }`
+Composite: `array(int)` (slice), obj literals `Point{ x: 1.0, y: 2.0 }`, `tuple(str, int)`
 
 ### Built-in Functions
 

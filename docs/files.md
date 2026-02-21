@@ -32,7 +32,7 @@ println(content);
 
 ### lines
 
-Returns the file contents split into lines as `[]str`. Exits with an error if the file cannot be read:
+Returns the file contents split into lines as `array(str)`. Exits with an error if the file cannot be read:
 
 ```zenth
 let lines = f.lines();

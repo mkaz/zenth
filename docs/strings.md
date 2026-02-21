@@ -132,7 +132,7 @@ if s.contains("world") {
 
 ## Splitting Strings
 
-Use the `.split()` method to divide a string into a slice of substrings (`[]str`). 
+Use the `.split()` method to divide a string into a slice of substrings (`array(str)`). 
 By default, `.split()` splits on whitespace. You can also pass a delimiter string:
 
 ```zenth
@@ -141,6 +141,14 @@ println(words[0]); // "this"
 
 let parts = "a-b-c".split("-");
 println(parts[1]); // "b"
+```
+
+Use `.split_once(sep)` when you only need two pieces. It returns a tuple `(left, right)`:
+
+```zenth
+let (cmd, value) = "forward 10".split_once(" ");
+println(cmd);   // "forward"
+println(value); // "10"
 ```
 
 ## Indexing

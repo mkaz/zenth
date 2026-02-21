@@ -4,7 +4,7 @@ obj Point {
 }
 
 fn main() {
-    var grid: []Point = [];
+    var grid: array(Point) = [];
     let pt = Point(x=1, y=2);
     grid.add(pt);
 

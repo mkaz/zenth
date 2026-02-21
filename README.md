@@ -91,6 +91,7 @@ zenth build hello.zn
 - **Objects with methods** -- define methods inside the object, use `self`
 - **Useful object printing** -- objects print as constructor-like values by default
 - **Typed hashmaps** -- create hashmaps with `hashmap(KeyType, ValueType)`
+- **Tuples** -- fixed-size mixed values like `("a", 1)` with `.0`, `.1` access
 - **`match` over switch** -- with `_` as the wildcard
 - **Compiles to native binaries** -- via Go, so it's fast and portable
 

@@ -14,13 +14,13 @@ let names = ["Alice", "Bob", "Charlie"];
 With an explicit type annotation:
 
 ```zenth
-let scores: []int = [100, 95, 87];
+let scores: array(int) = [100, 95, 87];
 ```
 
 An empty slice can use a type annotation:
 
 ```zenth
-var points: []Point = [];
+var points: array(Point) = [];
 points.add(Point(x=1, y=2));
 ```
 
@@ -130,7 +130,7 @@ let processed = numbers.map(fn(x: int) -> int {
 ## Example
 
 ```zenth
-fn sum(numbers: []int) -> int {
+fn sum(numbers: array(int)) -> int {
     var total = 0;
     for n in numbers {
         total += n;

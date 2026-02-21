@@ -1,0 +1,16 @@
+fn main() {
+    let data = [
+        "forward 1",
+        "backward 2",
+        "left 3"
+    ];
+
+    var cmds: array(tuple(str, int)) = [];
+    for row in data {
+        let (cmd, raw) = row.split_once(" ");
+        cmds.add((cmd, int(raw)));
+    }
+
+    println("Found: " + str(cmds.length()));
+    println(cmds[0].0 + "=" + str(cmds[0].1));
+}

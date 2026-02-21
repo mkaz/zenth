@@ -159,6 +159,33 @@ func (p *Parser) parseParams() []ast.Param {
 func (p *Parser) parseTypeExpr() *ast.TypeExpr {
 	pos := p.cur().Pos
 
+	// Array type: array(T)
+	if p.peek() == token.Ident && p.cur().Literal == "array" && p.peekAt(1) == token.LParen {
+		p.advance() // array
+		p.expect(token.LParen)
+		elem := p.parseTypeExpr()
+		p.expect(token.RParen)
+		return &ast.TypeExpr{TokenPos: pos, Name: "array", IsSlice: true, Params: []*ast.TypeExpr{elem}}
+	}
+
+	// Tuple type: tuple(T1, T2, ...)
+	if p.peek() == token.Ident && p.cur().Literal == "tuple" && p.peekAt(1) == token.LParen {
+		p.advance() // tuple
+		p.expect(token.LParen)
+		params := []*ast.TypeExpr{}
+		if p.peek() != token.RParen {
+			for {
+				params = append(params, p.parseTypeExpr())
+				if p.peek() != token.Comma {
+					break
+				}
+				p.advance() // ,
+			}
+		}
+		p.expect(token.RParen)
+		return &ast.TypeExpr{TokenPos: pos, Name: "tuple", IsTuple: true, Params: params}
+	}
+
 	// Hashmap type: hashmap[K]V
 	if p.peek() == token.Ident && p.cur().Literal == "hashmap" && p.peekAt(1) == token.LBracket {
 		p.advance() // hashmap
@@ -167,14 +194,6 @@ func (p *Parser) parseTypeExpr() *ast.TypeExpr {
 		p.expect(token.RBracket)
 		val := p.parseTypeExpr()
 		return &ast.TypeExpr{TokenPos: pos, Name: "hashmap", IsHashmap: true, Params: []*ast.TypeExpr{key, val}}
-	}
-
-	// Slice type: []Type
-	if p.peek() == token.LBracket && p.peekAt(1) == token.RBracket {
-		p.advance() // [
-		p.advance() // ]
-		elem := p.parseTypeExpr()
-		return &ast.TypeExpr{TokenPos: pos, Name: elem.Name, IsSlice: true, Params: []*ast.TypeExpr{elem}}
 	}
 
 	name := p.expect(token.Ident).Literal
@@ -225,8 +244,29 @@ func (p *Parser) parseStmt() ast.Node {
 	}
 }
 
-func (p *Parser) parseLetStmt() *ast.LetStmt {
+func (p *Parser) parseTupleBindingNames() []string {
+	p.expect(token.LParen)
+	var names []string
+	for {
+		names = append(names, p.expect(token.Ident).Literal)
+		if p.peek() != token.Comma {
+			break
+		}
+		p.advance()
+	}
+	p.expect(token.RParen)
+	return names
+}
+
+func (p *Parser) parseLetStmt() ast.Node {
 	tok := p.expect(token.Let)
+	if p.peek() == token.LParen {
+		names := p.parseTupleBindingNames()
+		p.expect(token.Assign)
+		value := p.parseExpr(0)
+		p.expect(token.Semicolon)
+		return &ast.TupleDestructStmt{TokenPos: tok.Pos, Kind: token.Let, Names: names, Value: value}
+	}
 	stmt := &ast.LetStmt{TokenPos: tok.Pos}
 	stmt.Name = p.expect(token.Ident).Literal
 
@@ -249,8 +289,15 @@ func (p *Parser) parseLetStmt() *ast.LetStmt {
 	return stmt
 }
 
-func (p *Parser) parseVarStmt() *ast.VarStmt {
+func (p *Parser) parseVarStmt() ast.Node {
 	tok := p.expect(token.Var)
+	if p.peek() == token.LParen {
+		names := p.parseTupleBindingNames()
+		p.expect(token.Assign)
+		value := p.parseExpr(0)
+		p.expect(token.Semicolon)
+		return &ast.TupleDestructStmt{TokenPos: tok.Pos, Kind: token.Var, Names: names, Value: value}
+	}
 	stmt := &ast.VarStmt{TokenPos: tok.Pos}
 	stmt.Name = p.expect(token.Ident).Literal
 
@@ -273,8 +320,15 @@ func (p *Parser) parseVarStmt() *ast.VarStmt {
 	return stmt
 }
 
-func (p *Parser) parseConstStmt() *ast.ConstStmt {
+func (p *Parser) parseConstStmt() ast.Node {
 	tok := p.expect(token.Const)
+	if p.peek() == token.LParen {
+		names := p.parseTupleBindingNames()
+		p.expect(token.Assign)
+		value := p.parseExpr(0)
+		p.expect(token.Semicolon)
+		return &ast.TupleDestructStmt{TokenPos: tok.Pos, Kind: token.Const, Names: names, Value: value}
+	}
 	stmt := &ast.ConstStmt{TokenPos: tok.Pos}
 	stmt.Name = p.expect(token.Ident).Literal
 
@@ -446,6 +500,12 @@ func (p *Parser) parseSimpleStmt() ast.Node {
 	switch p.peek() {
 	case token.Let:
 		tok := p.expect(token.Let)
+		if p.peek() == token.LParen {
+			names := p.parseTupleBindingNames()
+			p.expect(token.Assign)
+			value := p.parseExpr(0)
+			return &ast.TupleDestructStmt{TokenPos: tok.Pos, Kind: token.Let, Names: names, Value: value}
+		}
 		stmt := &ast.LetStmt{TokenPos: tok.Pos}
 		stmt.Name = p.expect(token.Ident).Literal
 		if p.peek() == token.Colon {
@@ -461,6 +521,12 @@ func (p *Parser) parseSimpleStmt() ast.Node {
 		return stmt
 	case token.Var:
 		tok := p.expect(token.Var)
+		if p.peek() == token.LParen {
+			names := p.parseTupleBindingNames()
+			p.expect(token.Assign)
+			value := p.parseExpr(0)
+			return &ast.TupleDestructStmt{TokenPos: tok.Pos, Kind: token.Var, Names: names, Value: value}
+		}
 		stmt := &ast.VarStmt{TokenPos: tok.Pos}
 		stmt.Name = p.expect(token.Ident).Literal
 		if p.peek() == token.Colon {
@@ -669,7 +735,14 @@ func (p *Parser) parsePostfix() ast.Node {
 			}
 		case token.Dot:
 			tok := p.advance()
-			field := p.expect(token.Ident).Literal
+			fieldTok := p.cur()
+			var field string
+			if fieldTok.Type == token.Ident || fieldTok.Type == token.IntLit {
+				field = p.advance().Literal
+			} else {
+				p.errorf(fieldTok.Pos, "expected field name after '.', got %s", fieldTok.Type)
+				field = "<error>"
+			}
 			expr = &ast.FieldExpr{TokenPos: tok.Pos, Object: expr, Field: field}
 		default:
 			return expr
@@ -747,6 +820,18 @@ func (p *Parser) parsePrimary() ast.Node {
 	case token.LParen:
 		p.advance()
 		expr := p.parseExpr(0)
+		if p.peek() == token.Comma {
+			tuple := &ast.TupleLitExpr{TokenPos: tok.Pos, Elements: []ast.Node{expr}}
+			for p.peek() == token.Comma {
+				p.advance()
+				if p.peek() == token.RParen {
+					break
+				}
+				tuple.Elements = append(tuple.Elements, p.parseExpr(0))
+			}
+			p.expect(token.RParen)
+			return tuple
+		}
 		p.expect(token.RParen)
 		return expr
 

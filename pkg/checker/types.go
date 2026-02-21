@@ -1,6 +1,9 @@
 package checker
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // ZType represents a Zenth type.
 type ZType interface {
@@ -59,7 +62,7 @@ func (s *ObjType) Equals(other ZType) bool {
 }
 func (s *ObjType) typeMarker() {}
 
-// SliceType represents a []T type.
+// SliceType represents an array(T) type.
 type SliceType struct {
 	Elem ZType
 }
@@ -87,6 +90,37 @@ func (m *HashmapType) Equals(other ZType) bool {
 	return false
 }
 func (m *HashmapType) typeMarker() {}
+
+// TupleType represents a heterogenous tuple type.
+type TupleType struct {
+	Elems []ZType
+}
+
+func (t *TupleType) String() string {
+	if len(t.Elems) == 0 {
+		return "tuple[]"
+	}
+	parts := make([]string, len(t.Elems))
+	for i, elem := range t.Elems {
+		parts[i] = elem.String()
+	}
+	return "tuple[" + strings.Join(parts, ", ") + "]"
+}
+
+func (t *TupleType) Equals(other ZType) bool {
+	o, ok := other.(*TupleType)
+	if !ok || len(t.Elems) != len(o.Elems) {
+		return false
+	}
+	for i := range t.Elems {
+		if !t.Elems[i].Equals(o.Elems[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func (t *TupleType) typeMarker() {}
 
 // FuncType represents a function type (for passing functions as values).
 type FuncType struct {

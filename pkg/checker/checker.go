@@ -3,6 +3,7 @@ package checker
 import (
 	"fmt"
 	"path"
+	"strconv"
 	"strings"
 
 	"github.com/mkaz/zenth/pkg/ast"
@@ -244,6 +245,13 @@ func (c *Checker) resolveTypeExpr(t *ast.TypeExpr) ZType {
 	if t.IsSlice && len(t.Params) > 0 {
 		return &SliceType{Elem: c.resolveTypeExpr(t.Params[0])}
 	}
+	if t.IsTuple {
+		elems := make([]ZType, 0, len(t.Params))
+		for _, p := range t.Params {
+			elems = append(elems, c.resolveTypeExpr(p))
+		}
+		return &TupleType{Elems: elems}
+	}
 	if bt := LookupBuiltinType(t.Name); bt != nil {
 		return bt
 	}
@@ -276,6 +284,8 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 		return c.checkVarStmt(n)
 	case *ast.ConstStmt:
 		return c.checkConstStmt(n)
+	case *ast.TupleDestructStmt:
+		return c.checkTupleDestructStmt(n)
 	case *ast.AssignStmt:
 		return c.checkAssignStmt(n)
 	case *ast.MultiAssignStmt:
@@ -328,6 +338,8 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 		return TypeNil
 	case *ast.ArrayLitExpr:
 		return c.checkArrayLit(n)
+	case *ast.TupleLitExpr:
+		return c.checkTupleLit(n)
 	case *ast.NamedArgExpr:
 		return c.checkNode(n.Value)
 	case *ast.IfExpr:
@@ -436,9 +448,55 @@ func (c *Checker) checkConstStmt(s *ast.ConstStmt) ZType {
 	return TypeVoid
 }
 
+func (c *Checker) checkTupleDestructStmt(s *ast.TupleDestructStmt) ZType {
+	valueType := c.checkNode(s.Value)
+	tt, ok := valueType.(*TupleType)
+	if !ok {
+		c.errorf(s.Pos(), "tuple destructuring requires tuple value, got %s", valueType)
+		for _, name := range s.Names {
+			if name == "_" {
+				continue
+			}
+			sym := &Symbol{Name: name, Type: TypeVoid}
+			switch s.Kind {
+			case token.Var:
+				sym.Mutable = true
+			case token.Const:
+				sym.IsConst = true
+			}
+			c.scope.Define(sym)
+		}
+		return TypeVoid
+	}
+	if len(tt.Elems) != len(s.Names) {
+		c.errorf(s.Pos(), "tuple destructuring arity mismatch: %d names, %d values", len(s.Names), len(tt.Elems))
+		return TypeVoid
+	}
+	s.ElemGoTypes = make([]string, len(tt.Elems))
+	for i, name := range s.Names {
+		s.ElemGoTypes[i] = goTypeName(tt.Elems[i])
+		if name == "_" {
+			continue
+		}
+		sym := &Symbol{Name: name, Type: tt.Elems[i]}
+		switch s.Kind {
+		case token.Var:
+			sym.Mutable = true
+		case token.Const:
+			sym.IsConst = true
+		}
+		c.scope.Define(sym)
+	}
+	return TypeVoid
+}
+
 func (c *Checker) checkAssignStmt(s *ast.AssignStmt) ZType {
 	targetType := c.checkNode(s.Target)
 	valueType := c.checkNode(s.Value)
+
+	if field, ok := s.Target.(*ast.FieldExpr); ok && field.TupleAccess {
+		c.errorf(s.Pos(), "cannot assign to tuple element .%d", field.TupleIndex)
+	}
 
 	// Check mutability
 	if ident, ok := s.Target.(*ast.IdentExpr); ok {
@@ -479,6 +537,9 @@ func (c *Checker) checkMultiAssignStmt(s *ast.MultiAssignStmt) ZType {
 	for i, target := range s.Targets {
 		targetType := c.checkNode(target)
 		valueType := c.checkNode(s.Values[i])
+		if field, ok := target.(*ast.FieldExpr); ok && field.TupleAccess {
+			c.errorf(s.Pos(), "cannot assign to tuple element .%d", field.TupleIndex)
+		}
 		// Check mutability
 		if ident, ok := target.(*ast.IdentExpr); ok {
 			sym := c.scope.Lookup(ident.Name)
@@ -927,6 +988,18 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.StringMethod = "split"
 				return &SliceType{Elem: TypeStr}
+			case "split_once":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "split_once() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !argType.Equals(TypeStr) {
+						c.errorf(e.Args[0].Pos(), "split_once() separator must be str, got %s", argType)
+					}
+				}
+				e.StringMethod = "split_once"
+				return &TupleType{Elems: []ZType{TypeStr, TypeStr}}
 			case "length":
 				if len(e.Args) != 0 {
 					c.errorf(e.Pos(), "length() takes no arguments, got %d", len(e.Args))
@@ -1183,6 +1256,21 @@ func (c *Checker) checkFieldExpr(e *ast.FieldExpr) ZType {
 		c.errorf(e.Pos(), "obj %s has no field '%s'", st.Name, e.Field)
 		return TypeVoid
 	}
+	if tt, ok := objType.(*TupleType); ok {
+		idx, err := strconv.Atoi(e.Field)
+		if err != nil {
+			c.errorf(e.Pos(), "tuple field must be numeric index, got '%s'", e.Field)
+			return TypeVoid
+		}
+		if idx < 0 || idx >= len(tt.Elems) {
+			c.errorf(e.Pos(), "tuple index %d out of range (len=%d)", idx, len(tt.Elems))
+			return TypeVoid
+		}
+		e.TupleAccess = true
+		e.TupleIndex = idx
+		e.TupleElemGoType = goTypeName(tt.Elems[idx])
+		return tt.Elems[idx]
+	}
 	c.errorf(e.Pos(), "cannot access field '%s' on %s", e.Field, objType)
 	return TypeVoid
 }
@@ -1276,6 +1364,14 @@ func (c *Checker) checkArrayLit(e *ast.ArrayLitExpr) ZType {
 	sliceType := &SliceType{Elem: firstType}
 	e.GoType = goTypeName(sliceType)
 	return sliceType
+}
+
+func (c *Checker) checkTupleLit(e *ast.TupleLitExpr) ZType {
+	elems := make([]ZType, 0, len(e.Elements))
+	for _, elem := range e.Elements {
+		elems = append(elems, c.checkNode(elem))
+	}
+	return &TupleType{Elems: elems}
 }
 
 func (c *Checker) checkHashmapConstructor(e *ast.CallExpr) ZType {
@@ -1562,6 +1658,8 @@ func goTypeName(t ZType) string {
 		return "[]" + goTypeName(ty.Elem)
 	case *HashmapType:
 		return "map[" + goTypeName(ty.Key) + "]" + goTypeName(ty.Value)
+	case *TupleType:
+		return "[]interface{}"
 	case *ObjType:
 		return "*" + ty.Name
 	default:
