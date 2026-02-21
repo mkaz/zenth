@@ -1000,6 +1000,102 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.StringMethod = "split_once"
 				return &TupleType{Elems: []ZType{TypeStr, TypeStr}}
+			case "upper":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "upper() takes no arguments, got %d", len(e.Args))
+				}
+				e.StringMethod = "upper"
+				return TypeStr
+			case "lower":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "lower() takes no arguments, got %d", len(e.Args))
+				}
+				e.StringMethod = "lower"
+				return TypeStr
+			case "starts_with":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "starts_with() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !argType.Equals(TypeStr) {
+						c.errorf(e.Args[0].Pos(), "starts_with() argument must be str, got %s", argType)
+					}
+				}
+				e.StringMethod = "starts_with"
+				return TypeBool
+			case "ends_with":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "ends_with() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !argType.Equals(TypeStr) {
+						c.errorf(e.Args[0].Pos(), "ends_with() argument must be str, got %s", argType)
+					}
+				}
+				e.StringMethod = "ends_with"
+				return TypeBool
+			case "strip":
+				if len(e.Args) > 1 {
+					c.errorf(e.Pos(), "strip() takes 0 or 1 arguments, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !argType.Equals(TypeStr) {
+						c.errorf(e.Args[0].Pos(), "strip() argument must be str, got %s", argType)
+					}
+				}
+				e.StringMethod = "strip"
+				return TypeStr
+			case "find":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "find() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !argType.Equals(TypeStr) {
+						c.errorf(e.Args[0].Pos(), "find() argument must be str, got %s", argType)
+					}
+				}
+				e.StringMethod = "find"
+				return TypeInt
+			case "count":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "count() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !argType.Equals(TypeStr) {
+						c.errorf(e.Args[0].Pos(), "count() argument must be str, got %s", argType)
+					}
+				}
+				e.StringMethod = "count"
+				return TypeInt
+			case "replace":
+				if len(e.Args) < 2 || len(e.Args) > 3 {
+					c.errorf(e.Pos(), "replace() takes 2 or 3 arguments, got %d", len(e.Args))
+				}
+				if len(e.Args) >= 1 {
+					argType := c.checkNode(e.Args[0])
+					if !argType.Equals(TypeStr) {
+						c.errorf(e.Args[0].Pos(), "replace() argument 1 must be str, got %s", argType)
+					}
+				}
+				if len(e.Args) >= 2 {
+					argType := c.checkNode(e.Args[1])
+					if !argType.Equals(TypeStr) {
+						c.errorf(e.Args[1].Pos(), "replace() argument 2 must be str, got %s", argType)
+					}
+				}
+				if len(e.Args) == 3 {
+					argType := c.checkNode(e.Args[2])
+					if !IsInteger(argType) {
+						c.errorf(e.Args[2].Pos(), "replace() argument 3 must be int, got %s", argType)
+					}
+				}
+				e.StringMethod = "replace"
+				return TypeStr
 			case "length":
 				if len(e.Args) != 0 {
 					c.errorf(e.Pos(), "length() takes no arguments, got %d", len(e.Args))

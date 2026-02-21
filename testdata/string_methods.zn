@@ -1,0 +1,12 @@
+fn main() {
+    println("u=" + "hello".upper());
+    println("l=" + "HeLLo".lower());
+    println("sw=" + str("zenth".starts_with("zen")));
+    println("ew=" + str("zenth".ends_with("th")));
+    println("strip=--" + "  hi  ".strip() + "--");
+    println("stripc=--" + "..hi..".strip(".") + "--");
+    println("find=" + str("banana".find("na")));
+    println("count=" + str("banana".count("na")));
+    println("repall=" + "a-b-a".replace("a", "x"));
+    println("repn=" + "a-b-a".replace("a", "x", 1));
+}

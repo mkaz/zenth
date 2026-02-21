@@ -177,6 +177,10 @@ func TestBuildAndRun(t *testing.T) {
 			contains: []string{"bcde", "ab", "bc", "3", "30", "3", "30", "3", "20"},
 		},
 		{
+			file:     "string_methods.zn",
+			contains: []string{"u=HELLO", "l=hello", "sw=true", "ew=true", "strip=--hi--", "stripc=--hi--", "find=2", "count=2", "repall=x-b-x", "repn=x-b-a"},
+		},
+		{
 			file:     "tuple.zn",
 			contains: []string{"a", "1", "1-x-true", "left:right", "forward:10"},
 		},
@@ -287,6 +291,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/string_length_args.zn",
 			errMsg: "length() takes no arguments, got 1",
+		},
+		{
+			file:   "errors/string_replace_bad_count.zn",
+			errMsg: "replace() argument 3 must be int",
 		},
 		{
 			file:   "errors/flag_no_default.zn",

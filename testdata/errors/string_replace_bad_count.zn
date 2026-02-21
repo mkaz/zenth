@@ -1,0 +1,3 @@
+fn main() {
+    println("a-b-a".replace("a", "x", "1"));
+}

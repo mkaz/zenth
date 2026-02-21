@@ -130,6 +130,50 @@ if s.contains("world") {
 }
 ```
 
+## Case Conversion
+
+Use `.upper()` and `.lower()` for case conversion:
+
+```zenth
+println("hello".upper()); // HELLO
+println("HeLLo".lower()); // hello
+```
+
+## Prefix and Suffix
+
+Use `.starts_with()` and `.ends_with()`:
+
+```zenth
+let name = "zenth";
+println(str(name.starts_with("zen"))); // true
+println(str(name.ends_with("th")));    // true
+```
+
+## Trimming
+
+Use `.strip()` to trim whitespace, or pass characters to trim from both ends:
+
+```zenth
+println("--" + "  hi  ".strip() + "--");   // --hi--
+println("--" + "..hi..".strip(".") + "--"); // --hi--
+```
+
+## Find, Count, Replace
+
+Use `.find()` and `.count()` for substring search and counting:
+
+```zenth
+println(str("banana".find("na")));  // 2
+println(str("banana".count("na"))); // 2
+```
+
+Use `.replace(old, new)` to replace all matches, or `.replace(old, new, n)` to limit replacements:
+
+```zenth
+println("a-b-a".replace("a", "x"));    // x-b-x
+println("a-b-a".replace("a", "x", 1)); // x-b-a
+```
+
 ## Splitting Strings
 
 Use the `.split()` method to divide a string into a slice of substrings (`array(str)`). 

@@ -1451,6 +1451,86 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.genExpr(c.Args[0])
 				g.write(")")
 				return
+			case "upper":
+				g.imports["strings"] = ""
+				g.write("strings.ToUpper(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "lower":
+				g.imports["strings"] = ""
+				g.write("strings.ToLower(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "starts_with":
+				g.imports["strings"] = ""
+				g.write("strings.HasPrefix(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(")")
+				return
+			case "ends_with":
+				g.imports["strings"] = ""
+				g.write("strings.HasSuffix(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(")")
+				return
+			case "strip":
+				g.imports["strings"] = ""
+				if len(c.Args) == 0 {
+					g.write("strings.TrimSpace(")
+					g.genExpr(field.Object)
+					g.write(")")
+				} else {
+					g.write("strings.Trim(")
+					g.genExpr(field.Object)
+					g.write(", ")
+					g.genExpr(c.Args[0])
+					g.write(")")
+				}
+				return
+			case "find":
+				g.imports["strings"] = ""
+				g.write("strings.Index(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(")")
+				return
+			case "count":
+				g.imports["strings"] = ""
+				g.write("strings.Count(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(")")
+				return
+			case "replace":
+				g.imports["strings"] = ""
+				if len(c.Args) == 2 {
+					g.write("strings.ReplaceAll(")
+					g.genExpr(field.Object)
+					g.write(", ")
+					g.genExpr(c.Args[0])
+					g.write(", ")
+					g.genExpr(c.Args[1])
+					g.write(")")
+				} else {
+					g.write("strings.Replace(")
+					g.genExpr(field.Object)
+					g.write(", ")
+					g.genExpr(c.Args[0])
+					g.write(", ")
+					g.genExpr(c.Args[1])
+					g.write(", ")
+					g.genExpr(c.Args[2])
+					g.write(")")
+				}
+				return
 			case "length":
 				g.write("len(")
 				g.genExpr(field.Object)
