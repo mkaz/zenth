@@ -356,6 +356,7 @@ type CallExpr struct {
 	SliceConvTarget  string // set by checker for to_int/to_f64/to_str ("int", "float64", "string")
 	SliceConvFunc    string // set by checker when int()/f64()/str() is called on a slice
 	StringMethod     string // set by checker for built-in string methods (e.g. "split")
+	NumericMethod    string // set by checker for built-in numeric functions (e.g. "abs_int")
 	HashmapCtor      bool   // set by checker for hashmap(K, V) constructor
 	HashmapObjKey    bool   // set by checker when hashmap key type is an obj (value-based keying)
 	HashmapKeyGoType string // concrete Go key type for hashmap constructor

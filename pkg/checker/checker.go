@@ -1127,6 +1127,9 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 
 	// Handle free function calls
 	if ident, ok := e.Callee.(*ast.IdentExpr); ok {
+		if isNumericBuiltin(ident.Name) {
+			return c.checkNumericBuiltinCall(e, ident.Name)
+		}
 		if ident.Name == "hashmap" {
 			return c.checkHashmapConstructor(e)
 		}
@@ -1172,6 +1175,136 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 		c.checkNode(arg)
 	}
 	return TypeVoid
+}
+
+func isNumericBuiltin(name string) bool {
+	switch name {
+	case "abs", "min", "max", "clamp", "round", "floor", "ceil", "pow", "sqrt":
+		return true
+	default:
+		return false
+	}
+}
+
+func (c *Checker) getPositionalArgsForBuiltin(e *ast.CallExpr, name string) []ast.Node {
+	args := make([]ast.Node, 0, len(e.Args))
+	for _, arg := range e.Args {
+		if named, ok := arg.(*ast.NamedArgExpr); ok {
+			c.errorf(named.Pos(), "named arguments are not supported for %s()", name)
+			args = append(args, named.Value)
+			continue
+		}
+		args = append(args, arg)
+	}
+	return args
+}
+
+func isBasicNumberType(t ZType) bool {
+	return t.Equals(TypeInt) || t.Equals(TypeF64)
+}
+
+func (c *Checker) checkNumericBuiltinCall(e *ast.CallExpr, name string) ZType {
+	args := c.getPositionalArgsForBuiltin(e, name)
+	switch name {
+	case "abs":
+		if len(args) != 1 {
+			c.errorf(e.Pos(), "abs() takes exactly 1 argument, got %d", len(args))
+			for _, arg := range args {
+				c.checkNode(arg)
+			}
+			return TypeVoid
+		}
+		t := c.checkNode(args[0])
+		if t.Equals(TypeInt) {
+			e.NumericMethod = "abs_int"
+			return TypeInt
+		}
+		if t.Equals(TypeF64) {
+			e.NumericMethod = "abs_f64"
+			return TypeF64
+		}
+		c.errorf(args[0].Pos(), "abs() argument must be int or f64, got %s", t)
+		return TypeVoid
+	case "min", "max":
+		if len(args) != 2 {
+			c.errorf(e.Pos(), "%s() takes exactly 2 arguments, got %d", name, len(args))
+			for _, arg := range args {
+				c.checkNode(arg)
+			}
+			return TypeVoid
+		}
+		t1 := c.checkNode(args[0])
+		t2 := c.checkNode(args[1])
+		if t1.Equals(TypeInt) && t2.Equals(TypeInt) {
+			e.NumericMethod = name + "_int"
+			return TypeInt
+		}
+		if t1.Equals(TypeF64) && t2.Equals(TypeF64) {
+			e.NumericMethod = name + "_f64"
+			return TypeF64
+		}
+		c.errorf(e.Pos(), "%s() arguments must both be int or both be f64, got %s and %s", name, t1, t2)
+		return TypeVoid
+	case "clamp":
+		if len(args) != 3 {
+			c.errorf(e.Pos(), "clamp() takes exactly 3 arguments, got %d", len(args))
+			for _, arg := range args {
+				c.checkNode(arg)
+			}
+			return TypeVoid
+		}
+		t1 := c.checkNode(args[0])
+		t2 := c.checkNode(args[1])
+		t3 := c.checkNode(args[2])
+		if t1.Equals(TypeInt) && t2.Equals(TypeInt) && t3.Equals(TypeInt) {
+			e.NumericMethod = "clamp_int"
+			return TypeInt
+		}
+		if t1.Equals(TypeF64) && t2.Equals(TypeF64) && t3.Equals(TypeF64) {
+			e.NumericMethod = "clamp_f64"
+			return TypeF64
+		}
+		c.errorf(e.Pos(), "clamp() arguments must all be int or all be f64, got %s, %s, %s", t1, t2, t3)
+		return TypeVoid
+	case "round", "floor", "ceil", "sqrt":
+		if len(args) != 1 {
+			c.errorf(e.Pos(), "%s() takes exactly 1 argument, got %d", name, len(args))
+			for _, arg := range args {
+				c.checkNode(arg)
+			}
+			return TypeVoid
+		}
+		t := c.checkNode(args[0])
+		if !isBasicNumberType(t) {
+			c.errorf(args[0].Pos(), "%s() argument must be int or f64, got %s", name, t)
+			return TypeVoid
+		}
+		e.NumericMethod = name
+		return TypeF64
+	case "pow":
+		if len(args) != 2 {
+			c.errorf(e.Pos(), "pow() takes exactly 2 arguments, got %d", len(args))
+			for _, arg := range args {
+				c.checkNode(arg)
+			}
+			return TypeVoid
+		}
+		t1 := c.checkNode(args[0])
+		t2 := c.checkNode(args[1])
+		if !isBasicNumberType(t1) {
+			c.errorf(args[0].Pos(), "pow() argument 1 must be int or f64, got %s", t1)
+		}
+		if !isBasicNumberType(t2) {
+			c.errorf(args[1].Pos(), "pow() argument 2 must be int or f64, got %s", t2)
+		}
+		e.NumericMethod = "pow"
+		return TypeF64
+	default:
+		for _, arg := range args {
+			c.checkNode(arg)
+		}
+		return TypeVoid
+	}
 }
 
 func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {

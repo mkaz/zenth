@@ -1,0 +1,4 @@
+fn main() {
+    let x = min(1, 2.0);
+    println(str(x));
+}

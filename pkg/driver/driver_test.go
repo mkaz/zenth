@@ -129,6 +129,24 @@ func TestBuildAndRun(t *testing.T) {
 			},
 		},
 		{
+			file: "numeric_funcs.zn",
+			contains: []string{
+				"abs_i=5",
+				"abs_f=2.5",
+				"min_i=3",
+				"max_i=7",
+				"clamp_i=10",
+				"min_f=1.5",
+				"max_f=2.5",
+				"clamp_f=10",
+				"round=4",
+				"floor=3",
+				"ceil=4",
+				"pow=8",
+				"sqrt=3",
+			},
+		},
+		{
 			file:     "named_args_func.zn",
 			contains: []string{"1,2,3", "5,6,7"},
 		},
@@ -295,6 +313,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/string_replace_bad_count.zn",
 			errMsg: "replace() argument 3 must be int",
+		},
+		{
+			file:   "errors/numeric_min_type_mismatch.zn",
+			errMsg: "min() arguments must both be int or both be f64",
 		},
 		{
 			file:   "errors/flag_no_default.zn",

@@ -34,6 +34,11 @@ type Generator struct {
 	needsMap           bool
 	needsFilter        bool
 	needsSplitOnce     bool
+	needsAbsInt        bool
+	needsMinInt        bool
+	needsMaxInt        bool
+	needsClampInt      bool
+	needsClampF64      bool
 	needsFlag          bool
 	flagDecls          []flagDecl
 	tempCounter        int
@@ -407,6 +412,41 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\t\treturn []interface{}{parts[0], \"\"}")
 		g.writeln("\t}")
 		g.writeln("\treturn []interface{}{parts[0], parts[1]}")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsAbsInt {
+		g.writeln("func zenth_abs_int(v int) int {")
+		g.writeln("\tif v < 0 { return -v }")
+		g.writeln("\treturn v")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsMinInt {
+		g.writeln("func zenth_min_int(a, b int) int {")
+		g.writeln("\tif a < b { return a }")
+		g.writeln("\treturn b")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsMaxInt {
+		g.writeln("func zenth_max_int(a, b int) int {")
+		g.writeln("\tif a > b { return a }")
+		g.writeln("\treturn b")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsClampInt {
+		g.writeln("func zenth_clamp_int(x, lo, hi int) int {")
+		g.writeln("\tif x < lo { return lo }")
+		g.writeln("\tif x > hi { return hi }")
+		g.writeln("\treturn x")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsClampF64 {
+		g.writeln("func zenth_clamp_f64(x, lo, hi float64) float64 {")
+		g.writeln("\treturn math.Max(lo, math.Min(x, hi))")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -1266,6 +1306,103 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			}
 			g.genArgList(c.Args)
 			g.write(")")
+			return
+		case "abs":
+			switch c.NumericMethod {
+			case "abs_int":
+				g.needsAbsInt = true
+				g.write("zenth_abs_int(")
+				g.genArgList(c.Args)
+				g.write(")")
+			case "abs_f64":
+				g.imports["math"] = ""
+				g.write("math.Abs(")
+				g.genArgList(c.Args)
+				g.write(")")
+			default:
+				g.write("/* invalid abs() */")
+			}
+			return
+		case "min":
+			switch c.NumericMethod {
+			case "min_int":
+				g.needsMinInt = true
+				g.write("zenth_min_int(")
+				g.genArgList(c.Args)
+				g.write(")")
+			case "min_f64":
+				g.imports["math"] = ""
+				g.write("math.Min(")
+				g.genArgList(c.Args)
+				g.write(")")
+			default:
+				g.write("/* invalid min() */")
+			}
+			return
+		case "max":
+			switch c.NumericMethod {
+			case "max_int":
+				g.needsMaxInt = true
+				g.write("zenth_max_int(")
+				g.genArgList(c.Args)
+				g.write(")")
+			case "max_f64":
+				g.imports["math"] = ""
+				g.write("math.Max(")
+				g.genArgList(c.Args)
+				g.write(")")
+			default:
+				g.write("/* invalid max() */")
+			}
+			return
+		case "clamp":
+			switch c.NumericMethod {
+			case "clamp_int":
+				g.needsClampInt = true
+				g.write("zenth_clamp_int(")
+				g.genArgList(c.Args)
+				g.write(")")
+			case "clamp_f64":
+				g.imports["math"] = ""
+				g.needsClampF64 = true
+				g.write("zenth_clamp_f64(")
+				g.genArgList(c.Args)
+				g.write(")")
+			default:
+				g.write("/* invalid clamp() */")
+			}
+			return
+		case "round":
+			g.imports["math"] = ""
+			g.write("math.Round(float64(")
+			g.genExpr(c.Args[0])
+			g.write("))")
+			return
+		case "floor":
+			g.imports["math"] = ""
+			g.write("math.Floor(float64(")
+			g.genExpr(c.Args[0])
+			g.write("))")
+			return
+		case "ceil":
+			g.imports["math"] = ""
+			g.write("math.Ceil(float64(")
+			g.genExpr(c.Args[0])
+			g.write("))")
+			return
+		case "pow":
+			g.imports["math"] = ""
+			g.write("math.Pow(float64(")
+			g.genExpr(c.Args[0])
+			g.write("), float64(")
+			g.genExpr(c.Args[1])
+			g.write("))")
+			return
+		case "sqrt":
+			g.imports["math"] = ""
+			g.write("math.Sqrt(float64(")
+			g.genExpr(c.Args[0])
+			g.write("))")
 			return
 		case "hashmap":
 			if c.HashmapCtor {

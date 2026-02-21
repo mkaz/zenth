@@ -100,6 +100,11 @@ Zenth provides several built-in functions that are always available:
 | `println(x, [enabled])` | Print `x` with a newline; print only when `enabled` is `true` (default) |
 | `len(x)` | Return the length of a string or slice |
 | `str(x)` | Convert any value to its string representation |
+| `abs(x)` | Absolute value for `int` or `f64` |
+| `min(a, b)` / `max(a, b)` | Minimum / maximum for two `int` or two `f64` values |
+| `clamp(x, lo, hi)` | Clamp `x` between `lo` and `hi` (`int` or `f64`) |
+| `round(x)` / `floor(x)` / `ceil(x)` | Floating-point rounding helpers (return `f64`) |
+| `pow(x, y)` / `sqrt(x)` | Power and square root (return `f64`) |
 | `flag(default=val)` | Declare a command-line flag with a default value |
 
 ```zenth
@@ -110,6 +115,7 @@ fn main() {
     println("debug line", debug); // prints only when debug is true
     println(str(len("abc")));  // prints "3"
     println(str(42));      // prints "42"
+    println(str(abs(-5)));  // prints "5"
 }
 ```
 
