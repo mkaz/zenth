@@ -129,6 +129,20 @@ func TestBuildAndRun(t *testing.T) {
 			},
 		},
 		{
+			file: "base_conversion.zn",
+			contains: []string{
+				"hex=255",
+				"bin=10",
+				"oct=63",
+				"dec=42",
+				"to_hex=ff",
+				"to_bin=1010",
+				"to_oct=77",
+				"to_dec=42",
+				"rt=deadbeef",
+			},
+		},
+		{
 			file: "numeric_funcs.zn",
 			contains: []string{
 				"abs_i=5",
@@ -349,6 +363,14 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/split_once_bad_arg.zn",
 			errMsg: "split_once() separator must be str",
+		},
+		{
+			file:   "errors/to_int_bad_base.zn",
+			errMsg: "to_int() base must be int, got str",
+		},
+		{
+			file:   "errors/to_base_bad_arg.zn",
+			errMsg: "to_base() argument must be int, got str",
 		},
 	}
 

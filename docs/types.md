@@ -27,6 +27,16 @@ Integer literals can use underscores for readability:
 let million = 1_000_000;
 ```
 
+### Base Conversion
+
+Use `.to_base(base)` to convert an integer to a string in a given base (2-36):
+
+```zenth
+let hex = 255.to_base(16);   // "ff"
+let bin = 10.to_base(2);     // "1010"
+let oct = 63.to_base(8);     // "77"
+```
+
 ## Floating-Point Types
 
 | Type  | Size | Description |

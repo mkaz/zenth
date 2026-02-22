@@ -959,8 +959,14 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 		if objType.Equals(TypeStr) {
 			switch field.Field {
 			case "to_int":
-				if len(e.Args) != 0 {
-					c.errorf(e.Pos(), "to_int() takes no arguments, got %d", len(e.Args))
+				if len(e.Args) > 1 {
+					c.errorf(e.Pos(), "to_int() takes 0 or 1 arguments, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !IsInteger(argType) {
+						c.errorf(e.Args[0].Pos(), "to_int() base must be int, got %s", argType)
+					}
 				}
 				e.SliceMethod = true
 				return TypeInt
@@ -1114,6 +1120,23 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.StringMethod = "contains"
 				return TypeBool
+			}
+		}
+
+		if IsInteger(objType) {
+			switch field.Field {
+			case "to_base":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "to_base() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !IsInteger(argType) {
+						c.errorf(e.Args[0].Pos(), "to_base() argument must be int, got %s", argType)
+					}
+				}
+				e.StringMethod = "to_base"
+				return TypeStr
 			}
 		}
 

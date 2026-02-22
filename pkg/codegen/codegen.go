@@ -39,6 +39,8 @@ type Generator struct {
 	needsMaxInt        bool
 	needsClampInt      bool
 	needsClampF64      bool
+	needsIntBase       bool
+	needsToBase        bool
 	needsFlag          bool
 	flagDecls          []flagDecl
 	tempCounter        int
@@ -103,10 +105,10 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.imports["strings"] = ""
 		g.imports["path/filepath"] = ""
 	}
-	if g.needsIntConv || g.needsF64Conv || g.needsSliceToInt || g.needsSliceToF64 {
+	if g.needsIntConv || g.needsF64Conv || g.needsSliceToInt || g.needsSliceToF64 || g.needsIntBase || g.needsToBase {
 		g.imports["strconv"] = ""
 	}
-	if g.needsIntConv || g.needsF64Conv || g.needsSliceToInt || g.needsSliceToF64 || g.needsSliceToStr {
+	if g.needsIntConv || g.needsF64Conv || g.needsSliceToInt || g.needsSliceToF64 || g.needsSliceToStr || g.needsIntBase || g.needsToBase {
 		g.imports["os"] = ""
 	}
 	if g.needsFlag {
@@ -263,6 +265,23 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\t\tos.Exit(1)")
 		g.writeln("\t\treturn 0")
 		g.writeln("\t}")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsIntBase {
+		g.writeln("func zenth_int_base(s string, base int) int {")
+		g.writeln("\tn, err := strconv.ParseInt(s, base, 64)")
+		g.writeln("\tif err != nil {")
+		g.writeln("\t\tfmt.Fprintf(os.Stderr, \"error: cannot convert %q to int with base %d\\n\", s, base)")
+		g.writeln("\t\tos.Exit(1)")
+		g.writeln("\t}")
+		g.writeln("\treturn int(n)")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsToBase {
+		g.writeln("func zenth_to_base(n int64, base int) string {")
+		g.writeln("\treturn strconv.FormatInt(n, base)")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -1527,16 +1546,28 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				return
 			case "to_int":
 				if c.SliceConvTarget == "" {
-					// Scalar: str.to_int()
-					g.needsIntConv = true
-					g.write("zenth_int(")
+					if len(c.Args) == 1 {
+						// Scalar with base: str.to_int(16)
+						g.needsIntBase = true
+						g.write("zenth_int_base(")
+						g.genExpr(field.Object)
+						g.write(", ")
+						g.genExpr(c.Args[0])
+						g.write(")")
+					} else {
+						// Scalar: str.to_int()
+						g.needsIntConv = true
+						g.write("zenth_int(")
+						g.genExpr(field.Object)
+						g.write(")")
+					}
 				} else {
 					// Slice: []str.to_int()
 					g.needsSliceToInt = true
 					g.write("zenth_slice_to_int(")
+					g.genExpr(field.Object)
+					g.write(")")
 				}
-				g.genExpr(field.Object)
-				g.write(")")
 				return
 			case "to_f64":
 				if c.SliceConvTarget == "" {
@@ -1678,6 +1709,14 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write("strings.Contains(")
 				g.genExpr(field.Object)
 				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(")")
+				return
+			case "to_base":
+				g.needsToBase = true
+				g.write("zenth_to_base(int64(")
+				g.genExpr(field.Object)
+				g.write("), ")
 				g.genExpr(c.Args[0])
 				g.write(")")
 				return

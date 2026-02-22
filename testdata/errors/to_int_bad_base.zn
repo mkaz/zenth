@@ -1,0 +1,4 @@
+fn main() {
+    let n = "ff".to_int("16");
+    println(str(n));
+}

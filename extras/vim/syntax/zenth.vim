@@ -20,7 +20,7 @@ syn keyword zenthType         f32 f64 bool str byte
 syn keyword zenthType         array tuple
 
 " Built-in functions
-syn keyword zenthBuiltin      print println len str hashmap filter append push pop file flag abs min max clamp round floor ceil pow sqrt
+syn keyword zenthBuiltin      print println len str hashmap filter append push pop file flag abs min max clamp round floor ceil pow sqrt to_base
 
 " Operators
 syn match zenthOperator       /[+\-*/%=<>!&|^~]/

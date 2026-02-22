@@ -109,6 +109,18 @@ let f = str(3.14); // "3.14"
 
 Inside interpolated strings, conversion is automatic -- `str()` is only needed when you need a string value outside of interpolation.
 
+### Parsing with Base
+
+Use `.to_int(base)` to parse a string as an integer in a given base (2-36):
+
+```zenth
+let n = "ff".to_int(16);     // 255
+let b = "1010".to_int(2);    // 10
+let o = "77".to_int(8);      // 63
+```
+
+Without an argument, `.to_int()` parses as base 10.
+
 ## String Length
 
 Use `len()` or `.length()` to get the length of a string:
