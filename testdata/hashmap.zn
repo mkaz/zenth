@@ -11,4 +11,9 @@ fn main() {
 
     println("val=" + grid[same]);
     println("len=" + str(len(grid)));
+
+    var scores = hashmap(str, int);
+    scores["Alice"] = 95;
+    scores["Bert"] = 80;
+    println(scores);
 }
