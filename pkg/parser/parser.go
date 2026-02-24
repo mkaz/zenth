@@ -92,6 +92,8 @@ func (p *Parser) parseTopLevel() ast.Node {
 		return p.parseInterfaceDecl()
 	case token.Import:
 		return p.parseImportDecl()
+	case token.TypeKw:
+		return p.parseTypeAliasDecl()
 	case token.Let:
 		return p.parseLetStmt()
 	case token.Var:
@@ -988,6 +990,15 @@ func (p *Parser) parseImportDecl() *ast.ImportDecl {
 	}
 	p.expect(token.Semicolon)
 	return decl
+}
+
+func (p *Parser) parseTypeAliasDecl() *ast.TypeAliasDecl {
+	tok := p.expect(token.TypeKw)
+	name := p.expect(token.Ident).Literal
+	p.expect(token.Assign)
+	typ := p.parseTypeExpr()
+	p.expect(token.Semicolon)
+	return &ast.TypeAliasDecl{TokenPos: tok.Pos, Name: name, Type: typ}
 }
 
 func (p *Parser) parseInterpString(tok token.Token) ast.Node {

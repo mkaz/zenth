@@ -80,6 +80,7 @@ const (
 	False
 	Break
 	Continue
+	TypeKw // type
 	PlusAssign  // +=
 	MinusAssign // -=
 	StarAssign  // *=
@@ -146,6 +147,7 @@ var typeNames = map[Type]string{
 	False:      "false",
 	Break:      "break",
 	Continue:   "continue",
+	TypeKw:     "type",
 	PlusAssign:  "+=",
 	MinusAssign: "-=",
 	StarAssign:  "*=",
@@ -182,6 +184,7 @@ var keywords = map[string]Type{
 	"false":     False,
 	"break":     Break,
 	"continue":  Continue,
+	"type":      TypeKw,
 }
 
 // LookupIdent returns the keyword token type for ident, or Ident if not a keyword.

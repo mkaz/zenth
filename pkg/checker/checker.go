@@ -34,6 +34,7 @@ type Checker struct {
 	funcs           map[string]*FuncInfo // "name" or "Type.name"
 	objs            map[string]*ObjInfo
 	modules         map[string]bool
+	typeAliases     map[string]*ast.TypeExpr
 	errors          []string
 	currentFunc     *FuncInfo // for checking return types
 	pendingFlagName string    // set before checking a let/var value for flag()
@@ -44,10 +45,11 @@ func New() *Checker {
 	global := NewScope(nil)
 
 	c := &Checker{
-		scope:   global,
-		funcs:   make(map[string]*FuncInfo),
-		objs:    make(map[string]*ObjInfo),
-		modules: make(map[string]bool),
+		scope:       global,
+		funcs:       make(map[string]*FuncInfo),
+		objs:        make(map[string]*ObjInfo),
+		modules:     make(map[string]bool),
+		typeAliases: make(map[string]*ast.TypeExpr),
 	}
 
 	// Known module names for qualified calls (fmt.println, math.sqrt, etc.).
@@ -145,6 +147,8 @@ func (c *Checker) Check(prog *ast.Program) error {
 			c.registerFunc(s)
 		case *ast.ImportDecl:
 			c.registerImport(s)
+		case *ast.TypeAliasDecl:
+			c.typeAliases[s.Name] = s.Type
 		}
 	}
 
@@ -258,6 +262,9 @@ func (c *Checker) resolveTypeExpr(t *ast.TypeExpr) ZType {
 	if st, ok := c.objs[t.Name]; ok {
 		return &ObjType{Name: st.Name, Fields: st.Fields}
 	}
+	if alias, ok := c.typeAliases[t.Name]; ok {
+		return c.resolveTypeExpr(alias)
+	}
 	c.errorf(t.Pos(), "unknown type: %s", t.Name)
 	return TypeVoid
 }
@@ -275,6 +282,8 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 	case *ast.InterfaceDecl:
 		return TypeVoid // TODO: check interface
 	case *ast.ImportDecl:
+		return TypeVoid
+	case *ast.TypeAliasDecl:
 		return TypeVoid
 	case *ast.Block:
 		return c.checkBlock(n)

@@ -78,6 +78,16 @@ type MethodSig struct {
 	ReturnType *TypeExpr
 }
 
+// TypeAliasDecl represents: type Name = TypeExpr;
+type TypeAliasDecl struct {
+	TokenPos token.Pos
+	Name     string
+	Type     *TypeExpr
+}
+
+func (t *TypeAliasDecl) Pos() token.Pos { return t.TokenPos }
+func (t *TypeAliasDecl) nodeMarker()    {}
+
 // ImportDecl represents an import statement.
 type ImportDecl struct {
 	TokenPos token.Pos

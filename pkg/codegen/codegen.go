@@ -15,6 +15,7 @@ type Generator struct {
 	imports            map[string]string // Go import path -> alias (or empty)
 	objs               map[string]*ast.ObjDecl
 	funcs              map[string]*ast.FnDecl // "name" or "StructName.methodName"
+	typeAliases        map[string]*ast.TypeExpr
 	needsRange         bool
 	needsRangei        bool
 	needsPop           bool
@@ -55,9 +56,10 @@ type flagDecl struct {
 // New creates a new code Generator.
 func New() *Generator {
 	return &Generator{
-		imports: make(map[string]string),
-		objs:    make(map[string]*ast.ObjDecl),
-		funcs:   make(map[string]*ast.FnDecl),
+		imports:     make(map[string]string),
+		objs:        make(map[string]*ast.ObjDecl),
+		funcs:       make(map[string]*ast.FnDecl),
+		typeAliases: make(map[string]*ast.TypeExpr),
 	}
 }
 
@@ -75,6 +77,8 @@ func (g *Generator) Generate(prog *ast.Program) string {
 			g.funcs[s.Name] = s
 		case *ast.ImportDecl:
 			g.addImport(s)
+		case *ast.TypeAliasDecl:
+			g.typeAliases[s.Name] = s.Type
 		}
 	}
 
@@ -526,6 +530,8 @@ func (g *Generator) genNode(node ast.Node) {
 		g.genObjDecl(n)
 	case *ast.InterfaceDecl:
 		g.genInterfaceDecl(n)
+	case *ast.TypeAliasDecl:
+		g.writef("type %s = %s\n\n", n.Name, g.genType(n.Type))
 	case *ast.Block:
 		g.genBlock(n)
 	case *ast.LetStmt:
@@ -585,12 +591,12 @@ func (g *Generator) genFnDecl(f *ast.FnDecl) {
 		}
 		g.write(p.Name)
 		g.write(" ")
-		g.write(genTypeExpr(p.Type))
+		g.write(g.genType(p.Type))
 	}
 	g.write(")")
 	if f.ReturnType != nil {
 		g.write(" ")
-		g.write(genTypeExpr(f.ReturnType))
+		g.write(g.genType(f.ReturnType))
 	}
 	g.write(" {\n")
 	g.indent++
@@ -625,7 +631,7 @@ func (g *Generator) genObjDecl(s *ast.ObjDecl) {
 	g.writef("type %s struct {\n", s.Name)
 	g.indent++
 	for _, f := range s.Fields {
-		g.writef("%s %s\n", exportName(f.Name), genTypeExpr(f.Type))
+		g.writef("%s %s\n", exportName(f.Name), g.genType(f.Type))
 	}
 	g.indent--
 	g.writeln("}")
@@ -707,12 +713,12 @@ func (g *Generator) genInterfaceDecl(iface *ast.InterfaceDecl) {
 			}
 			g.write(p.Name)
 			g.write(" ")
-			g.write(genTypeExpr(p.Type))
+			g.write(g.genType(p.Type))
 		}
 		g.write(")")
 		if m.ReturnType != nil {
 			g.write(" ")
-			g.write(genTypeExpr(m.ReturnType))
+			g.write(g.genType(m.ReturnType))
 		}
 		g.write("\n")
 	}
@@ -732,7 +738,7 @@ func (g *Generator) genLetStmt(s *ast.LetStmt) {
 	if s.Infer || s.Type == nil {
 		g.write(s.Name + " := ")
 	} else {
-		g.write("var " + s.Name + " " + genTypeExpr(s.Type) + " = ")
+		g.write("var " + s.Name + " " + g.genType(s.Type) + " = ")
 	}
 	g.genExpr(s.Value)
 	g.write("\n")
@@ -745,7 +751,7 @@ func (g *Generator) genVarStmt(s *ast.VarStmt) {
 	if s.Infer || s.Type == nil {
 		g.write(s.Name + " := ")
 	} else {
-		g.write("var " + s.Name + " " + genTypeExpr(s.Type) + " = ")
+		g.write("var " + s.Name + " " + g.genType(s.Type) + " = ")
 	}
 	g.genExpr(s.Value)
 	g.write("\n")
@@ -2019,18 +2025,28 @@ func goOp(op token.Type) string {
 	}
 }
 
-func genTypeExpr(t *ast.TypeExpr) string {
+func (g *Generator) genType(t *ast.TypeExpr) string {
+	return genTypeExprResolved(t, g.typeAliases)
+}
+
+func genTypeExprResolved(t *ast.TypeExpr, aliases map[string]*ast.TypeExpr) string {
 	if t == nil {
 		return ""
 	}
+	// Resolve alias: plain name with no params/flags
+	if !t.IsSlice && !t.IsHashmap && !t.IsTuple && !t.IsArray && len(t.Params) == 0 {
+		if alias, ok := aliases[t.Name]; ok {
+			return genTypeExprResolved(alias, aliases)
+		}
+	}
 	if t.IsHashmap && len(t.Params) == 2 {
-		return "map[" + genTypeExpr(t.Params[0]) + "]" + genTypeExpr(t.Params[1])
+		return "map[" + genTypeExprResolved(t.Params[0], aliases) + "]" + genTypeExprResolved(t.Params[1], aliases)
 	}
 	if t.IsTuple {
 		return "[]interface{}"
 	}
 	if t.IsSlice && len(t.Params) > 0 {
-		return "[]" + genTypeExpr(t.Params[0])
+		return "[]" + genTypeExprResolved(t.Params[0], aliases)
 	}
 	return mapTypeName(t.Name)
 }

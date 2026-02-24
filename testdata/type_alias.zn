@@ -1,0 +1,39 @@
+// Test type aliases with various type expressions
+
+obj Point {
+    x: int;
+    y: int;
+}
+
+type Points = array(Point);
+type StringMap = hashmap[str]str;
+type Pair = tuple(str, int);
+type Ints = array(int);
+
+fn sum(nums: Ints) -> int {
+    var total = 0;
+    for n in nums {
+        total += n;
+    }
+    return total;
+}
+
+fn main() {
+    // Array alias
+    var pts: Points = [Point(x=1, y=2), Point(x=3, y=4)];
+    println(str(len(pts)));
+
+    // Hashmap alias
+    var m: StringMap = hashmap(str, str);
+    m["hello"] = "world";
+    println(m["hello"]);
+
+    // Tuple alias
+    let p: Pair = ("Alice", 42);
+    println(p.0);
+    println(str(p.1));
+
+    // Use alias in function parameter
+    let nums: Ints = [10, 20, 30];
+    println(str(sum(nums)));
+}
