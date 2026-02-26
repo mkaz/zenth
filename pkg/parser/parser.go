@@ -170,22 +170,38 @@ func (p *Parser) parseTypeExpr() *ast.TypeExpr {
 		return &ast.TypeExpr{TokenPos: pos, Name: "array", IsSlice: true, Params: []*ast.TypeExpr{elem}}
 	}
 
-	// Tuple type: tuple(T1, T2, ...)
+	// Tuple type: tuple(T1, T2, ...) or tuple(name: T1, name: T2, ...)
 	if p.peek() == token.Ident && p.cur().Literal == "tuple" && p.peekAt(1) == token.LParen {
 		p.advance() // tuple
 		p.expect(token.LParen)
 		params := []*ast.TypeExpr{}
+		var paramNames []string
+		// Detect named tuple type: Ident followed by Colon
+		named := p.peek() == token.Ident && p.peekAt(1) == token.Colon
 		if p.peek() != token.RParen {
-			for {
-				params = append(params, p.parseTypeExpr())
-				if p.peek() != token.Comma {
-					break
+			if named {
+				for {
+					nameTok := p.expect(token.Ident)
+					p.expect(token.Colon)
+					paramNames = append(paramNames, nameTok.Literal)
+					params = append(params, p.parseTypeExpr())
+					if p.peek() != token.Comma {
+						break
+					}
+					p.advance() // ,
 				}
-				p.advance() // ,
+			} else {
+				for {
+					params = append(params, p.parseTypeExpr())
+					if p.peek() != token.Comma {
+						break
+					}
+					p.advance() // ,
+				}
 			}
 		}
 		p.expect(token.RParen)
-		return &ast.TypeExpr{TokenPos: pos, Name: "tuple", IsTuple: true, Params: params}
+		return &ast.TypeExpr{TokenPos: pos, Name: "tuple", IsTuple: true, Params: params, ParamNames: paramNames}
 	}
 
 	// Hashmap type: hashmap[K]V
@@ -820,13 +836,37 @@ func (p *Parser) parsePrimary() ast.Node {
 		if tok.Literal == "tuple" && p.peek() == token.LParen {
 			p.advance() // consume '('
 			tuple := &ast.TupleLitExpr{TokenPos: tok.Pos}
-			tuple.Elements = append(tuple.Elements, p.parseExpr(0))
-			for p.peek() == token.Comma {
-				p.advance()
-				if p.peek() == token.RParen {
-					break
+			// Detect named tuple: first element is Ident followed by Assign
+			named := p.peek() == token.Ident && p.peekAt(1) == token.Assign
+			if named {
+				for {
+					nameTok := p.expect(token.Ident)
+					p.expect(token.Assign)
+					tuple.Names = append(tuple.Names, nameTok.Literal)
+					tuple.Elements = append(tuple.Elements, p.parseExpr(0))
+					if p.peek() != token.Comma {
+						break
+					}
+					p.advance()
+					if p.peek() == token.RParen {
+						break
+					}
+					if p.peek() != token.Ident || p.peekAt(1) != token.Assign {
+						p.errorf(p.cur().Pos, "cannot mix named and positional tuple fields")
+						break
+					}
 				}
-				tuple.Elements = append(tuple.Elements, p.parseExpr(0))
+			} else {
+				if p.peek() != token.RParen {
+					tuple.Elements = append(tuple.Elements, p.parseExpr(0))
+					for p.peek() == token.Comma {
+						p.advance()
+						if p.peek() == token.RParen {
+							break
+						}
+						tuple.Elements = append(tuple.Elements, p.parseExpr(0))
+					}
+				}
 			}
 			p.expect(token.RParen)
 			return tuple

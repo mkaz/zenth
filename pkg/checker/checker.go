@@ -254,7 +254,11 @@ func (c *Checker) resolveTypeExpr(t *ast.TypeExpr) ZType {
 		for _, p := range t.Params {
 			elems = append(elems, c.resolveTypeExpr(p))
 		}
-		return &TupleType{Elems: elems}
+		var names []string
+		if len(t.ParamNames) > 0 {
+			names = t.ParamNames
+		}
+		return &TupleType{Elems: elems, Names: names}
 	}
 	if bt := LookupBuiltinType(t.Name); bt != nil {
 		return bt
@@ -1518,19 +1522,33 @@ func (c *Checker) checkFieldExpr(e *ast.FieldExpr) ZType {
 		return TypeVoid
 	}
 	if tt, ok := objType.(*TupleType); ok {
+		// Try numeric index first (works for both named and positional)
 		idx, err := strconv.Atoi(e.Field)
-		if err != nil {
-			c.errorf(e.Pos(), "tuple field must be numeric index, got '%s'", e.Field)
+		if err == nil {
+			if idx < 0 || idx >= len(tt.Elems) {
+				c.errorf(e.Pos(), "tuple index %d out of range (len=%d)", idx, len(tt.Elems))
+				return TypeVoid
+			}
+			e.TupleAccess = true
+			e.TupleIndex = idx
+			e.TupleElemGoType = goTypeName(tt.Elems[idx])
+			return tt.Elems[idx]
+		}
+		// Try named field access
+		if tt.Names != nil {
+			for i, name := range tt.Names {
+				if name == e.Field {
+					e.TupleAccess = true
+					e.TupleIndex = i
+					e.TupleElemGoType = goTypeName(tt.Elems[i])
+					return tt.Elems[i]
+				}
+			}
+			c.errorf(e.Pos(), "named tuple has no field '%s'", e.Field)
 			return TypeVoid
 		}
-		if idx < 0 || idx >= len(tt.Elems) {
-			c.errorf(e.Pos(), "tuple index %d out of range (len=%d)", idx, len(tt.Elems))
-			return TypeVoid
-		}
-		e.TupleAccess = true
-		e.TupleIndex = idx
-		e.TupleElemGoType = goTypeName(tt.Elems[idx])
-		return tt.Elems[idx]
+		c.errorf(e.Pos(), "tuple field must be numeric index, got '%s'", e.Field)
+		return TypeVoid
 	}
 	c.errorf(e.Pos(), "cannot access field '%s' on %s", e.Field, objType)
 	return TypeVoid
@@ -1631,6 +1649,17 @@ func (c *Checker) checkTupleLit(e *ast.TupleLitExpr) ZType {
 	elems := make([]ZType, 0, len(e.Elements))
 	for _, elem := range e.Elements {
 		elems = append(elems, c.checkNode(elem))
+	}
+	if e.Names != nil {
+		// Check for duplicate field names
+		seen := make(map[string]bool)
+		for _, name := range e.Names {
+			if seen[name] {
+				c.errorf(e.Pos(), "duplicate field name '%s' in named tuple", name)
+			}
+			seen[name] = true
+		}
+		return &TupleType{Elems: elems, Names: e.Names}
 	}
 	return &TupleType{Elems: elems}
 }

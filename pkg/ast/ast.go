@@ -108,8 +108,9 @@ type TypeExpr struct {
 	IsSlice   bool        // array(T)
 	IsHashmap bool        // hashmap[K]V
 	IsTuple   bool        // tuple(T1, T2, ...)
-	IsArray   bool        // [N]T
-	ArrayLen  int         // for fixed arrays
+	IsArray    bool        // [N]T
+	ArrayLen   int         // for fixed arrays
+	ParamNames []string   // for named tuple types: tuple(key: str, value: int)
 }
 
 func (t *TypeExpr) Pos() token.Pos { return t.TokenPos }
@@ -416,10 +417,11 @@ type FieldExpr struct {
 func (f *FieldExpr) Pos() token.Pos { return f.TokenPos }
 func (f *FieldExpr) nodeMarker()    {}
 
-// TupleLitExpr represents: (expr, expr, ...)
+// TupleLitExpr represents: tuple(expr, expr, ...) or tuple(name=expr, name=expr, ...)
 type TupleLitExpr struct {
 	TokenPos token.Pos
 	Elements []Node
+	Names    []string // nil for positional, same length as Elements when named
 }
 
 func (t *TupleLitExpr) Pos() token.Pos { return t.TokenPos }

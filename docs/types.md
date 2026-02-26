@@ -117,21 +117,17 @@ For object keys, hashmap lookup is value-based: another `Point(x=1, y=2)` resolv
 
 ### Tuples
 
-Tuples are fixed-size ordered values that can hold mixed types. Use `tuple(...)` for both values and type annotations:
+Tuples are fixed-size ordered values that can hold mixed types. They support both positional and named fields:
 
 ```zenth
 let t = tuple("a", 1);
-println(t.0);      // "a"
-println(str(t.1)); // 1
+println(t.0);      // positional access
 
-let pair: tuple(str, str) = tuple("left", "right");
+let person = tuple(name="Alice", age=30);
+println(person.name);  // named access
 ```
 
-Nested with arrays:
-
-```zenth
-let pairs: array(tuple(str, str)) = [];
-```
+See [Tuples](tuples.md) for named tuples, destructuring, and usage in functions.
 
 ### Structs
 

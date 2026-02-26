@@ -217,6 +217,10 @@ func TestBuildAndRun(t *testing.T) {
 			contains: []string{"a", "1", "1-x-true", "left:right", "forward:10"},
 		},
 		{
+			file:     "named_tuple.zn",
+			contains: []string{"Alice", "30", "x", "42", "Bob:95", "Carol:88"},
+		},
+		{
 			file:     "commands_tuple.zn",
 			contains: []string{"Found: 3", "forward=1"},
 		},
@@ -359,6 +363,22 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/tuple_destructure_arity.zn",
 			errMsg: "tuple destructuring arity mismatch",
+		},
+		{
+			file:   "errors/named_tuple_mixed.zn",
+			errMsg: "cannot mix named and positional tuple fields",
+		},
+		{
+			file:   "errors/named_tuple_dup_field.zn",
+			errMsg: "duplicate field name",
+		},
+		{
+			file:   "errors/named_tuple_bad_field.zn",
+			errMsg: "named tuple has no field",
+		},
+		{
+			file:   "errors/named_tuple_type_mismatch.zn",
+			errMsg: "type mismatch",
 		},
 		{
 			file:   "errors/split_once_bad_arg.zn",

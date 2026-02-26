@@ -94,6 +94,7 @@ func (m *HashmapType) typeMarker() {}
 // TupleType represents a heterogenous tuple type.
 type TupleType struct {
 	Elems []ZType
+	Names []string // nil for positional tuples; same length as Elems when named
 }
 
 func (t *TupleType) String() string {
@@ -102,7 +103,11 @@ func (t *TupleType) String() string {
 	}
 	parts := make([]string, len(t.Elems))
 	for i, elem := range t.Elems {
-		parts[i] = elem.String()
+		if t.Names != nil {
+			parts[i] = t.Names[i] + ": " + elem.String()
+		} else {
+			parts[i] = elem.String()
+		}
 	}
 	return "tuple[" + strings.Join(parts, ", ") + "]"
 }
@@ -111,6 +116,17 @@ func (t *TupleType) Equals(other ZType) bool {
 	o, ok := other.(*TupleType)
 	if !ok || len(t.Elems) != len(o.Elems) {
 		return false
+	}
+	// Named vs positional are distinct types
+	if (t.Names == nil) != (o.Names == nil) {
+		return false
+	}
+	if t.Names != nil {
+		for i := range t.Names {
+			if t.Names[i] != o.Names[i] {
+				return false
+			}
+		}
 	}
 	for i := range t.Elems {
 		if !t.Elems[i].Equals(o.Elems[i]) {
