@@ -1,5 +1,5 @@
 fn main() {
-    let (a, b, c) = (1, 2);
+    let (a, b, c) = tuple(1, 2);
     println(str(a));
     println(str(b));
     println(str(c));

@@ -8,7 +8,7 @@ fn main() {
     var cmds: array(tuple(str, int)) = [];
     for row in data {
         let (cmd, raw) = row.split_once(" ");
-        cmds.add((cmd, int(raw)));
+        cmds.add(tuple(cmd, int(raw)));
     }
 
     println("Found: " + str(cmds.length()));

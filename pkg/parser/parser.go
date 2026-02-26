@@ -817,13 +817,10 @@ func (p *Parser) parsePrimary() ast.Node {
 
 	case token.Ident:
 		p.advance()
-		return &ast.IdentExpr{TokenPos: tok.Pos, Name: tok.Literal}
-
-	case token.LParen:
-		p.advance()
-		expr := p.parseExpr(0)
-		if p.peek() == token.Comma {
-			tuple := &ast.TupleLitExpr{TokenPos: tok.Pos, Elements: []ast.Node{expr}}
+		if tok.Literal == "tuple" && p.peek() == token.LParen {
+			p.advance() // consume '('
+			tuple := &ast.TupleLitExpr{TokenPos: tok.Pos}
+			tuple.Elements = append(tuple.Elements, p.parseExpr(0))
 			for p.peek() == token.Comma {
 				p.advance()
 				if p.peek() == token.RParen {
@@ -834,6 +831,11 @@ func (p *Parser) parsePrimary() ast.Node {
 			p.expect(token.RParen)
 			return tuple
 		}
+		return &ast.IdentExpr{TokenPos: tok.Pos, Name: tok.Literal}
+
+	case token.LParen:
+		p.advance()
+		expr := p.parseExpr(0)
 		p.expect(token.RParen)
 		return expr
 

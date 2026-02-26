@@ -29,7 +29,7 @@ fn main() {
     println(m["hello"]);
 
     // Tuple alias
-    let p: Pair = ("Alice", 42);
+    let p: Pair = tuple("Alice", 42);
     println(p.0);
     println(str(p.1));
 

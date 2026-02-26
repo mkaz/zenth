@@ -117,14 +117,14 @@ For object keys, hashmap lookup is value-based: another `Point(x=1, y=2)` resolv
 
 ### Tuples
 
-Tuples are fixed-size ordered values that can hold mixed types. Use parentheses for values and `tuple(...)` for type annotations:
+Tuples are fixed-size ordered values that can hold mixed types. Use `tuple(...)` for both values and type annotations:
 
 ```zenth
-let t = ("a", 1);
+let t = tuple("a", 1);
 println(t.0);      // "a"
 println(str(t.1)); // 1
 
-let pair: tuple(str, str) = ("left", "right");
+let pair: tuple(str, str) = tuple("left", "right");
 ```
 
 Nested with arrays:

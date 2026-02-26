@@ -97,8 +97,8 @@ let value = int(raw);
 Destructuring arity must match the tuple size:
 
 ```zenth
-let (a, b) = (1, 2);      // ok
-let (x, y, z) = (1, 2);   // error
+let (a, b) = tuple(1, 2);      // ok
+let (x, y, z) = tuple(1, 2);   // error
 ```
 
 ## Increment and Decrement

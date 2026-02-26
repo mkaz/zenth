@@ -1,13 +1,13 @@
 fn main() {
-    let t = ("a", 1);
+    let t = tuple("a", 1);
     println(t.0);
     println(str(t.1));
 
-    let u = (1, "x", true);
+    let u = tuple(1, "x", true);
     println(str(u.0) + "-" + u.1 + "-" + str(u.2));
 
     let pairs: array(tuple(str, str)) = [];
-    pairs.add(("left", "right"));
+    pairs.add(tuple("left", "right"));
     println(pairs[0].0 + ":" + pairs[0].1);
 
     let (cmd, raw) = "forward 10".split_once(" ");
