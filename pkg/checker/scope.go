@@ -1,11 +1,14 @@
 package checker
 
+import "github.com/mkaz/zenth/pkg/ast"
+
 // Symbol represents a declared name in a scope.
 type Symbol struct {
-	Name    string
-	Type    ZType
-	Mutable bool // true for var, false for let/const
-	IsConst bool
+	Name        string
+	Type        ZType
+	Mutable     bool     // true for var, false for let/const
+	IsConst     bool
+	DefaultExpr ast.Node // default value expression for hashmap variables
 }
 
 // Scope represents a lexical scope.

@@ -42,6 +42,7 @@ type Generator struct {
 	needsClampF64      bool
 	needsIntBase       bool
 	needsToBase        bool
+	needsMapget        bool
 	needsFlag          bool
 	flagDecls          []flagDecl
 	tempCounter        int
@@ -473,6 +474,13 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("}")
 		g.writeln("")
 	}
+	if g.needsMapget {
+		g.writeln("func zenth_mapget[K comparable, V any](m map[K]V, key K, def V) V {")
+		g.writeln("\tif v, ok := m[key]; ok { return v }")
+		g.writeln("\treturn def")
+		g.writeln("}")
+		g.writeln("")
+	}
 
 	g.buf.WriteString(body.String())
 
@@ -796,8 +804,43 @@ func (g *Generator) genTupleDestructStmt(s *ast.TupleDestructStmt) {
 }
 
 func (g *Generator) genAssignStmt(s *ast.AssignStmt) {
+	// For compound ops on hashmap index with default, emit init-if-missing first
+	if s.Op != token.Assign {
+		if idx, ok := s.Target.(*ast.IndexExpr); ok && idx.HashmapDefaultVal != nil {
+			g.writeIndent()
+			g.write("if _, ok := ")
+			g.genExpr(idx.Object)
+			g.write("[")
+			if idx.HashmapObjKey {
+				g.needsHashmapObjKey = true
+				g.write("zenth_hashmap_obj_key(")
+				g.genExpr(idx.Index)
+				g.write(")")
+			} else {
+				g.genExpr(idx.Index)
+			}
+			g.write("]; !ok { ")
+			g.genExpr(idx.Object)
+			g.write("[")
+			if idx.HashmapObjKey {
+				g.write("zenth_hashmap_obj_key(")
+				g.genExpr(idx.Index)
+				g.write(")")
+			} else {
+				g.genExpr(idx.Index)
+			}
+			g.write("] = ")
+			g.genExpr(idx.HashmapDefaultVal)
+			g.write(" }\n")
+		}
+	}
 	g.writeIndent()
-	g.genExpr(s.Target)
+	// For assignments to hashmap index (both plain and compound), use raw m[key] not mapget
+	if idx, ok := s.Target.(*ast.IndexExpr); ok && idx.HashmapDefaultVal != nil {
+		g.genRawIndexExpr(idx)
+	} else {
+		g.genExpr(s.Target)
+	}
 	switch s.Op {
 	case token.Assign:
 		g.write(" = ")
@@ -812,6 +855,21 @@ func (g *Generator) genAssignStmt(s *ast.AssignStmt) {
 	}
 	g.genExpr(s.Value)
 	g.write("\n")
+}
+
+// genRawIndexExpr generates m[key] without mapget wrapper
+func (g *Generator) genRawIndexExpr(idx *ast.IndexExpr) {
+	g.genExpr(idx.Object)
+	g.write("[")
+	if idx.HashmapObjKey {
+		g.needsHashmapObjKey = true
+		g.write("zenth_hashmap_obj_key(")
+		g.genExpr(idx.Index)
+		g.write(")")
+	} else {
+		g.genExpr(idx.Index)
+	}
+	g.write("]")
 }
 
 func (g *Generator) genMultiAssignStmt(s *ast.MultiAssignStmt) {
@@ -1073,8 +1131,40 @@ func (g *Generator) genMatchStmt(s *ast.MatchStmt) {
 }
 
 func (g *Generator) genIncDecStmt(s *ast.IncDecStmt) {
+	// For ++/-- on hashmap index with default, emit init-if-missing first
+	if idx, ok := s.Operand.(*ast.IndexExpr); ok && idx.HashmapDefaultVal != nil {
+		g.writeIndent()
+		g.write("if _, ok := ")
+		g.genExpr(idx.Object)
+		g.write("[")
+		if idx.HashmapObjKey {
+			g.needsHashmapObjKey = true
+			g.write("zenth_hashmap_obj_key(")
+			g.genExpr(idx.Index)
+			g.write(")")
+		} else {
+			g.genExpr(idx.Index)
+		}
+		g.write("]; !ok { ")
+		g.genExpr(idx.Object)
+		g.write("[")
+		if idx.HashmapObjKey {
+			g.write("zenth_hashmap_obj_key(")
+			g.genExpr(idx.Index)
+			g.write(")")
+		} else {
+			g.genExpr(idx.Index)
+		}
+		g.write("] = ")
+		g.genExpr(idx.HashmapDefaultVal)
+		g.write(" }\n")
+	}
 	g.writeIndent()
-	g.genExpr(s.Operand)
+	if idx, ok := s.Operand.(*ast.IndexExpr); ok && idx.HashmapDefaultVal != nil {
+		g.genRawIndexExpr(idx)
+	} else {
+		g.genExpr(s.Operand)
+	}
 	if s.Op == token.PlusPlus {
 		g.write("++")
 	} else {
@@ -1123,6 +1213,22 @@ func (g *Generator) genExpr(node ast.Node) {
 			g.genExpr(n.Object)
 			g.write(", ")
 			g.genExpr(n.Index)
+			g.write(")")
+		} else if n.HashmapDefaultVal != nil {
+			g.needsMapget = true
+			g.write("zenth_mapget(")
+			g.genExpr(n.Object)
+			g.write(", ")
+			if n.HashmapObjKey {
+				g.needsHashmapObjKey = true
+				g.write("zenth_hashmap_obj_key(")
+				g.genExpr(n.Index)
+				g.write(")")
+			} else {
+				g.genExpr(n.Index)
+			}
+			g.write(", ")
+			g.genExpr(n.HashmapDefaultVal)
 			g.write(")")
 		} else {
 			g.genExpr(n.Object)

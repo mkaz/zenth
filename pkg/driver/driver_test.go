@@ -197,6 +197,10 @@ func TestBuildAndRun(t *testing.T) {
 			contains: []string{"val=#", "len=1"},
 		},
 		{
+			file:     "hashmap_default.zn",
+			contains: []string{"foo=3", "bar=0", "baz=42", "len=2", "x=2"},
+		},
+		{
 			file:     "flag.zn",
 			contains: []string{"debug=false", "times=5", "msg=Hello"},
 		},
@@ -391,6 +395,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/to_base_bad_arg.zn",
 			errMsg: "to_base() argument must be int, got str",
+		},
+		{
+			file:   "errors/hashmap_default_type.zn",
+			errMsg: "hashmap default type mismatch",
 		},
 	}
 

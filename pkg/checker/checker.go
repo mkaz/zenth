@@ -425,7 +425,11 @@ func (c *Checker) checkLetStmt(s *ast.LetStmt) ZType {
 		}
 		valType = declared
 	}
-	c.scope.Define(&Symbol{Name: s.Name, Type: valType, Mutable: false})
+	sym := &Symbol{Name: s.Name, Type: valType, Mutable: false}
+	if call, ok := s.Value.(*ast.CallExpr); ok && call.HashmapDefaultVal != nil {
+		sym.DefaultExpr = call.HashmapDefaultVal
+	}
+	c.scope.Define(sym)
 	return TypeVoid
 }
 
@@ -442,7 +446,11 @@ func (c *Checker) checkVarStmt(s *ast.VarStmt) ZType {
 		}
 		valType = declared
 	}
-	c.scope.Define(&Symbol{Name: s.Name, Type: valType, Mutable: true})
+	sym := &Symbol{Name: s.Name, Type: valType, Mutable: true}
+	if call, ok := s.Value.(*ast.CallExpr); ok && call.HashmapDefaultVal != nil {
+		sym.DefaultExpr = call.HashmapDefaultVal
+	}
+	c.scope.Define(sym)
 	return TypeVoid
 }
 
@@ -1571,6 +1579,12 @@ func (c *Checker) checkIndexExpr(e *ast.IndexExpr) ZType {
 		if _, ok := t.Key.(*ObjType); ok {
 			e.HashmapObjKey = true
 		}
+		// Propagate default value from symbol to IndexExpr
+		if ident, ok := e.Object.(*ast.IdentExpr); ok {
+			if sym := c.scope.Lookup(ident.Name); sym != nil && sym.DefaultExpr != nil {
+				e.HashmapDefaultVal = sym.DefaultExpr
+			}
+		}
 		return t.Value
 	default:
 		if objType.Equals(TypeStr) {
@@ -1665,13 +1679,28 @@ func (c *Checker) checkTupleLit(e *ast.TupleLitExpr) ZType {
 }
 
 func (c *Checker) checkHashmapConstructor(e *ast.CallExpr) ZType {
-	if len(e.Args) != 2 {
-		c.errorf(e.Pos(), "hashmap() expects exactly 2 type arguments, got %d", len(e.Args))
+	// Separate positional args from named args (default=expr)
+	var posArgs []ast.Node
+	var defaultExpr ast.Node
+	for _, arg := range e.Args {
+		if na, ok := arg.(*ast.NamedArgExpr); ok {
+			if na.Name == "default" {
+				defaultExpr = na.Value
+			} else {
+				c.errorf(na.Pos(), "hashmap() unknown named argument '%s'", na.Name)
+			}
+		} else {
+			posArgs = append(posArgs, arg)
+		}
+	}
+
+	if len(posArgs) != 2 {
+		c.errorf(e.Pos(), "hashmap() expects exactly 2 type arguments, got %d", len(posArgs))
 		return &HashmapType{Key: TypeVoid, Value: TypeVoid}
 	}
 
-	keyType := c.resolveTypeRefArg(e.Args[0])
-	valType := c.resolveTypeRefArg(e.Args[1])
+	keyType := c.resolveTypeRefArg(posArgs[0])
+	valType := c.resolveTypeRefArg(posArgs[1])
 
 	if keyType == nil {
 		keyType = TypeVoid
@@ -1680,7 +1709,16 @@ func (c *Checker) checkHashmapConstructor(e *ast.CallExpr) ZType {
 		valType = TypeVoid
 	}
 	if !isHashmapKeyType(keyType) && !keyType.Equals(TypeVoid) {
-		c.errorf(e.Args[0].Pos(), "invalid hashmap key type: %s", keyType)
+		c.errorf(posArgs[0].Pos(), "invalid hashmap key type: %s", keyType)
+	}
+
+	// Validate default expression type
+	if defaultExpr != nil {
+		defType := c.checkNode(defaultExpr)
+		if !valType.Equals(defType) && !valType.Equals(TypeVoid) {
+			c.errorf(defaultExpr.Pos(), "hashmap default type mismatch: expected %s, got %s", valType, defType)
+		}
+		e.HashmapDefaultVal = defaultExpr
 	}
 
 	e.HashmapCtor = true

@@ -1,0 +1,23 @@
+fn main() {
+    // compound assignment on missing key
+    var m = hashmap(str, int, default=0);
+    m["foo"] += 1;
+    m["foo"] += 2;
+    println("foo=" + str(m["foo"]));
+
+    // read missing key returns default
+    println("bar=" + str(m["bar"]));
+
+    // overwrite works normally
+    m["baz"] = 42;
+    println("baz=" + str(m["baz"]));
+
+    // len reflects only assigned keys
+    println("len=" + str(len(m)));
+
+    // increment with ++
+    var c = hashmap(str, int, default=0);
+    c["x"]++;
+    c["x"]++;
+    println("x=" + str(c["x"]));
+}
