@@ -243,12 +243,13 @@ func (f *ForStmt) nodeMarker()    {}
 
 // ForInStmt represents: for [index,] value in iterable { ... }
 type ForInStmt struct {
-	TokenPos token.Pos
-	Index    string // empty if no index variable
-	Value    string
-	Iterable Node
-	Body     *Block
-	IterStr  bool // set by checker when iterating over a string
+	TokenPos    token.Pos
+	Index       string // empty if no index variable
+	Value       string
+	Iterable    Node
+	Body        *Block
+	IterStr     bool // set by checker when iterating over a string
+	IterHashmap bool // set by checker when iterating over a hashmap
 }
 
 func (f *ForInStmt) Pos() token.Pos { return f.TokenPos }
@@ -373,6 +374,7 @@ type CallExpr struct {
 	HashmapKeyGoType  string // concrete Go key type for hashmap constructor
 	HashmapValGoType  string // concrete Go value type for hashmap constructor
 	HashmapDefaultVal Node   // set by checker: default value expression for hashmap
+	HashmapMethod     string // set by checker: "keys" or "values" for hashmap methods
 	ResolvedFunc      string // set by checker: function key ("name" or "Type.method")
 	FlagName          string // set by checker: variable name for flag() calls
 	FlagGoType        string // set by checker: "bool", "int", "string" for flag() calls

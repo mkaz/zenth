@@ -44,6 +44,39 @@ println(str(counts["missing"])); // prints "0"
 
 When you access a missing key, the default is returned instead of Go's zero value. Compound assignments (`+=`, `-=`, `++`, etc.) on missing keys initialize from the default first.
 
+## Iterating
+
+Use `for` to iterate over a hashmap:
+
+```zenth
+var m = hashmap(str, int);
+m["a"] = 1;
+m["b"] = 2;
+
+// iterate over key-value pairs
+for k, v in m {
+    println(k + "=" + str(v));
+}
+
+// iterate over keys only
+for k in m {
+    println(k);
+}
+```
+
+### keys() and values()
+
+Use `.keys()` and `.values()` to get slices of keys or values:
+
+```zenth
+let keys = m.keys();
+let vals = m.values();
+
+for v in vals {
+    println(str(v));
+}
+```
+
 ## Object Keys
 
 You can use user-defined objects as hashmap keys. Hashmap lookup is value-based, so two instances with the same field values resolve to the same entry:

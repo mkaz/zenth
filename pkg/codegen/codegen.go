@@ -42,7 +42,9 @@ type Generator struct {
 	needsClampF64      bool
 	needsIntBase       bool
 	needsToBase        bool
-	needsMapget        bool
+	needsMapget          bool
+	needsHashmapKeys    bool
+	needsHashmapValues  bool
 	needsFlag          bool
 	flagDecls          []flagDecl
 	tempCounter        int
@@ -478,6 +480,22 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("func zenth_mapget[K comparable, V any](m map[K]V, key K, def V) V {")
 		g.writeln("\tif v, ok := m[key]; ok { return v }")
 		g.writeln("\treturn def")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsHashmapKeys {
+		g.writeln("func zenth_hashmap_keys[K comparable, V any](m map[K]V) []K {")
+		g.writeln("\tkeys := make([]K, 0, len(m))")
+		g.writeln("\tfor k := range m { keys = append(keys, k) }")
+		g.writeln("\treturn keys")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsHashmapValues {
+		g.writeln("func zenth_hashmap_values[K comparable, V any](m map[K]V) []V {")
+		g.writeln("\tvals := make([]V, 0, len(m))")
+		g.writeln("\tfor _, v := range m { vals = append(vals, v) }")
+		g.writeln("\treturn vals")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -1065,6 +1083,22 @@ func (g *Generator) genForInStmt(s *ast.ForInStmt) {
 		g.write(" {\n")
 		g.indent++
 		g.writef("%s := string(_rune)\n", s.Value)
+	} else if s.IterHashmap {
+		// Go's range over map yields (key, value)
+		g.write("for ")
+		if s.Index != "" {
+			// for k, v in m => for k, v := range m
+			g.write(s.Index)
+			g.write(", ")
+			g.write(s.Value)
+		} else {
+			// for k in m => for k := range m (keys only)
+			g.write(s.Value)
+		}
+		g.write(" := range ")
+		g.genExpr(s.Iterable)
+		g.write(" {\n")
+		g.indent++
 	} else {
 		g.write("for ")
 		if s.Index != "" {
@@ -1557,6 +1591,26 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 		if decl, ok := g.objs[ident.Name]; ok {
 			g.genObjConstructor(decl, c.Args)
 			return
+		}
+	}
+
+	// Handle built-in hashmap methods
+	if c.HashmapMethod != "" {
+		if field, ok := c.Callee.(*ast.FieldExpr); ok {
+			switch c.HashmapMethod {
+			case "keys":
+				g.needsHashmapKeys = true
+				g.write("zenth_hashmap_keys(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "values":
+				g.needsHashmapValues = true
+				g.write("zenth_hashmap_values(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			}
 		}
 	}
 

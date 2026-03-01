@@ -1,0 +1,34 @@
+fn main() {
+    var m = hashmap(str, int);
+    m["a"] = 1;
+    m["b"] = 2;
+    m["c"] = 3;
+
+    // for k, v in m
+    var sum = 0;
+    for k, v in m {
+        sum += v;
+        println("kv=" + k);
+    }
+    println("sum=" + str(sum));
+
+    // for k in m (keys only)
+    var count = 0;
+    for k in m {
+        count += 1;
+        println("k=" + k);
+    }
+    println("count=" + str(count));
+
+    // m.keys()
+    let keys = m.keys();
+    println("nkeys=" + str(len(keys)));
+
+    // m.values()
+    let vals = m.values();
+    var vsum = 0;
+    for v in vals {
+        vsum += v;
+    }
+    println("vsum=" + str(vsum));
+}

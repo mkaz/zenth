@@ -201,6 +201,10 @@ func TestBuildAndRun(t *testing.T) {
 			contains: []string{"foo=3", "bar=0", "baz=42", "len=2", "x=2"},
 		},
 		{
+			file:     "hashmap_iter.zn",
+			contains: []string{"sum=6", "count=3", "nkeys=3", "vsum=6"},
+		},
+		{
 			file:     "flag.zn",
 			contains: []string{"debug=false", "times=5", "msg=Hello"},
 		},

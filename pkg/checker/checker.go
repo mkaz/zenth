@@ -643,6 +643,15 @@ func (c *Checker) checkForInStmt(s *ast.ForInStmt) ZType {
 			c.scope.Define(&Symbol{Name: s.Index, Type: TypeInt})
 		}
 		c.scope.Define(&Symbol{Name: s.Value, Type: t.Elem})
+	case *HashmapType:
+		s.IterHashmap = true
+		if s.Index != "" {
+			c.scope.Define(&Symbol{Name: s.Index, Type: t.Key})
+			c.scope.Define(&Symbol{Name: s.Value, Type: t.Value})
+		} else {
+			// for v in m iterates over keys only
+			c.scope.Define(&Symbol{Name: s.Value, Type: t.Key})
+		}
 	default:
 		if iterType.Equals(TypeStr) {
 			s.IterStr = true
@@ -1158,6 +1167,24 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.StringMethod = "to_base"
 				return TypeStr
+			}
+		}
+
+		// Check for built-in hashmap methods
+		if hmType, ok := objType.(*HashmapType); ok {
+			switch field.Field {
+			case "keys":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "keys() takes no arguments, got %d", len(e.Args))
+				}
+				e.HashmapMethod = "keys"
+				return &SliceType{Elem: hmType.Key}
+			case "values":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "values() takes no arguments, got %d", len(e.Args))
+				}
+				e.HashmapMethod = "values"
+				return &SliceType{Elem: hmType.Value}
 			}
 		}
 
