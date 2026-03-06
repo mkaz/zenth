@@ -248,8 +248,10 @@ type ForInStmt struct {
 	Value       string
 	Iterable    Node
 	Body        *Block
-	IterStr     bool // set by checker when iterating over a string
-	IterHashmap bool // set by checker when iterating over a hashmap
+	IterStr            bool   // set by checker when iterating over a string
+	IterHashmap        bool   // set by checker when iterating over a hashmap
+	IterHashmapObjKey  bool   // set by checker when hashmap key is an obj type
+	IterHashmapObjType string // Go type name of the obj key (e.g. "Point")
 }
 
 func (f *ForInStmt) Pos() token.Pos { return f.TokenPos }

@@ -645,6 +645,10 @@ func (c *Checker) checkForInStmt(s *ast.ForInStmt) ZType {
 		c.scope.Define(&Symbol{Name: s.Value, Type: t.Elem})
 	case *HashmapType:
 		s.IterHashmap = true
+		if objKey, ok := t.Key.(*ObjType); ok {
+			s.IterHashmapObjKey = true
+			s.IterHashmapObjType = objKey.Name
+		}
 		if s.Index != "" {
 			c.scope.Define(&Symbol{Name: s.Index, Type: t.Key})
 			c.scope.Define(&Symbol{Name: s.Value, Type: t.Value})
@@ -1749,9 +1753,9 @@ func (c *Checker) checkHashmapConstructor(e *ast.CallExpr) ZType {
 	}
 
 	e.HashmapCtor = true
-	if _, ok := keyType.(*ObjType); ok {
+	if objKey, ok := keyType.(*ObjType); ok {
 		e.HashmapObjKey = true
-		e.HashmapKeyGoType = "string"
+		e.HashmapKeyGoType = objKey.Name
 	} else {
 		e.HashmapKeyGoType = goTypeName(keyType)
 	}
@@ -2012,7 +2016,12 @@ func goTypeName(t ZType) string {
 	case *SliceType:
 		return "[]" + goTypeName(ty.Elem)
 	case *HashmapType:
-		return "map[" + goTypeName(ty.Key) + "]" + goTypeName(ty.Value)
+		keyName := goTypeName(ty.Key)
+		// Obj keys use struct value types (not pointers) in Go maps
+		if _, ok := ty.Key.(*ObjType); ok {
+			keyName = strings.TrimPrefix(keyName, "*")
+		}
+		return "map[" + keyName + "]" + goTypeName(ty.Value)
 	case *TupleType:
 		return "[]interface{}"
 	case *ObjType:

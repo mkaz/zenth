@@ -31,7 +31,6 @@ type Generator struct {
 	needsSliceToStr    bool
 	needsStrIndex      bool
 	needsStrSlice      bool
-	needsHashmapObjKey bool
 	needsMap           bool
 	needsFilter        bool
 	needsSplitOnce     bool
@@ -406,12 +405,6 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\tr := []rune(s)")
 		g.writeln("\tif hi < 0 { hi = len(r) }")
 		g.writeln("\treturn string(r[lo:hi])")
-		g.writeln("}")
-		g.writeln("")
-	}
-	if g.needsHashmapObjKey {
-		g.writeln("func zenth_hashmap_obj_key(v interface{}) string {")
-		g.writeln("\treturn fmt.Sprintf(\"%#v\", v)")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -830,10 +823,8 @@ func (g *Generator) genAssignStmt(s *ast.AssignStmt) {
 			g.genExpr(idx.Object)
 			g.write("[")
 			if idx.HashmapObjKey {
-				g.needsHashmapObjKey = true
-				g.write("zenth_hashmap_obj_key(")
+				g.write("*")
 				g.genExpr(idx.Index)
-				g.write(")")
 			} else {
 				g.genExpr(idx.Index)
 			}
@@ -841,9 +832,8 @@ func (g *Generator) genAssignStmt(s *ast.AssignStmt) {
 			g.genExpr(idx.Object)
 			g.write("[")
 			if idx.HashmapObjKey {
-				g.write("zenth_hashmap_obj_key(")
+				g.write("*")
 				g.genExpr(idx.Index)
-				g.write(")")
 			} else {
 				g.genExpr(idx.Index)
 			}
@@ -880,10 +870,8 @@ func (g *Generator) genRawIndexExpr(idx *ast.IndexExpr) {
 	g.genExpr(idx.Object)
 	g.write("[")
 	if idx.HashmapObjKey {
-		g.needsHashmapObjKey = true
-		g.write("zenth_hashmap_obj_key(")
+		g.write("*")
 		g.genExpr(idx.Index)
-		g.write(")")
 	} else {
 		g.genExpr(idx.Index)
 	}
@@ -1086,7 +1074,16 @@ func (g *Generator) genForInStmt(s *ast.ForInStmt) {
 	} else if s.IterHashmap {
 		// Go's range over map yields (key, value)
 		g.write("for ")
-		if s.Index != "" {
+		if s.IterHashmapObjKey {
+			// Obj keys are stored as struct values in Go maps;
+			// iterate with a temp name and convert to pointer below.
+			if s.Index != "" {
+				g.write("_objkey_, ")
+				g.write(s.Value)
+			} else {
+				g.write("_objkey_")
+			}
+		} else if s.Index != "" {
 			// for k, v in m => for k, v := range m
 			g.write(s.Index)
 			g.write(", ")
@@ -1099,6 +1096,15 @@ func (g *Generator) genForInStmt(s *ast.ForInStmt) {
 		g.genExpr(s.Iterable)
 		g.write(" {\n")
 		g.indent++
+		if s.IterHashmapObjKey {
+			// Convert struct value key to pointer for Zenth usage
+			keyVar := s.Value
+			if s.Index != "" {
+				keyVar = s.Index
+			}
+			g.writef("%s := &%s{}\n", keyVar, s.IterHashmapObjType)
+			g.writef("*%s = _objkey_\n", keyVar)
+		}
 	} else {
 		g.write("for ")
 		if s.Index != "" {
@@ -1172,10 +1178,8 @@ func (g *Generator) genIncDecStmt(s *ast.IncDecStmt) {
 		g.genExpr(idx.Object)
 		g.write("[")
 		if idx.HashmapObjKey {
-			g.needsHashmapObjKey = true
-			g.write("zenth_hashmap_obj_key(")
+			g.write("*")
 			g.genExpr(idx.Index)
-			g.write(")")
 		} else {
 			g.genExpr(idx.Index)
 		}
@@ -1183,9 +1187,8 @@ func (g *Generator) genIncDecStmt(s *ast.IncDecStmt) {
 		g.genExpr(idx.Object)
 		g.write("[")
 		if idx.HashmapObjKey {
-			g.write("zenth_hashmap_obj_key(")
+			g.write("*")
 			g.genExpr(idx.Index)
-			g.write(")")
 		} else {
 			g.genExpr(idx.Index)
 		}
@@ -1254,10 +1257,8 @@ func (g *Generator) genExpr(node ast.Node) {
 			g.genExpr(n.Object)
 			g.write(", ")
 			if n.HashmapObjKey {
-				g.needsHashmapObjKey = true
-				g.write("zenth_hashmap_obj_key(")
+				g.write("*")
 				g.genExpr(n.Index)
-				g.write(")")
 			} else {
 				g.genExpr(n.Index)
 			}
@@ -1268,10 +1269,8 @@ func (g *Generator) genExpr(node ast.Node) {
 			g.genExpr(n.Object)
 			g.write("[")
 			if n.HashmapObjKey {
-				g.needsHashmapObjKey = true
-				g.write("zenth_hashmap_obj_key(")
+				g.write("*")
 				g.genExpr(n.Index)
-				g.write(")")
 			} else {
 				g.genExpr(n.Index)
 			}
