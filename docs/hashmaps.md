@@ -64,6 +64,22 @@ for k in m {
 }
 ```
 
+### exists()
+
+Use `.exists(key)` to check whether a key is present in the hashmap:
+
+```zenth
+var scores = hashmap(str, int);
+scores["Alice"] = 95;
+
+if scores.exists("Alice") {
+    println("found Alice");
+}
+if !scores.exists("Bob") {
+    println("Bob not found");
+}
+```
+
 ### keys() and values()
 
 Use `.keys()` and `.values()` to get slices of keys or values:

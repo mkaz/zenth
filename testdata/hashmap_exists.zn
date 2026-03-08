@@ -1,0 +1,29 @@
+// Test hashmap.exists(key) method
+
+fn main() {
+    var scores = hashmap(str, int);
+    scores["Alice"] = 95;
+    scores["Bob"] = 80;
+
+    // Key that exists
+    if scores.exists("Alice") {
+        println("alice exists");
+    }
+
+    // Key that doesn't exist
+    if !scores.exists("Charlie") {
+        println("charlie missing");
+    }
+
+    // After adding
+    scores["Charlie"] = 70;
+    if scores.exists("Charlie") {
+        println("charlie added");
+    }
+
+    // Integer key hashmap
+    var grid = hashmap(int, str);
+    grid[0] = "origin";
+    println("has0=" + str(grid.exists(0)));
+    println("has1=" + str(grid.exists(1)));
+}

@@ -639,13 +639,20 @@ func (c *Checker) checkForStmt(s *ast.ForStmt) ZType {
 func (c *Checker) checkForInStmt(s *ast.ForInStmt) ZType {
 	iterType := c.checkNode(s.Iterable)
 
+	// Helper to define a loop variable in scope, skipping "_" discard
+	defineLoopVar := func(name string, typ ZType) {
+		if name != "_" {
+			c.scope.Define(&Symbol{Name: name, Type: typ})
+		}
+	}
+
 	c.pushScope()
 	switch t := iterType.(type) {
 	case *SliceType:
 		if s.Index != "" {
-			c.scope.Define(&Symbol{Name: s.Index, Type: TypeInt})
+			defineLoopVar(s.Index, TypeInt)
 		}
-		c.scope.Define(&Symbol{Name: s.Value, Type: t.Elem})
+		defineLoopVar(s.Value, t.Elem)
 	case *HashmapType:
 		s.IterHashmap = true
 		if objKey, ok := t.Key.(*ObjType); ok {
@@ -653,11 +660,11 @@ func (c *Checker) checkForInStmt(s *ast.ForInStmt) ZType {
 			s.IterHashmapObjType = objKey.Name
 		}
 		if s.Index != "" {
-			c.scope.Define(&Symbol{Name: s.Index, Type: t.Key})
-			c.scope.Define(&Symbol{Name: s.Value, Type: t.Value})
+			defineLoopVar(s.Index, t.Key)
+			defineLoopVar(s.Value, t.Value)
 		} else {
 			// for v in m iterates over keys only
-			c.scope.Define(&Symbol{Name: s.Value, Type: t.Key})
+			defineLoopVar(s.Value, t.Key)
 		}
 	case *SetType:
 		s.IterSet = true
@@ -668,14 +675,14 @@ func (c *Checker) checkForInStmt(s *ast.ForInStmt) ZType {
 			s.IterSetTupleStruct = tupleStructName(tt)
 			s.IterSetTupleFieldTypes = tupleFieldGoTypes(tt)
 		}
-		c.scope.Define(&Symbol{Name: s.Value, Type: t.Elem})
+		defineLoopVar(s.Value, t.Elem)
 	default:
 		if iterType.Equals(TypeStr) {
 			s.IterStr = true
 			if s.Index != "" {
-				c.scope.Define(&Symbol{Name: s.Index, Type: TypeInt})
+				defineLoopVar(s.Index, TypeInt)
 			}
-			c.scope.Define(&Symbol{Name: s.Value, Type: TypeStr})
+			defineLoopVar(s.Value, TypeStr)
 		} else {
 			c.errorf(s.Pos(), "cannot iterate over %s", iterType)
 		}
@@ -983,6 +990,24 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.SliceMethod = true
 				return sliceType.Elem
+			case "sum":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "sum() takes no arguments, got %d", len(e.Args))
+				}
+				if !IsNumeric(sliceType.Elem) {
+					c.errorf(e.Pos(), "sum() requires a numeric array, got %s", objType)
+				}
+				e.SliceMethod = true
+				return sliceType.Elem
+			case "sorted":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "sorted() takes no arguments, got %d", len(e.Args))
+				}
+				if !IsNumeric(sliceType.Elem) && !sliceType.Elem.Equals(TypeStr) {
+					c.errorf(e.Pos(), "sorted() requires a numeric or string array, got %s", objType)
+				}
+				e.SliceMethod = true
+				return sliceType
 			}
 		}
 		// Check for built-in file methods
@@ -1256,6 +1281,18 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.HashmapMethod = "values"
 				return &SliceType{Elem: hmType.Value}
+			case "exists":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "exists() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !hmType.Key.Equals(argType) {
+						c.errorf(e.Args[0].Pos(), "exists() argument type %s does not match hashmap key type %s", argType, hmType.Key)
+					}
+				}
+				e.HashmapMethod = "exists"
+				return TypeBool
 			}
 		}
 

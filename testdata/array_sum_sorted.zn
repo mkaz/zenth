@@ -1,0 +1,48 @@
+// Test array.sum() and array.sorted() methods
+
+fn main() {
+    // sum on integers
+    let nums = [1, 2, 3, 4, 5];
+    println("sum=" + str(nums.sum()));
+
+    // sum on floats
+    let floats = [1.5, 2.5, 3.0];
+    println("fsum=" + str(floats.sum()));
+
+    // sum on empty gives zero
+    let empty: array(int) = [];
+    println("esum=" + str(empty.sum()));
+
+    // sorted integers
+    let unsorted = [3, 1, 4, 1, 5, 9, 2, 6];
+    let s = unsorted.sorted();
+    // Original unchanged
+    println("orig=" + str(unsorted[0]));
+    // Sorted result
+    var result = "";
+    for v in s {
+        if result != "" { result = result + ","; }
+        result = result + str(v);
+    }
+    println("sorted=" + result);
+
+    // sorted strings
+    let words = ["banana", "apple", "cherry"];
+    let sw = words.sorted();
+    var sresult = "";
+    for w in sw {
+        if sresult != "" { sresult = sresult + ","; }
+        sresult = sresult + w;
+    }
+    println("words=" + sresult);
+
+    // sorted negative numbers
+    let negs = [-5, 3, -1, 7, 0];
+    let sn = negs.sorted();
+    var nresult = "";
+    for v in sn {
+        if nresult != "" { nresult = nresult + ","; }
+        nresult = nresult + str(v);
+    }
+    println("negs=" + nresult);
+}

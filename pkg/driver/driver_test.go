@@ -294,6 +294,36 @@ func TestBuildAndRun(t *testing.T) {
 				"pairs=2",
 			},
 		},
+		{
+			file: "discard.zn",
+			contains: []string{
+				"count=5",
+				"abc",
+				"012",
+			},
+		},
+		{
+			file: "hashmap_exists.zn",
+			contains: []string{
+				"alice exists",
+				"charlie missing",
+				"charlie added",
+				"has0=true",
+				"has1=false",
+			},
+		},
+		{
+			file: "array_sum_sorted.zn",
+			contains: []string{
+				"sum=15",
+				"fsum=7",
+				"esum=0",
+				"orig=3",
+				"sorted=1,1,2,3,4,5,6,9",
+				"words=apple,banana,cherry",
+				"negs=-5,-1,0,3,7",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -461,6 +491,14 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/repeat_bad_arg.zn",
 			errMsg: "repeat() argument must be int",
+		},
+		{
+			file:   "errors/sum_non_numeric.zn",
+			errMsg: "sum() requires a numeric array",
+		},
+		{
+			file:   "errors/sorted_non_sortable.zn",
+			errMsg: "sorted() requires a numeric or string array",
 		},
 	}
 

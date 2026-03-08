@@ -44,9 +44,12 @@ type Generator struct {
 	needsMapget        bool
 	needsHashmapKeys   bool
 	needsHashmapValues bool
+	needsHashmapExists bool
 	needsSetExists     bool
 	needsSliceMax      bool
 	needsSliceMin      bool
+	needsSliceSum      bool
+	needsSliceSorted   bool
 	tupleStructs       map[string][]string // struct name -> field Go types
 	needsFlag          bool
 	flagDecls          []flagDecl
@@ -497,6 +500,13 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("}")
 		g.writeln("")
 	}
+	if g.needsHashmapExists {
+		g.writeln("func zenth_hashmap_exists[K comparable, V any](m map[K]V, key K) bool {")
+		g.writeln("\t_, ok := m[key]")
+		g.writeln("\treturn ok")
+		g.writeln("}")
+		g.writeln("")
+	}
 	if g.needsSetExists {
 		g.writeln("func zenth_set_exists[T comparable](s map[T]struct{}, elem T) bool {")
 		g.writeln("\t_, ok := s[elem]")
@@ -519,6 +529,23 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\tm := s[0]")
 		g.writeln("\tfor _, v := range s[1:] { if v < m { m = v } }")
 		g.writeln("\treturn m")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsSliceSum {
+		g.writeln("func zenth_slice_sum[T interface{ ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 }](s []T) T {")
+		g.writeln("\tvar total T")
+		g.writeln("\tfor _, v := range s { total += v }")
+		g.writeln("\treturn total")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsSliceSorted {
+		g.writeln("func zenth_slice_sorted[T interface{ ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 | ~string }](s []T) []T {")
+		g.writeln("\tc := make([]T, len(s))")
+		g.writeln("\tcopy(c, s)")
+		g.writeln("\tsort.Slice(c, func(i, j int) bool { return c[i] < c[j] })")
+		g.writeln("\treturn c")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -1128,18 +1155,29 @@ func (g *Generator) genForInStmt(s *ast.ForInStmt) {
 	if s.IterStr {
 		// Go's range over string yields (index, rune); wrap value in string().
 		g.write("for ")
-		if s.Index != "" {
-			g.write(s.Index)
+		if s.Value == "_" && (s.Index == "" || s.Index == "_") {
+			g.write("range ")
+			g.genExpr(s.Iterable)
+			g.write(" {\n")
+			g.indent++
 		} else {
-			g.write("_")
+			if s.Index != "" {
+				g.write(s.Index)
+			} else {
+				g.write("_")
+			}
+			g.write(", _rune := range ")
+			g.genExpr(s.Iterable)
+			g.write(" {\n")
+			g.indent++
+			if s.Value != "_" {
+				g.writef("%s := string(_rune)\n", s.Value)
+			}
 		}
-		g.write(", _rune := range ")
-		g.genExpr(s.Iterable)
-		g.write(" {\n")
-		g.indent++
-		g.writef("%s := string(_rune)\n", s.Value)
 	} else if s.IterHashmap {
 		// Go's range over map yields (key, value)
+		indexIsDiscard := s.Index == "_"
+		valueIsDiscard := s.Value == "_"
 		g.write("for ")
 		if s.IterHashmapObjKey {
 			// Obj keys are stored as struct values in Go maps;
@@ -1151,10 +1189,22 @@ func (g *Generator) genForInStmt(s *ast.ForInStmt) {
 				g.write("_objkey_")
 			}
 		} else if s.Index != "" {
-			// for k, v in m => for k, v := range m
-			g.write(s.Index)
-			g.write(", ")
-			g.write(s.Value)
+			if indexIsDiscard && valueIsDiscard {
+				g.write("range ")
+				g.genExpr(s.Iterable)
+				g.write(" {\n")
+				g.indent++
+				// Skip the rest of hashmap iteration setup
+				goto hashmapDone
+			} else if valueIsDiscard {
+				// for k, _ in m => for k := range m
+				g.write(s.Index)
+			} else {
+				// for k, v in m => for k, v := range m
+				g.write(s.Index)
+				g.write(", ")
+				g.write(s.Value)
+			}
 		} else {
 			// for k in m => for k := range m (keys only)
 			g.write(s.Value)
@@ -1172,9 +1222,15 @@ func (g *Generator) genForInStmt(s *ast.ForInStmt) {
 			g.writef("%s := &%s{}\n", keyVar, s.IterHashmapObjType)
 			g.writef("*%s = _objkey_\n", keyVar)
 		}
+	hashmapDone:
 	} else if s.IterSet {
 		// Go's range over map[T]struct{} yields (key, _)
-		if s.IterSetTupleStruct != "" {
+		if s.Value == "_" {
+			g.write("for range ")
+			g.genExpr(s.Iterable)
+			g.write(" {\n")
+			g.indent++
+		} else if s.IterSetTupleStruct != "" {
 			// For set(tuple(...)), range yields struct keys; convert back to []interface{}
 			g.tupleStructs[s.IterSetTupleStruct] = s.IterSetTupleFieldTypes
 			g.write("for _stup_ := range ")
@@ -1192,16 +1248,29 @@ func (g *Generator) genForInStmt(s *ast.ForInStmt) {
 			g.indent++
 		}
 	} else {
+		indexIsDiscard := s.Index == "" || s.Index == "_"
+		valueIsDiscard := s.Value == "_"
 		g.write("for ")
-		if s.Index != "" {
+		if indexIsDiscard && valueIsDiscard {
+			// Both discarded: for range expr
+			g.write("range ")
+			g.genExpr(s.Iterable)
+		} else if valueIsDiscard {
+			// Only index needed: for i := range expr
 			g.write(s.Index)
+			g.write(" := range ")
+			g.genExpr(s.Iterable)
 		} else {
-			g.write("_")
+			if s.Index != "" {
+				g.write(s.Index)
+			} else {
+				g.write("_")
+			}
+			g.write(", ")
+			g.write(s.Value)
+			g.write(" := range ")
+			g.genExpr(s.Iterable)
 		}
-		g.write(", ")
-		g.write(s.Value)
-		g.write(" := range ")
-		g.genExpr(s.Iterable)
 		g.write(" {\n")
 		g.indent++
 	}
@@ -1708,6 +1777,14 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.genExpr(field.Object)
 				g.write(")")
 				return
+			case "exists":
+				g.needsHashmapExists = true
+				g.write("zenth_hashmap_exists(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(")")
+				return
 			}
 		}
 	}
@@ -1917,6 +1994,19 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			case "min":
 				g.needsSliceMin = true
 				g.write("zenth_slice_min(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "sum":
+				g.needsSliceSum = true
+				g.write("zenth_slice_sum(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "sorted":
+				g.needsSliceSorted = true
+				g.imports["sort"] = ""
+				g.write("zenth_slice_sorted(")
 				g.genExpr(field.Object)
 				g.write(")")
 				return

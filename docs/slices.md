@@ -114,6 +114,35 @@ println(str(floats.min())); // 1.41
 
 These methods work on any numeric array (`int`, `f64`, `i32`, etc.) and panic at runtime if called on an empty array.
 
+## Sum
+
+Use `.sum()` to compute the sum of a numeric array:
+
+```zenth
+let nums = [1, 2, 3, 4, 5];
+println(str(nums.sum()));  // 15
+
+let floats = [1.5, 2.5, 3.0];
+println(str(floats.sum())); // 7
+```
+
+Returns zero for empty arrays.
+
+## Sorted
+
+Use `.sorted()` to get a new sorted copy of an array. Works on numeric and string arrays:
+
+```zenth
+let unsorted = [3, 1, 4, 1, 5, 9];
+let s = unsorted.sorted();  // [1, 1, 3, 4, 5, 9]
+// unsorted is unchanged
+
+let words = ["banana", "apple", "cherry"];
+let sw = words.sorted();  // ["apple", "banana", "cherry"]
+```
+
+The original array is not modified. Strings are sorted lexicographically.
+
 ## Transforming Slices
 
 Use `.map()` to transform each element and `.filter()` to select elements:

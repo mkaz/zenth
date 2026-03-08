@@ -190,6 +190,14 @@ for step in range(0, 100) {
     println(str(step));
 }
 
+// _ discard for unused loop variables
+for _ in range(0, 10) {
+    println("tick");
+}
+for _, item in items {   // discard index
+    println(item);
+}
+
 // while-style
 for running {
     process();
@@ -265,9 +273,14 @@ let sub = numbers[1:3];   // [2, 3]
 // Concatenation
 let combined = [1, 2] + [3, 4];
 
-// Max and min on numeric arrays
+// Max, min, sum on numeric arrays
 let biggest = numbers.max();    // 5
 let smallest = numbers.min();   // 1
+let total = numbers.sum();      // 15
+
+// Sorted (returns new sorted copy)
+let s = [3, 1, 4].sorted();    // [1, 3, 4]
+let sw = ["b", "a"].sorted();  // ["a", "b"]
 
 // Type conversions for string arrays
 let strs = ["1", "2", "3"];
@@ -330,6 +343,9 @@ for key in scores {       // keys only
 // Methods
 let keys = scores.keys();       // array(str)
 let vals = scores.values();     // array(int)
+if scores.exists("Alice") {     // check key existence
+    println("found");
+}
 
 // Object keys (value-based lookup)
 obj Point {

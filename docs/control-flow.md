@@ -117,6 +117,25 @@ for i in range(0, 10, 2) {
 }
 ```
 
+Use `_` to discard the loop variable when you only need the repetition:
+
+```zenth
+for _ in range(0, 10) {
+    println("tick");
+}
+```
+
+The `_` discard also works as the index or value in two-variable loops:
+
+```zenth
+for _, item in items {   // discard index
+    println(item);
+}
+for i, _ in items {      // discard value
+    println(str(i));
+}
+```
+
 Iterating over a string yields individual characters as strings:
 
 ```zenth

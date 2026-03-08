@@ -1,0 +1,23 @@
+// Test _ discard in for-in loops
+
+fn main() {
+    // _ as value in for-in (discard each element)
+    var count = 0;
+    for _ in range(0, 5) {
+        count++;
+    }
+    println("count=" + str(count));
+
+    // _ as index in for-in
+    let items = ["a", "b", "c"];
+    for _, item in items {
+        print(item);
+    }
+    println("");
+
+    // _ as value with index
+    for i, _ in items {
+        print(str(i));
+    }
+    println("");
+}
