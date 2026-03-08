@@ -1,8 +1,6 @@
 ---
 name: zenth
-description: Zenth is a programming language that combines Go and Python syntax,
-it transpiles Zenth to Go and then uses Go build tools to compile down to a
-binary. Use this skill for writing Zenth programs.
+description: Zenth is a programming language that combines Go and Python syntax, it transpiles Zenth to Go and then uses Go build tools to compile down to a binary. Use this skill for writing Zenth programs.
 ---
 
 # Zenth Programming Language - LLM Agent Guide
