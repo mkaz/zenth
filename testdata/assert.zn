@@ -1,0 +1,24 @@
+// Test assert and assert_eq built-in functions
+
+fn main() {
+    // assert with true condition
+    assert(1 + 1 == 2);
+    assert(true);
+    assert("hello".starts_with("hel"));
+
+    // assert_eq with matching values
+    assert_eq(1 + 1, 2);
+    assert_eq("hello", "hello");
+    assert_eq(true, true);
+    assert_eq(3.14, 3.14);
+
+    // assert_eq with computed values
+    let nums = [1, 2, 3, 4, 5];
+    assert_eq(nums.sum(), 15);
+    assert_eq(nums.max(), 5);
+    assert_eq(nums.min(), 1);
+
+    assert_eq("fold along x=5".strip_prefix("fold along "), "x=5");
+
+    println("all assertions passed");
+}

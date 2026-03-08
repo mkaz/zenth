@@ -7,7 +7,7 @@ import (
 	"github.com/mkaz/zenth/pkg/driver"
 )
 
-const version = "0.3.5"
+const version = "0.4.0"
 
 func main() {
 	if len(os.Args) < 2 {
@@ -20,6 +20,8 @@ func main() {
 		handleBuild()
 	case "run":
 		handleRun()
+	case "test":
+		handleTest()
 	case "version":
 		fmt.Printf("zenth %s\n", version)
 	case "help", "--help", "-h":
@@ -117,18 +119,52 @@ func handleRun() {
 	}
 }
 
+func handleTest() {
+	var verbose bool
+	path := "tests" // default test directory
+
+	args := os.Args[2:]
+	for i := 0; i < len(args); i++ {
+		switch args[i] {
+		case "-v", "--verbose":
+			verbose = true
+		default:
+			if args[i][0] == '-' {
+				fatal("unknown flag: %s", args[i])
+			}
+			path = args[i]
+		}
+	}
+
+	results, err := driver.RunTests(path, verbose)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
+	}
+
+	output, allPassed := driver.FormatResults(results)
+	fmt.Print(output)
+	if !allPassed {
+		os.Exit(1)
+	}
+}
+
 func printUsage() {
 	fmt.Println(`zenth - The Zenth Programming Language
 
 Usage:
   zenth build [flags] <file.zn>    Compile a Zenth program to a binary
   zenth run [flags] <file.zn>      Compile and run a Zenth program
+  zenth test [path]                Run tests (default: tests/ directory)
   zenth version                    Print version
   zenth help                       Show this help
 
 Build flags:
   -o <name>       Output binary name (default: input filename without .zn)
   --emit-go       Print generated Go source instead of compiling
+  -v, --verbose   Verbose output
+
+Test flags:
   -v, --verbose   Verbose output`)
 }
 

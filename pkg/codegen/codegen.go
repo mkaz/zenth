@@ -50,6 +50,8 @@ type Generator struct {
 	needsSliceMin      bool
 	needsSliceSum      bool
 	needsSliceSorted   bool
+	needsAssert        bool
+	needsAssertEq      bool
 	tupleStructs       map[string][]string // struct name -> field Go types
 	needsFlag          bool
 	flagDecls          []flagDecl
@@ -537,6 +539,22 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\tvar total T")
 		g.writeln("\tfor _, v := range s { total += v }")
 		g.writeln("\treturn total")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsAssert {
+		g.writeln("func zenth_assert(cond bool, file string, line int) {")
+		g.writeln("\tif !cond {")
+		g.writeln("\t\tpanic(fmt.Sprintf(\"assert failed at %s:%d\", file, line))")
+		g.writeln("\t}")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsAssertEq {
+		g.writeln("func zenth_assert_eq[T comparable](got, expected T, file string, line int) {")
+		g.writeln("\tif got != expected {")
+		g.writeln("\t\tpanic(fmt.Sprintf(\"assert_eq failed at %s:%d\\n  expected: %v\\n       got: %v\", file, line, expected, got))")
+		g.writeln("\t}")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -1564,6 +1582,22 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.genArgList(c.Args)
 				g.write(")")
 			}
+			return
+		case "assert":
+			g.needsAssert = true
+			pos := c.Pos()
+			g.writef("zenth_assert(")
+			g.genExpr(c.Args[0])
+			g.writef(", %q, %d)", pos.File, pos.Line)
+			return
+		case "assert_eq":
+			g.needsAssertEq = true
+			pos := c.Pos()
+			g.writef("zenth_assert_eq(")
+			g.genExpr(c.Args[0])
+			g.write(", ")
+			g.genExpr(c.Args[1])
+			g.writef(", %q, %d)", pos.File, pos.Line)
 			return
 		case "len":
 			g.write("len(")

@@ -122,9 +122,6 @@ cp -r extras/vim/* ~/.config/nvim/
 
 This gives you syntax highlighting, filetype detection, and indentation for `.zn` files.
 
-## Status
-
-Zenth is early and evolving. The basics work well -- functions, variables, objects, control flow, type checking, slices, file I/O -- but features like enums, interfaces, error handling, and multi-file projects aren't there yet. See the [docs](docs/README.md) for what's currently supported.
 
 ## License
 

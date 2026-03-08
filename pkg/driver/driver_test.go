@@ -324,6 +324,10 @@ func TestBuildAndRun(t *testing.T) {
 				"negs=-5,-1,0,3,7",
 			},
 		},
+		{
+			file:     "assert.zn",
+			contains: []string{"all assertions passed"},
+		},
 	}
 
 	for _, tt := range tests {

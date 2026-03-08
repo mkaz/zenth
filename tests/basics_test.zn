@@ -1,0 +1,58 @@
+// Basic language feature tests
+
+fn test_arithmetic() {
+    assert_eq(2 + 3, 5);
+    assert_eq(10 - 4, 6);
+    assert_eq(3 * 7, 21);
+    assert_eq(10 / 3, 3);
+    assert_eq(10 % 3, 1);
+}
+
+fn test_variables() {
+    let x = 42;
+    assert_eq(x, 42);
+
+    var y = 10;
+    y = 20;
+    assert_eq(y, 20);
+
+    y += 5;
+    assert_eq(y, 25);
+}
+
+fn test_booleans() {
+    assert(true);
+    assert(!false);
+    assert(1 < 2);
+    assert(2 > 1);
+    assert(3 >= 3);
+    assert(3 <= 3);
+    assert_eq(true, true);
+    assert_eq(false, false);
+}
+
+fn test_strings() {
+    let s = "hello";
+    assert_eq(len(s), 5);
+    assert_eq(s.upper(), "HELLO");
+    assert_eq("WORLD".lower(), "world");
+    assert(s.starts_with("hel"));
+    assert(s.ends_with("llo"));
+    assert(s.contains("ell"));
+}
+
+fn test_string_methods() {
+    assert_eq("  hi  ".strip(), "hi");
+    assert_eq("fold along x=5".strip_prefix("fold along "), "x=5");
+    assert_eq("photo.png".strip_suffix(".png"), "photo");
+    assert_eq(".".repeat(3), "...");
+    assert_eq("banana".find("na"), 2);
+    assert_eq("banana".count("na"), 2);
+    assert_eq("a-b-a".replace("a", "x"), "x-b-x");
+}
+
+fn test_if_expression() {
+    let x = 10;
+    let label = if x > 5 { "big" } else { "small" };
+    assert_eq(label, "big");
+}

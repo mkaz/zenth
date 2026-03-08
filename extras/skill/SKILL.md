@@ -477,6 +477,8 @@ Available modules map to Go stdlib: `fmt`, `math`, `os`, `strings`
 | `file(path)` | Create file handle |
 | `flag(default=val)` | Command-line flag (name inferred from variable) |
 | `exit(code)` | Exit program with status code |
+| `assert(cond)` | Panic if `cond` is false (reports file:line) |
+| `assert_eq(got, expected)` | Panic if `got != expected` (reports file:line and both values) |
 
 ### File I/O
 
@@ -597,9 +599,53 @@ fn main() {
 }
 ```
 
+## Testing
+
+Zenth has a built-in test runner. Test files use `_test.zn` suffix and live in a `tests/` directory.
+
+### Running Tests
+
+```sh
+zenth test               # run all tests in tests/
+zenth test path/to/dir   # run tests in specific directory
+zenth test file_test.zn  # run a single test file
+```
+
+### Writing Tests
+
+Test functions start with `test_` and need no `fn main()`:
+
+```zenth
+// tests/math_test.zn
+
+fn test_addition() {
+    assert_eq(2 + 3, 5);
+    assert(10 > 0);
+}
+
+fn test_strings() {
+    assert_eq("hello".upper(), "HELLO");
+    assert("hello".contains("ell"));
+}
+```
+
+### Assertions
+
+- `assert(cond)` -- panics with `file:line` if `cond` is false
+- `assert_eq(got, expected)` -- panics with `file:line` and both values if `got != expected`
+
+Both assertions are available in all Zenth programs, not just test files.
+
+### Conventions
+
+- Test files: `*_test.zn` in a `tests/` directory
+- Test functions: `fn test_*()` with no parameters and no return type
+- Helper functions (without `test_` prefix) can be defined in test files
+- Exit code is `0` if all tests pass, `1` if any fail
+
 ## Important Notes
 
-- Every program needs a `fn main() { ... }` entry point
+- Every program needs a `fn main() { ... }` entry point (except test files)
 - Statements end with semicolons `;`
 - Blocks use curly braces `{ }`
 - `let` variables cannot be reassigned; use `var` for mutable state
@@ -611,12 +657,3 @@ fn main() {
 - Objects use `self` (not `this`) for method access
 - Object constructors always use named arguments: `Point(x=1, y=2)`
 
-## What's Not Yet Implemented
-
-- Enums / tagged unions
-- Interfaces (parsed but not type-checked)
-- Error handling (`try`)
-- Multiple return values
-- Concurrency / goroutines
-- Generics
-- Multi-file projects / user-defined packages

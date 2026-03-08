@@ -1376,6 +1376,12 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 		if ident.Name == "flag" {
 			return c.checkFlagCall(e)
 		}
+		if ident.Name == "assert" {
+			return c.checkAssertCall(e)
+		}
+		if ident.Name == "assert_eq" {
+			return c.checkAssertEqCall(e)
+		}
 		// Check if this is an obj constructor call
 		if _, ok := c.objs[ident.Name]; ok {
 			return c.checkObjConstructor(e, ident.Name)
@@ -2244,6 +2250,35 @@ func (c *Checker) checkMatchExpr(e *ast.MatchExpr) ZType {
 	}
 	e.GoType = goTypeName(firstType)
 	return firstType
+}
+
+func (c *Checker) checkAssertCall(e *ast.CallExpr) ZType {
+	args := c.getPositionalArgsForBuiltin(e, "assert")
+	if len(args) != 1 {
+		c.errorf(e.Pos(), "assert() takes exactly 1 argument, got %d", len(args))
+		return TypeVoid
+	}
+	argType := c.checkNode(args[0])
+	if !argType.Equals(TypeBool) {
+		c.errorf(args[0].Pos(), "assert() argument must be bool, got %s", argType)
+	}
+	e.ResolvedFunc = "assert"
+	return TypeVoid
+}
+
+func (c *Checker) checkAssertEqCall(e *ast.CallExpr) ZType {
+	args := c.getPositionalArgsForBuiltin(e, "assert_eq")
+	if len(args) != 2 {
+		c.errorf(e.Pos(), "assert_eq() takes exactly 2 arguments, got %d", len(args))
+		return TypeVoid
+	}
+	gotType := c.checkNode(args[0])
+	expectedType := c.checkNode(args[1])
+	if !gotType.Equals(expectedType) {
+		c.errorf(args[1].Pos(), "assert_eq() arguments must be the same type, got %s and %s", gotType, expectedType)
+	}
+	e.ResolvedFunc = "assert_eq"
+	return TypeVoid
 }
 
 // isComparableType checks if a Zenth type maps to a comparable Go type (usable as map key).
