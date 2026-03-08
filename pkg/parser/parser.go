@@ -809,6 +809,10 @@ func (p *Parser) parseCallExpr(callee ast.Node) *ast.CallExpr {
 				break
 			}
 			p.advance()
+			// Allow trailing comma
+			if p.peek() == token.RParen {
+				break
+			}
 		}
 	}
 	p.expect(token.RParen)
@@ -982,6 +986,10 @@ func (p *Parser) parseArrayLit() *ast.ArrayLitExpr {
 				break
 			}
 			p.advance()
+			// Allow trailing comma
+			if p.peek() == token.RBracket {
+				break
+			}
 		}
 	}
 	p.expect(token.RBracket)

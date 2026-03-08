@@ -2,11 +2,11 @@
 
 A programming language built to match my personal tastes.
 
-Zenth takes the parts I like from Python and Go -- Python's readability and ease of use, Go's type safety and compiled speed -- and combines them into something consistent and simple. Curly braces and semicolons instead of whitespace defining structure, type inference where it's obvious, explicit types where it matters.
+Zenth takes the parts I like from Python and Go and mashes them up into something hopefully consistent and simple. I like Python's readability and ease of use, and Go's compilation to a binary and toolset. For example, Zenth uses curly braces and semicolons instead of whitespace to define structure, requires types to be used (using inference where it can), and simplifies object creation and usage.
 
-It compiles to native binaries using Go's toolchain, so you get the performance, garbage collection, and cross-compilation benefits of Go.
+It compiles to native binaries using Go's toolchain, so gets the performance, garbage collection, and cross-compilation benefits of Go.
 
-This is a personal project. It's fun to hack on and pleasant to write small programs in, but probably shouldn't be used for anything too serious.
+**Note:** This is a personal project. It's fun to hack on and pleasant to write small programs in, but probably shouldn't be used for anything too serious.
 
 ## What it looks like
 

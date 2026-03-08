@@ -216,11 +216,11 @@ match day {
     _ => println("Other");
 }
 
-// match as expression
+// match as expression (arms use commas, not semicolons)
 let label = match day {
-    1 => "Monday";
-    2 => "Tuesday";
-    _ => "Other";
+    1 => "Monday",
+    2 => "Tuesday",
+    _ => "Other"
 };
 
 // break and continue work in all loops
@@ -508,9 +508,10 @@ Run with: `./program --debug --count=10 --msg="hello"`
 ### Multi-Variable Assignment
 
 ```zenth
-var a, b, c = 1, 2, 3;
+var a = 1;
+var b = 2;
 
-// Swap
+// Swap without temp variable
 a, b = b, a;
 ```
 
@@ -573,14 +574,14 @@ fn main() {
 fn main() {
     for var i = 1; i <= 100; i++ {
         let result = match i % 15 {
-            0 => "FizzBuzz";
+            0 => "FizzBuzz",
             _ => match i % 3 {
-                0 => "Fizz";
+                0 => "Fizz",
                 _ => match i % 5 {
-                    0 => "Buzz";
-                    _ => str(i);
-                };
-            };
+                    0 => "Buzz",
+                    _ => str(i)
+                }
+            }
         };
         println(result);
     }
@@ -656,4 +657,8 @@ Both assertions are available in all Zenth programs, not just test files.
 - `match` replaces `switch`; use `_` for the default case
 - Objects use `self` (not `this`) for method access
 - Object constructors always use named arguments: `Point(x=1, y=2)`
+- **match statements** use semicolons: `1 => println("one");`
+- **match expressions** (used as values) use commas: `1 => "one",`
+- Trailing commas are allowed in array literals and function call arguments
+- Empty array `[]` can be passed where the type is known from context (field, variable annotation)
 

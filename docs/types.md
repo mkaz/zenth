@@ -80,11 +80,14 @@ Indexing into a string returns a one-character `str`.
 
 ## Nil
 
-`nil` represents the absence of a value:
+`nil` represents the absence of a value for reference types (hashmaps, slices, objects). It must be used with an explicit type annotation:
 
 ```zenth
-let nothing = nil;
+var m: hashmap(str, int) = nil;
+var items: array(int) = nil;
 ```
+
+Primitive types (`int`, `str`, `bool`, `f64`) cannot be nil.
 
 ## Composite Types
 
@@ -166,17 +169,17 @@ println(person.name);  // named access
 
 See [Tuples](tuples.md) for named tuples, destructuring, and usage in functions.
 
-### Structs
+### Objects
 
 User-defined types with named fields:
 
 ```zenth
-struct Point {
+obj Point {
     x: f64;
     y: f64;
 }
 
-let p = Point{ x: 1.0, y: 2.0 };
+let p = Point(x=1.0, y=2.0);
 ```
 
 See [Objects](objects.md) for methods and `self`.

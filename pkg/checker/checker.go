@@ -2105,7 +2105,9 @@ func (c *Checker) checkObjConstructor(e *ast.CallExpr, name string) ZType {
 		}
 		actual := c.checkNode(named.Value)
 		if !expected.Equals(actual) {
-			c.errorf(named.Pos(), "field '%s': expected %s, got %s", named.Name, expected, actual)
+			if !c.isTypedEmptySliceAssignment(named.Value, expected, actual) {
+				c.errorf(named.Pos(), "field '%s': expected %s, got %s", named.Name, expected, actual)
+			}
 		}
 	}
 
