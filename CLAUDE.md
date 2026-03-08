@@ -7,11 +7,18 @@ A compiled programming language that blends Go's type discipline with Python's s
 
 For every change ALWAYS follow these directives:
 
+- For every language change, update the documentation thoroughly on how to use
+  the new feature, include plenty of examples.
+
 - For every language change, update the vim syntax in `extras/vim/` when relevant
     - For example: if a new keyword, operator, or other language construct is added
 
 - For every change, increment the patch version number in `cmd/zenth/main.go`
     - For example: a change will increment 0.1.4 to 0.1.5
+
+- For every change, look at the `extras/skill/SKILL.md` skill file and when
+  relevant update so LLMs working with Zenth will have any updated information
+  on how to use the language.
 
 ## Build, Test, and Development Commands
 
@@ -177,7 +184,7 @@ Standard library modules map to Go stdlib: `fmt`, `math`, `os`, `strings`/`str`
 
 ## Conventions
 
-- Use `justfile` (not Makefile)
+- Use `justfile` as convenience tool to build
 - Obj fields are lowercase in Zenth, exported (capitalized) in generated Go
 - Method names are lowercase in Zenth, exported in generated Go
 - `self` is the implicit receiver name for methods
@@ -196,8 +203,3 @@ Recent history uses short, imperative commit subjects (for example `Add file doc
 Prefer one focused change per commit and keep subject lines under ~72 chars.
 PRs should include: purpose, key implementation notes, tests run (`just test`), and docs updates for language/user-facing behavior changes.
 
-## Current Status (v0.1)
-
-**Working:** functions, let/var/const, type inference, objects (`obj`) with OOP-style methods and `self`, if/else/else-if, for loops (C-style, for-in, while-style, infinite), match statements, compile-time type errors, mutability checking, string/int/float/bool types, slices, obj literals, break/continue, compound assignment (`+=`, `-=`, etc.), `++`/`--`, imports, multi-variable assignment.
-
-**Not yet implemented:** enums/tagged unions, interfaces (parsed but not checked), error handling (`try`), multi-return, concurrency, generics, multi-file projects, user-defined packages.
