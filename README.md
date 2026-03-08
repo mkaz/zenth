@@ -2,9 +2,9 @@
 
 A programming language built to match my personal tastes.
 
-Zenth takes the parts I like from Python and Go -- Python's readability and ease of use, Go's type safety and compiled speed -- and combines them into something consistent and simple. Curly braces and semicolons for structure (no whitespace debates), type inference where it's obvious, explicit types where it matters.
+Zenth takes the parts I like from Python and Go -- Python's readability and ease of use, Go's type safety and compiled speed -- and combines them into something consistent and simple. Curly braces and semicolons instead of whitespace defining structure, type inference where it's obvious, explicit types where it matters.
 
-It compiles to native binaries through Go, so you get real performance, garbage collection, and cross-compilation without thinking about it.
+It compiles to native binaries using Go's toolchain, so you get the performance, garbage collection, and cross-compilation benefits of Go.
 
 This is a personal project. It's fun to hack on and pleasant to write small programs in, but probably shouldn't be used for anything too serious.
 
@@ -87,8 +87,7 @@ zenth build hello.zn
 
 - **Immutable by default** -- `let` is immutable, `var` is mutable, caught at compile time
 - **Type inference** -- locals are inferred, function signatures are explicit
-- **One loop keyword** -- `for` does C-style, for-in, for-range-count, while-style, and infinite loops
-- **Objects with methods** -- define methods inside the object, use `self`
+- **Objects with methods** -- define methods inside the object, `self` pre-declated
 - **Useful object printing** -- objects print as constructor-like values by default
 - **Typed hashmaps** -- create hashmaps with `hashmap(KeyType, ValueType)`
 - **Tuples** -- fixed-size mixed values like `("a", 1)` with `.0`, `.1` access
@@ -112,6 +111,8 @@ See the [docs/](docs/README.md) for the full language reference:
 
 ## Editor support
 
+### Vim 
+
 Vim/Neovim syntax highlighting is included in `extras/vim/`. To install, copy or symlink it into your Vim config:
 
 ```sh
@@ -121,6 +122,16 @@ cp -r extras/vim/* ~/.config/nvim/
 ```
 
 This gives you syntax highlighting, filetype detection, and indentation for `.zn` files.
+
+### LLMs
+
+A skill is available at `extras/skill` to provide guidance to your LLM on how to
+write Zenth programs. Copy the `skill` directory to your providers skills
+folder, renaming to `zenth`. For Claude Code:
+
+```sh
+cp -r extras/skill ~/.claude/skills/zenth
+```
 
 
 ## License
