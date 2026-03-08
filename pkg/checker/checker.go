@@ -1764,18 +1764,66 @@ func (c *Checker) checkHashmapConstructor(e *ast.CallExpr) ZType {
 }
 
 func (c *Checker) resolveTypeRefArg(arg ast.Node) ZType {
-	ident, ok := arg.(*ast.IdentExpr)
-	if !ok {
-		c.errorf(arg.Pos(), "hashmap() type arguments must be type names, got %T", arg)
+	// Simple identifier: str, int, Point, etc.
+	if ident, ok := arg.(*ast.IdentExpr); ok {
+		if bt := LookupBuiltinType(ident.Name); bt != nil {
+			return bt
+		}
+		if st, ok := c.objs[ident.Name]; ok {
+			return &ObjType{Name: st.Name, Fields: st.Fields}
+		}
+		if alias, ok := c.typeAliases[ident.Name]; ok {
+			return c.resolveTypeExpr(alias)
+		}
+		c.errorf(arg.Pos(), "unknown type: %s", ident.Name)
 		return nil
 	}
-	if bt := LookupBuiltinType(ident.Name); bt != nil {
-		return bt
+	// Nested generic: array(T), hashmap(K, V), etc. parsed as CallExpr
+	if call, ok := arg.(*ast.CallExpr); ok {
+		if callee, ok := call.Callee.(*ast.IdentExpr); ok {
+			switch callee.Name {
+			case "array":
+				if len(call.Args) != 1 {
+					c.errorf(arg.Pos(), "array() type expects exactly 1 argument, got %d", len(call.Args))
+					return nil
+				}
+				elem := c.resolveTypeRefArg(call.Args[0])
+				if elem == nil {
+					return nil
+				}
+				return &SliceType{Elem: elem}
+			case "hashmap":
+				// Filter out named args (like default=)
+				var posArgs []ast.Node
+				for _, a := range call.Args {
+					if _, ok := a.(*ast.NamedArgExpr); !ok {
+						posArgs = append(posArgs, a)
+					}
+				}
+				if len(posArgs) != 2 {
+					c.errorf(arg.Pos(), "hashmap() type expects exactly 2 type arguments, got %d", len(posArgs))
+					return nil
+				}
+				keyType := c.resolveTypeRefArg(posArgs[0])
+				valType := c.resolveTypeRefArg(posArgs[1])
+				if keyType == nil || valType == nil {
+					return nil
+				}
+				return &HashmapType{Key: keyType, Value: valType}
+			case "tuple":
+				elems := make([]ZType, 0, len(call.Args))
+				for _, a := range call.Args {
+					et := c.resolveTypeRefArg(a)
+					if et == nil {
+						return nil
+					}
+					elems = append(elems, et)
+				}
+				return &TupleType{Elems: elems}
+			}
+		}
 	}
-	if st, ok := c.objs[ident.Name]; ok {
-		return &ObjType{Name: st.Name, Fields: st.Fields}
-	}
-	c.errorf(arg.Pos(), "unknown type: %s", ident.Name)
+	c.errorf(arg.Pos(), "hashmap() type arguments must be type names, got %T", arg)
 	return nil
 }
 

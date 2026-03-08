@@ -204,13 +204,22 @@ func (p *Parser) parseTypeExpr() *ast.TypeExpr {
 		return &ast.TypeExpr{TokenPos: pos, Name: "tuple", IsTuple: true, Params: params, ParamNames: paramNames}
 	}
 
-	// Hashmap type: hashmap[K]V
+	// Hashmap type: hashmap[K]V or hashmap(K, V)
 	if p.peek() == token.Ident && p.cur().Literal == "hashmap" && p.peekAt(1) == token.LBracket {
 		p.advance() // hashmap
 		p.advance() // [
 		key := p.parseTypeExpr()
 		p.expect(token.RBracket)
 		val := p.parseTypeExpr()
+		return &ast.TypeExpr{TokenPos: pos, Name: "hashmap", IsHashmap: true, Params: []*ast.TypeExpr{key, val}}
+	}
+	if p.peek() == token.Ident && p.cur().Literal == "hashmap" && p.peekAt(1) == token.LParen {
+		p.advance() // hashmap
+		p.expect(token.LParen)
+		key := p.parseTypeExpr()
+		p.expect(token.Comma)
+		val := p.parseTypeExpr()
+		p.expect(token.RParen)
 		return &ast.TypeExpr{TokenPos: pos, Name: "hashmap", IsHashmap: true, Params: []*ast.TypeExpr{key, val}}
 	}
 

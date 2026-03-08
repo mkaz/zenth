@@ -233,6 +233,10 @@ func TestBuildAndRun(t *testing.T) {
 			contains: []string{"Found: 3", "forward=1"},
 		},
 		{
+			file:     "nested_generics.zn",
+			contains: []string{"2", "b", "c", "100"},
+		},
+		{
 			file: "closures.zn",
 			contains: []string{
 				"doubled: 2,4,6,8,10",
