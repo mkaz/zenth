@@ -102,15 +102,16 @@ func (i *ImportDecl) nodeMarker()    {}
 
 // TypeExpr represents a type expression.
 type TypeExpr struct {
-	TokenPos  token.Pos
-	Name      string      // "int", "str", "bool", etc. or a user type name
-	Params    []*TypeExpr // for parametric types like hashmap[K]V, array(T), tuple(T1, T2)
-	IsSlice   bool        // array(T)
-	IsHashmap bool        // hashmap[K]V
-	IsTuple   bool        // tuple(T1, T2, ...)
+	TokenPos   token.Pos
+	Name       string      // "int", "str", "bool", etc. or a user type name
+	Params     []*TypeExpr // for parametric types like hashmap[K]V, array(T), tuple(T1, T2)
+	IsSlice    bool        // array(T)
+	IsHashmap  bool        // hashmap[K]V
+	IsSet      bool        // set(T)
+	IsTuple    bool        // tuple(T1, T2, ...)
 	IsArray    bool        // [N]T
 	ArrayLen   int         // for fixed arrays
-	ParamNames []string   // for named tuple types: tuple(key: str, value: int)
+	ParamNames []string    // for named tuple types: tuple(key: str, value: int)
 }
 
 func (t *TypeExpr) Pos() token.Pos { return t.TokenPos }
@@ -243,13 +244,14 @@ func (f *ForStmt) nodeMarker()    {}
 
 // ForInStmt represents: for [index,] value in iterable { ... }
 type ForInStmt struct {
-	TokenPos    token.Pos
-	Index       string // empty if no index variable
-	Value       string
-	Iterable    Node
-	Body        *Block
+	TokenPos           token.Pos
+	Index              string // empty if no index variable
+	Value              string
+	Iterable           Node
+	Body               *Block
 	IterStr            bool   // set by checker when iterating over a string
 	IterHashmap        bool   // set by checker when iterating over a hashmap
+	IterSet            bool   // set by checker when iterating over a set
 	IterHashmapObjKey  bool   // set by checker when hashmap key is an obj type
 	IterHashmapObjType string // Go type name of the obj key (e.g. "Point")
 }
@@ -377,6 +379,9 @@ type CallExpr struct {
 	HashmapValGoType  string // concrete Go value type for hashmap constructor
 	HashmapDefaultVal Node   // set by checker: default value expression for hashmap
 	HashmapMethod     string // set by checker: "keys" or "values" for hashmap methods
+	SetCtor           bool   // set by checker for set(T) constructor
+	SetElemGoType     string // concrete Go element type for set constructor
+	SetMethod         string // set by checker: "add", "exists", "remove" for set methods
 	ResolvedFunc      string // set by checker: function key ("name" or "Type.method")
 	FlagName          string // set by checker: variable name for flag() calls
 	FlagGoType        string // set by checker: "bool", "int", "string" for flag() calls

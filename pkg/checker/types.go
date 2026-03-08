@@ -91,6 +91,20 @@ func (m *HashmapType) Equals(other ZType) bool {
 }
 func (m *HashmapType) typeMarker() {}
 
+// SetType represents a set(T) type.
+type SetType struct {
+	Elem ZType
+}
+
+func (s *SetType) String() string { return fmt.Sprintf("set(%s)", s.Elem) }
+func (s *SetType) Equals(other ZType) bool {
+	if o, ok := other.(*SetType); ok {
+		return s.Elem.Equals(o.Elem)
+	}
+	return false
+}
+func (s *SetType) typeMarker() {}
+
 // TupleType represents a heterogenous tuple type.
 type TupleType struct {
 	Elems []ZType

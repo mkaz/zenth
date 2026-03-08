@@ -246,6 +246,9 @@ func (c *Checker) resolveTypeExpr(t *ast.TypeExpr) ZType {
 			Value: c.resolveTypeExpr(t.Params[1]),
 		}
 	}
+	if t.IsSet && len(t.Params) > 0 {
+		return &SetType{Elem: c.resolveTypeExpr(t.Params[0])}
+	}
 	if t.IsSlice && len(t.Params) > 0 {
 		return &SliceType{Elem: c.resolveTypeExpr(t.Params[0])}
 	}
@@ -656,6 +659,12 @@ func (c *Checker) checkForInStmt(s *ast.ForInStmt) ZType {
 			// for v in m iterates over keys only
 			c.scope.Define(&Symbol{Name: s.Value, Type: t.Key})
 		}
+	case *SetType:
+		s.IterSet = true
+		if s.Index != "" {
+			c.errorf(s.Pos(), "set iteration does not support index variable")
+		}
+		c.scope.Define(&Symbol{Name: s.Value, Type: t.Elem})
 	default:
 		if iterType.Equals(TypeStr) {
 			s.IterStr = true
@@ -1192,6 +1201,54 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 			}
 		}
 
+		// Check for built-in set methods
+		if setType, ok := objType.(*SetType); ok {
+			switch field.Field {
+			case "add":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "add() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !setType.Elem.Equals(argType) {
+						c.errorf(e.Args[0].Pos(), "add() argument type %s does not match set element type %s", argType, setType.Elem)
+					}
+				}
+				e.SetMethod = "add"
+				return TypeVoid
+			case "exists":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "exists() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !setType.Elem.Equals(argType) {
+						c.errorf(e.Args[0].Pos(), "exists() argument type %s does not match set element type %s", argType, setType.Elem)
+					}
+				}
+				e.SetMethod = "exists"
+				return TypeBool
+			case "remove":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "remove() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !setType.Elem.Equals(argType) {
+						c.errorf(e.Args[0].Pos(), "remove() argument type %s does not match set element type %s", argType, setType.Elem)
+					}
+				}
+				e.SetMethod = "remove"
+				return TypeVoid
+			case "length":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "length() takes no arguments, got %d", len(e.Args))
+				}
+				e.SetMethod = "length"
+				return TypeInt
+			}
+		}
+
 		// Unknown method call on a typed value should be a semantic error.
 		for _, arg := range e.Args {
 			c.checkNode(arg)
@@ -1207,6 +1264,9 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 		}
 		if ident.Name == "hashmap" {
 			return c.checkHashmapConstructor(e)
+		}
+		if ident.Name == "set" {
+			return c.checkSetConstructor(e)
 		}
 		if ident.Name == "flag" {
 			return c.checkFlagCall(e)
@@ -1449,7 +1509,9 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 		argType := c.checkNode(e.Args[0])
 		if _, ok := argType.(*SliceType); !ok && !argType.Equals(TypeStr) {
 			if _, ok := argType.(*HashmapType); !ok {
-				c.errorf(e.Args[0].Pos(), "argument 1 to len has type %s, expected str, slice, or hashmap", argType)
+				if _, ok := argType.(*SetType); !ok {
+					c.errorf(e.Args[0].Pos(), "argument 1 to len has type %s, expected str, slice, hashmap, or set", argType)
+				}
 			}
 		}
 		return
@@ -1763,6 +1825,22 @@ func (c *Checker) checkHashmapConstructor(e *ast.CallExpr) ZType {
 	return &HashmapType{Key: keyType, Value: valType}
 }
 
+func (c *Checker) checkSetConstructor(e *ast.CallExpr) ZType {
+	if len(e.Args) != 1 {
+		c.errorf(e.Pos(), "set() expects exactly 1 type argument, got %d", len(e.Args))
+		return &SetType{Elem: TypeVoid}
+	}
+
+	elemType := c.resolveTypeRefArg(e.Args[0])
+	if elemType == nil {
+		elemType = TypeVoid
+	}
+
+	e.SetCtor = true
+	e.SetElemGoType = goTypeName(elemType)
+	return &SetType{Elem: elemType}
+}
+
 func (c *Checker) resolveTypeRefArg(arg ast.Node) ZType {
 	// Simple identifier: str, int, Point, etc.
 	if ident, ok := arg.(*ast.IdentExpr); ok {
@@ -1820,10 +1898,20 @@ func (c *Checker) resolveTypeRefArg(arg ast.Node) ZType {
 					elems = append(elems, et)
 				}
 				return &TupleType{Elems: elems}
+			case "set":
+				if len(call.Args) != 1 {
+					c.errorf(arg.Pos(), "set() type expects exactly 1 argument, got %d", len(call.Args))
+					return nil
+				}
+				elem := c.resolveTypeRefArg(call.Args[0])
+				if elem == nil {
+					return nil
+				}
+				return &SetType{Elem: elem}
 			}
 		}
 	}
-	c.errorf(arg.Pos(), "hashmap() type arguments must be type names, got %T", arg)
+	c.errorf(arg.Pos(), "type arguments must be type names, got %T", arg)
 	return nil
 }
 
@@ -2070,6 +2158,8 @@ func goTypeName(t ZType) string {
 			keyName = strings.TrimPrefix(keyName, "*")
 		}
 		return "map[" + keyName + "]" + goTypeName(ty.Value)
+	case *SetType:
+		return "map[" + goTypeName(ty.Elem) + "]struct{}"
 	case *TupleType:
 		return "[]interface{}"
 	case *ObjType:

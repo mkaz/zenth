@@ -41,9 +41,10 @@ type Generator struct {
 	needsClampF64      bool
 	needsIntBase       bool
 	needsToBase        bool
-	needsMapget          bool
-	needsHashmapKeys    bool
-	needsHashmapValues  bool
+	needsMapget        bool
+	needsHashmapKeys   bool
+	needsHashmapValues bool
+	needsSetExists     bool
 	needsFlag          bool
 	flagDecls          []flagDecl
 	tempCounter        int
@@ -489,6 +490,13 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\tvals := make([]V, 0, len(m))")
 		g.writeln("\tfor _, v := range m { vals = append(vals, v) }")
 		g.writeln("\treturn vals")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsSetExists {
+		g.writeln("func zenth_set_exists[T comparable](s map[T]struct{}, elem T) bool {")
+		g.writeln("\t_, ok := s[elem]")
+		g.writeln("\treturn ok")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -1105,6 +1113,14 @@ func (g *Generator) genForInStmt(s *ast.ForInStmt) {
 			g.writef("%s := &%s{}\n", keyVar, s.IterHashmapObjType)
 			g.writef("*%s = _objkey_\n", keyVar)
 		}
+	} else if s.IterSet {
+		// Go's range over map[T]struct{} yields (key, _)
+		g.write("for ")
+		g.write(s.Value)
+		g.write(" := range ")
+		g.genExpr(s.Iterable)
+		g.write(" {\n")
+		g.indent++
 	} else {
 		g.write("for ")
 		if s.Index != "" {
@@ -1579,6 +1595,15 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write("/* invalid hashmap() */")
 			}
 			return
+		case "set":
+			if c.SetCtor {
+				g.write("make(map[")
+				g.write(c.SetElemGoType)
+				g.write("]struct{})")
+			} else {
+				g.write("/* invalid set() */")
+			}
+			return
 		case "flag":
 			g.genFlagCall(c)
 			return
@@ -1606,6 +1631,40 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			case "values":
 				g.needsHashmapValues = true
 				g.write("zenth_hashmap_values(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			}
+		}
+	}
+
+	// Handle built-in set methods
+	if c.SetMethod != "" {
+		if field, ok := c.Callee.(*ast.FieldExpr); ok {
+			switch c.SetMethod {
+			case "add":
+				g.genExpr(field.Object)
+				g.write("[")
+				g.genExpr(c.Args[0])
+				g.write("] = struct{}{}")
+				return
+			case "exists":
+				g.needsSetExists = true
+				g.write("zenth_set_exists(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(")")
+				return
+			case "remove":
+				g.write("delete(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(")")
+				return
+			case "length":
+				g.write("len(")
 				g.genExpr(field.Object)
 				g.write(")")
 				return
@@ -2200,6 +2259,9 @@ func genTypeExprResolved(t *ast.TypeExpr, aliases map[string]*ast.TypeExpr) stri
 	}
 	if t.IsHashmap && len(t.Params) == 2 {
 		return "map[" + genTypeExprResolved(t.Params[0], aliases) + "]" + genTypeExprResolved(t.Params[1], aliases)
+	}
+	if t.IsSet && len(t.Params) > 0 {
+		return "map[" + genTypeExprResolved(t.Params[0], aliases) + "]struct{}"
 	}
 	if t.IsTuple {
 		return "[]interface{}"

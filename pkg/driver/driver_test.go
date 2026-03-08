@@ -237,6 +237,15 @@ func TestBuildAndRun(t *testing.T) {
 			contains: []string{"2", "b", "c", "100"},
 		},
 		{
+			file: "set.zn",
+			contains: []string{
+				"3",
+				"found start",
+				"unknown not found",
+				"6",
+			},
+		},
+		{
 			file: "closures.zn",
 			contains: []string{
 				"doubled: 2,4,6,8,10",
@@ -334,7 +343,7 @@ func TestCompileErrors(t *testing.T) {
 		},
 		{
 			file:   "errors/hashmap_type_arg.zn",
-			errMsg: "hashmap() type arguments must be type names",
+			errMsg: "type arguments must be type names",
 		},
 		{
 			file:   "errors/string_length_args.zn",

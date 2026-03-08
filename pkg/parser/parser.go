@@ -170,6 +170,15 @@ func (p *Parser) parseTypeExpr() *ast.TypeExpr {
 		return &ast.TypeExpr{TokenPos: pos, Name: "array", IsSlice: true, Params: []*ast.TypeExpr{elem}}
 	}
 
+	// Set type: set(T)
+	if p.peek() == token.Ident && p.cur().Literal == "set" && p.peekAt(1) == token.LParen {
+		p.advance() // set
+		p.expect(token.LParen)
+		elem := p.parseTypeExpr()
+		p.expect(token.RParen)
+		return &ast.TypeExpr{TokenPos: pos, Name: "set", IsSet: true, Params: []*ast.TypeExpr{elem}}
+	}
+
 	// Tuple type: tuple(T1, T2, ...) or tuple(name: T1, name: T2, ...)
 	if p.peek() == token.Ident && p.cur().Literal == "tuple" && p.peekAt(1) == token.LParen {
 		p.advance() // tuple

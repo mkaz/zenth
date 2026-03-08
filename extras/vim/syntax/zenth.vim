@@ -17,7 +17,7 @@ syn keyword zenthIdentifier   self
 " Built-in types
 syn keyword zenthType         int i8 i16 i32 i64 u8 u16 u32 u64
 syn keyword zenthType         f32 f64 bool str byte
-syn keyword zenthType         array tuple hashmap
+syn keyword zenthType         array tuple hashmap set
 
 " Built-in functions
 syn keyword zenthBuiltin      print println len str hashmap filter append push pop file flag abs min max clamp round floor ceil pow sqrt to_base
