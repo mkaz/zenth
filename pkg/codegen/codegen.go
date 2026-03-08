@@ -45,6 +45,9 @@ type Generator struct {
 	needsHashmapKeys   bool
 	needsHashmapValues bool
 	needsSetExists     bool
+	needsSliceMax      bool
+	needsSliceMin      bool
+	tupleStructs       map[string][]string // struct name -> field Go types
 	needsFlag          bool
 	flagDecls          []flagDecl
 	tempCounter        int
@@ -59,10 +62,11 @@ type flagDecl struct {
 // New creates a new code Generator.
 func New() *Generator {
 	return &Generator{
-		imports:     make(map[string]string),
-		objs:        make(map[string]*ast.ObjDecl),
-		funcs:       make(map[string]*ast.FnDecl),
-		typeAliases: make(map[string]*ast.TypeExpr),
+		imports:      make(map[string]string),
+		objs:         make(map[string]*ast.ObjDecl),
+		funcs:        make(map[string]*ast.FnDecl),
+		typeAliases:  make(map[string]*ast.TypeExpr),
+		tupleStructs: make(map[string][]string),
 	}
 }
 
@@ -497,6 +501,61 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("func zenth_set_exists[T comparable](s map[T]struct{}, elem T) bool {")
 		g.writeln("\t_, ok := s[elem]")
 		g.writeln("\treturn ok")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsSliceMax {
+		g.writeln("func zenth_slice_max[T interface{ ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 }](s []T) T {")
+		g.writeln("\tif len(s) == 0 { panic(\"max() called on empty array\") }")
+		g.writeln("\tm := s[0]")
+		g.writeln("\tfor _, v := range s[1:] { if v > m { m = v } }")
+		g.writeln("\treturn m")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsSliceMin {
+		g.writeln("func zenth_slice_min[T interface{ ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 }](s []T) T {")
+		g.writeln("\tif len(s) == 0 { panic(\"min() called on empty array\") }")
+		g.writeln("\tm := s[0]")
+		g.writeln("\tfor _, v := range s[1:] { if v < m { m = v } }")
+		g.writeln("\treturn m")
+		g.writeln("}")
+		g.writeln("")
+	}
+
+	// Emit tuple struct definitions and conversion helpers for set(tuple(...))
+	for name, fieldTypes := range g.tupleStructs {
+		// Struct definition
+		g.writef("type %s struct {\n", name)
+		for i, ft := range fieldTypes {
+			g.writef("\tF%d %s\n", i, ft)
+		}
+		g.writeln("}")
+		g.writeln("")
+
+		// Tuple-to-struct conversion
+		g.writef("func zenth_to_%s(t []interface{}) %s {\n", name, name)
+		g.writef("\treturn %s{", name)
+		for i, ft := range fieldTypes {
+			if i > 0 {
+				g.write(", ")
+			}
+			g.writef("t[%d].(%s)", i, ft)
+		}
+		g.writeln("}")
+		g.writeln("}")
+		g.writeln("")
+
+		// Struct-to-tuple conversion
+		g.writef("func zenth_from_%s(s %s) []interface{} {\n", name, name)
+		g.write("\treturn []interface{}{")
+		for i := range fieldTypes {
+			if i > 0 {
+				g.write(", ")
+			}
+			g.writef("s.F%d", i)
+		}
+		g.writeln("}")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -1115,12 +1174,23 @@ func (g *Generator) genForInStmt(s *ast.ForInStmt) {
 		}
 	} else if s.IterSet {
 		// Go's range over map[T]struct{} yields (key, _)
-		g.write("for ")
-		g.write(s.Value)
-		g.write(" := range ")
-		g.genExpr(s.Iterable)
-		g.write(" {\n")
-		g.indent++
+		if s.IterSetTupleStruct != "" {
+			// For set(tuple(...)), range yields struct keys; convert back to []interface{}
+			g.tupleStructs[s.IterSetTupleStruct] = s.IterSetTupleFieldTypes
+			g.write("for _stup_ := range ")
+			g.genExpr(s.Iterable)
+			g.write(" {\n")
+			g.indent++
+			g.writeIndent()
+			g.writef("%s := zenth_from_%s(_stup_)\n", s.Value, s.IterSetTupleStruct)
+		} else {
+			g.write("for ")
+			g.write(s.Value)
+			g.write(" := range ")
+			g.genExpr(s.Iterable)
+			g.write(" {\n")
+			g.indent++
+		}
 	} else {
 		g.write("for ")
 		if s.Index != "" {
@@ -1597,6 +1667,10 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			return
 		case "set":
 			if c.SetCtor {
+				// Register tuple struct if this is a set(tuple(...))
+				if c.SetTupleStruct != "" {
+					g.tupleStructs[c.SetTupleStruct] = c.SetTupleFieldTypes
+				}
 				g.write("make(map[")
 				g.write(c.SetElemGoType)
 				g.write("]struct{})")
@@ -1641,11 +1715,21 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 	// Handle built-in set methods
 	if c.SetMethod != "" {
 		if field, ok := c.Callee.(*ast.FieldExpr); ok {
+			// Register tuple struct if needed
+			if c.SetTupleStruct != "" {
+				g.tupleStructs[c.SetTupleStruct] = c.SetTupleFieldTypes
+			}
 			switch c.SetMethod {
 			case "add":
 				g.genExpr(field.Object)
 				g.write("[")
-				g.genExpr(c.Args[0])
+				if c.SetTupleStruct != "" {
+					g.writef("zenth_to_%s(", c.SetTupleStruct)
+					g.genExpr(c.Args[0])
+					g.write(")")
+				} else {
+					g.genExpr(c.Args[0])
+				}
 				g.write("] = struct{}{}")
 				return
 			case "exists":
@@ -1653,14 +1737,26 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write("zenth_set_exists(")
 				g.genExpr(field.Object)
 				g.write(", ")
-				g.genExpr(c.Args[0])
+				if c.SetTupleStruct != "" {
+					g.writef("zenth_to_%s(", c.SetTupleStruct)
+					g.genExpr(c.Args[0])
+					g.write(")")
+				} else {
+					g.genExpr(c.Args[0])
+				}
 				g.write(")")
 				return
 			case "remove":
 				g.write("delete(")
 				g.genExpr(field.Object)
 				g.write(", ")
-				g.genExpr(c.Args[0])
+				if c.SetTupleStruct != "" {
+					g.writef("zenth_to_%s(", c.SetTupleStruct)
+					g.genExpr(c.Args[0])
+					g.write(")")
+				} else {
+					g.genExpr(c.Args[0])
+				}
 				g.write(")")
 				return
 			case "length":
@@ -1812,6 +1908,18 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.genExpr(field.Object)
 				g.write(")")
 				return
+			case "max":
+				g.needsSliceMax = true
+				g.write("zenth_slice_max(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "min":
+				g.needsSliceMin = true
+				g.write("zenth_slice_min(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
 			}
 		}
 	}
@@ -1931,6 +2039,30 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			case "contains":
 				g.imports["strings"] = ""
 				g.write("strings.Contains(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(")")
+				return
+			case "strip_prefix":
+				g.imports["strings"] = ""
+				g.write("strings.TrimPrefix(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(")")
+				return
+			case "strip_suffix":
+				g.imports["strings"] = ""
+				g.write("strings.TrimSuffix(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(")")
+				return
+			case "repeat":
+				g.imports["strings"] = ""
+				g.write("strings.Repeat(")
 				g.genExpr(field.Object)
 				g.write(", ")
 				g.genExpr(c.Args[0])
@@ -2261,6 +2393,16 @@ func genTypeExprResolved(t *ast.TypeExpr, aliases map[string]*ast.TypeExpr) stri
 		return "map[" + genTypeExprResolved(t.Params[0], aliases) + "]" + genTypeExprResolved(t.Params[1], aliases)
 	}
 	if t.IsSet && len(t.Params) > 0 {
+		param := t.Params[0]
+		if param.IsTuple && len(param.Params) > 0 {
+			// set(tuple(T1, T2, ...)) uses a struct key type
+			parts := make([]string, len(param.Params))
+			for i, p := range param.Params {
+				parts[i] = mapTypeName(p.Name)
+			}
+			structName := "ZenthTuple_" + strings.Join(parts, "_")
+			return "map[" + structName + "]struct{}"
+		}
 		return "map[" + genTypeExprResolved(t.Params[0], aliases) + "]struct{}"
 	}
 	if t.IsTuple {

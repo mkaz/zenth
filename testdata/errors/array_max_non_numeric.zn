@@ -1,0 +1,4 @@
+fn main() {
+    let names = ["alice", "bob"];
+    let m = names.max();
+}

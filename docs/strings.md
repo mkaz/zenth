@@ -153,12 +153,25 @@ println("HeLLo".lower()); // hello
 
 ## Prefix and Suffix
 
-Use `.starts_with()` and `.ends_with()`:
+Use `.starts_with()` and `.ends_with()` to check for prefixes and suffixes:
 
 ```zenth
 let name = "zenth";
 println(str(name.starts_with("zen"))); // true
 println(str(name.ends_with("th")));    // true
+```
+
+Use `.strip_prefix()` and `.strip_suffix()` to remove a prefix or suffix from a string. If the string does not have the given prefix/suffix, it is returned unchanged:
+
+```zenth
+let line = "fold along x=5";
+let spec = line.strip_prefix("fold along "); // "x=5"
+
+let file = "photo.png";
+let name = file.strip_suffix(".png"); // "photo"
+
+// No match — returns unchanged
+let same = "hello".strip_prefix("xyz"); // "hello"
 ```
 
 ## Trimming
@@ -206,6 +219,18 @@ let (cmd, value) = "forward 10".split_once(" ");
 println(cmd);   // "forward"
 println(value); // "10"
 ```
+
+## Repeating
+
+Use `.repeat(n)` to repeat a string `n` times:
+
+```zenth
+let dots = ".".repeat(5);   // "....."
+let row = "ab".repeat(3);   // "ababab"
+let empty = "x".repeat(0);  // ""
+```
+
+This is useful for building grid rows, padding, or repeated patterns.
 
 ## Indexing
 

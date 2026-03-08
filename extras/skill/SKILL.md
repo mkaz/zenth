@@ -61,7 +61,7 @@ const PI = 3.14159;      // constant
 
 **Primitive:** `int`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`, `f32`, `f64`, `bool`, `str`, `byte`
 
-**Composite:** `array(int)`, `tuple(str, int)`, `hashmap(str, int)`, obj types
+**Composite:** `array(int)`, `tuple(str, int)`, `hashmap(str, int)`, `set(str)`, `set(tuple(int, int))`, obj types
 
 **Type aliases:**
 ```zenth
@@ -123,6 +123,8 @@ println("Use \{braces\} literally"); // escaped braces
 "HeLLo".lower()              // "hello"
 "zenth".starts_with("zen")   // true
 "zenth".ends_with("th")      // true
+"fold along x=5".strip_prefix("fold along ") // "x=5"
+"photo.png".strip_suffix(".png")             // "photo"
 "  hi  ".strip()             // "hi"
 "..hi..".strip(".")          // "hi"
 "banana".find("na")          // 2 (index)
@@ -132,6 +134,7 @@ println("Use \{braces\} literally"); // escaped braces
 "a,b,c".split(",")           // ["a", "b", "c"]
 "hello world".split()        // ["hello", "world"] (whitespace)
 "hi".contains("h")           // true
+".".repeat(5)                // "....."
 len("hello")                 // 5
 "hello".length()             // 5
 "hello".to_int()             // error; use on numeric strings
@@ -264,6 +267,10 @@ let sub = numbers[1:3];   // [2, 3]
 // Concatenation
 let combined = [1, 2] + [3, 4];
 
+// Max and min on numeric arrays
+let biggest = numbers.max();    // 5
+let smallest = numbers.min();   // 1
+
 // Type conversions for string arrays
 let strs = ["1", "2", "3"];
 let ints = strs.to_int();     // [1, 2, 3]
@@ -334,6 +341,44 @@ obj Point {
 var grid = hashmap(Point, str);
 grid[Point(x=1, y=2)] = "#";
 println(grid[Point(x=1, y=2)]);  // "#" (same-value lookup works)
+```
+
+### Sets
+
+```zenth
+// Create a set
+var visited = set(str);
+visited.add("start");
+visited.add("middle");
+visited.exists("start");   // true
+visited.remove("middle");
+println(str(len(visited)));  // 1
+println(str(visited.length())); // 1
+
+// Integer set
+var nums = set(int);
+nums.add(1);
+nums.add(2);
+nums.add(2);  // duplicate, ignored
+println(str(len(nums)));  // 2
+
+// Iterate over set
+for n in nums {
+    println(str(n));
+}
+
+// Set of tuples (composite keys without string round-tripping)
+var dots = set(tuple(int, int));
+dots.add(tuple(6, 10));
+dots.add(tuple(0, 14));
+dots.add(tuple(6, 10));  // duplicate, ignored
+if dots.exists(tuple(6, 10)) {
+    println("found");
+}
+dots.remove(tuple(0, 14));
+for dot in dots {
+    println("{dot.0},{dot.1}");
+}
 ```
 
 ### Objects and Methods
@@ -413,6 +458,7 @@ Available modules map to Go stdlib: `fmt`, `math`, `os`, `strings`
 | `rangei(start, end, step)` | Inclusive range with step |
 | `hashmap(K, V)` | Create empty hashmap |
 | `hashmap(K, V, default=val)` | Create hashmap with default |
+| `set(T)` | Create empty set |
 | `tuple(...)` | Create tuple (positional or named) |
 | `file(path)` | Create file handle |
 | `flag(default=val)` | Command-line flag (name inferred from variable) |

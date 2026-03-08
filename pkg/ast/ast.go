@@ -244,16 +244,18 @@ func (f *ForStmt) nodeMarker()    {}
 
 // ForInStmt represents: for [index,] value in iterable { ... }
 type ForInStmt struct {
-	TokenPos           token.Pos
-	Index              string // empty if no index variable
-	Value              string
-	Iterable           Node
-	Body               *Block
-	IterStr            bool   // set by checker when iterating over a string
-	IterHashmap        bool   // set by checker when iterating over a hashmap
-	IterSet            bool   // set by checker when iterating over a set
-	IterHashmapObjKey  bool   // set by checker when hashmap key is an obj type
-	IterHashmapObjType string // Go type name of the obj key (e.g. "Point")
+	TokenPos               token.Pos
+	Index                  string // empty if no index variable
+	Value                  string
+	Iterable               Node
+	Body                   *Block
+	IterStr                bool     // set by checker when iterating over a string
+	IterHashmap            bool     // set by checker when iterating over a hashmap
+	IterSet                bool     // set by checker when iterating over a set
+	IterSetTupleStruct     string   // set by checker: struct name for set(tuple) iteration
+	IterSetTupleFieldTypes []string // set by checker: Go types for set(tuple) conversion
+	IterHashmapObjKey      bool     // set by checker when hashmap key is an obj type
+	IterHashmapObjType     string   // Go type name of the obj key (e.g. "Point")
 }
 
 func (f *ForInStmt) Pos() token.Pos { return f.TokenPos }
@@ -365,26 +367,28 @@ func (u *UnaryExpr) nodeMarker()    {}
 
 // CallExpr represents: callee(args)
 type CallExpr struct {
-	TokenPos          token.Pos
-	Callee            Node
-	Args              []Node
-	SliceMethod       bool   // set by checker for built-in slice methods
-	SliceConvTarget   string // set by checker for to_int/to_f64/to_str ("int", "float64", "string")
-	SliceConvFunc     string // set by checker when int()/f64()/str() is called on a slice
-	StringMethod      string // set by checker for built-in string methods (e.g. "split")
-	NumericMethod     string // set by checker for built-in numeric functions (e.g. "abs_int")
-	HashmapCtor       bool   // set by checker for hashmap(K, V) constructor
-	HashmapObjKey     bool   // set by checker when hashmap key type is an obj (value-based keying)
-	HashmapKeyGoType  string // concrete Go key type for hashmap constructor
-	HashmapValGoType  string // concrete Go value type for hashmap constructor
-	HashmapDefaultVal Node   // set by checker: default value expression for hashmap
-	HashmapMethod     string // set by checker: "keys" or "values" for hashmap methods
-	SetCtor           bool   // set by checker for set(T) constructor
-	SetElemGoType     string // concrete Go element type for set constructor
-	SetMethod         string // set by checker: "add", "exists", "remove" for set methods
-	ResolvedFunc      string // set by checker: function key ("name" or "Type.method")
-	FlagName          string // set by checker: variable name for flag() calls
-	FlagGoType        string // set by checker: "bool", "int", "string" for flag() calls
+	TokenPos           token.Pos
+	Callee             Node
+	Args               []Node
+	SliceMethod        bool     // set by checker for built-in slice methods
+	SliceConvTarget    string   // set by checker for to_int/to_f64/to_str ("int", "float64", "string")
+	SliceConvFunc      string   // set by checker when int()/f64()/str() is called on a slice
+	StringMethod       string   // set by checker for built-in string methods (e.g. "split")
+	NumericMethod      string   // set by checker for built-in numeric functions (e.g. "abs_int")
+	HashmapCtor        bool     // set by checker for hashmap(K, V) constructor
+	HashmapObjKey      bool     // set by checker when hashmap key type is an obj (value-based keying)
+	HashmapKeyGoType   string   // concrete Go key type for hashmap constructor
+	HashmapValGoType   string   // concrete Go value type for hashmap constructor
+	HashmapDefaultVal  Node     // set by checker: default value expression for hashmap
+	HashmapMethod      string   // set by checker: "keys" or "values" for hashmap methods
+	SetCtor            bool     // set by checker for set(T) constructor
+	SetElemGoType      string   // concrete Go element type for set constructor
+	SetMethod          string   // set by checker: "add", "exists", "remove" for set methods
+	SetTupleStruct     string   // set by checker: struct name for set(tuple(...)) operations
+	SetTupleFieldTypes []string // set by checker: Go types of tuple fields for set(tuple) conversion
+	ResolvedFunc       string   // set by checker: function key ("name" or "Type.method")
+	FlagName           string   // set by checker: variable name for flag() calls
+	FlagGoType         string   // set by checker: "bool", "int", "string" for flag() calls
 }
 
 func (c *CallExpr) Pos() token.Pos { return c.TokenPos }

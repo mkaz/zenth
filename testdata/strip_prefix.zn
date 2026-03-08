@@ -1,0 +1,31 @@
+// Test strip_prefix, strip_suffix, and repeat string methods
+
+fn main() {
+    // strip_prefix
+    let line = "fold along x=5";
+    let spec = line.strip_prefix("fold along ");
+    println("spec=" + spec);
+
+    // strip_prefix when prefix not present (returns unchanged)
+    let unchanged = "hello".strip_prefix("xyz");
+    println("unchanged=" + unchanged);
+
+    // strip_suffix
+    let trimmed = "photo.png".strip_suffix(".png");
+    println("trimmed=" + trimmed);
+
+    // strip_suffix when suffix not present
+    let same = "photo.png".strip_suffix(".jpg");
+    println("same=" + same);
+
+    // repeat
+    let dots = ".".repeat(5);
+    println("dots=" + dots);
+
+    let row = "ab".repeat(3);
+    println("row=" + row);
+
+    // repeat(0) gives empty string
+    let empty = "x".repeat(0);
+    println("empty=" + empty);
+}

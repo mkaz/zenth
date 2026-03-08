@@ -115,6 +115,43 @@ grid[pt] = "#";
 
 For object keys, hashmap lookup is value-based: another `Point(x=1, y=2)` resolves the same entry.
 
+### Sets
+
+Sets are unordered collections of unique values. Create an empty set with `set(Type)`:
+
+```zenth
+var visited = set(str);
+visited.add("start");
+visited.add("middle");
+visited.exists("start");  // true
+visited.remove("middle");
+println(str(len(visited)));  // 1
+```
+
+Sets support `int`, `str`, `bool`, and other comparable types as elements.
+
+#### Sets of Tuples
+
+Sets can hold tuples, enabling composite keys without string round-tripping:
+
+```zenth
+var dots = set(tuple(int, int));
+dots.add(tuple(6, 10));
+dots.add(tuple(0, 14));
+dots.add(tuple(6, 10));  // duplicate, ignored
+println(str(len(dots)));  // 2
+
+if dots.exists(tuple(6, 10)) {
+    println("found");
+}
+
+for dot in dots {
+    println("{dot.0},{dot.1}");
+}
+```
+
+Tuple elements must be comparable types (scalars, strings, booleans). Tuples containing slices or maps cannot be used as set elements.
+
 ### Tuples
 
 Tuples are fixed-size ordered values that can hold mixed types. They support both positional and named fields:

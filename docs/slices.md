@@ -98,6 +98,22 @@ let last = letters.pop();    // "d", letters is now ["a", "b", "c"]
 let first = letters.pop(0);  // "a", letters is now ["b", "c"]
 ```
 
+## Max and Min
+
+Use `.max()` and `.min()` to find the largest and smallest elements of a numeric array:
+
+```zenth
+let nums = [3, 1, 4, 1, 5, 9, 2, 6];
+println(str(nums.max()));  // 9
+println(str(nums.min()));  // 1
+
+let floats = [3.14, 2.71, 1.41];
+println(str(floats.max())); // 3.14
+println(str(floats.min())); // 1.41
+```
+
+These methods work on any numeric array (`int`, `f64`, `i32`, etc.) and panic at runtime if called on an empty array.
+
 ## Transforming Slices
 
 Use `.map()` to transform each element and `.filter()` to select elements:

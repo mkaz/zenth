@@ -257,6 +257,43 @@ func TestBuildAndRun(t *testing.T) {
 				"big: 20,15",
 			},
 		},
+		{
+			file: "strip_prefix.zn",
+			contains: []string{
+				"spec=x=5",
+				"unchanged=hello",
+				"trimmed=photo",
+				"same=photo.png",
+				"dots=.....",
+				"row=ababab",
+				"empty=",
+			},
+		},
+		{
+			file: "array_maxmin.zn",
+			contains: []string{
+				"max=9",
+				"min=1",
+				"single_max=42",
+				"single_min=42",
+				"fmax=3.14",
+				"fmin=1.41",
+				"neg_max=-1",
+				"neg_min=-10",
+			},
+		},
+		{
+			file: "set_tuple.zn",
+			contains: []string{
+				"size=4",
+				"after_dup=4",
+				"found 6,10",
+				"1,1 not found",
+				"after_remove=3",
+				"length=3",
+				"pairs=2",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -416,6 +453,14 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/hashmap_default_type.zn",
 			errMsg: "hashmap default type mismatch",
+		},
+		{
+			file:   "errors/array_max_non_numeric.zn",
+			errMsg: "max() requires a numeric array",
+		},
+		{
+			file:   "errors/repeat_bad_arg.zn",
+			errMsg: "repeat() argument must be int",
 		},
 	}
 

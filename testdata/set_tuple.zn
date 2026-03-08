@@ -1,0 +1,44 @@
+// Test set(tuple(...)) with struct-based key representation
+
+fn main() {
+    // Create a set of (int, int) tuples
+    var dots = set(tuple(int, int));
+    dots.add(tuple(6, 10));
+    dots.add(tuple(0, 14));
+    dots.add(tuple(9, 10));
+    dots.add(tuple(0, 3));
+    println("size=" + str(len(dots)));
+
+    // Duplicate should not increase size
+    dots.add(tuple(6, 10));
+    println("after_dup=" + str(len(dots)));
+
+    // exists check
+    if dots.exists(tuple(6, 10)) {
+        println("found 6,10");
+    }
+    if !dots.exists(tuple(1, 1)) {
+        println("1,1 not found");
+    }
+
+    // remove
+    dots.remove(tuple(0, 3));
+    println("after_remove=" + str(len(dots)));
+
+    // length method
+    println("length=" + str(dots.length()));
+
+    // Iteration
+    var sum = 0;
+    for dot in dots {
+        sum += dot.0 + dot.1;
+    }
+    println("sum=" + str(sum));
+
+    // set(tuple(str, int))
+    var pairs = set(tuple(str, int));
+    pairs.add(tuple("x", 5));
+    pairs.add(tuple("y", 7));
+    pairs.add(tuple("x", 5));
+    println("pairs=" + str(len(pairs)));
+}

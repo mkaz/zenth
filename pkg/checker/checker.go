@@ -664,6 +664,10 @@ func (c *Checker) checkForInStmt(s *ast.ForInStmt) ZType {
 		if s.Index != "" {
 			c.errorf(s.Pos(), "set iteration does not support index variable")
 		}
+		if tt, ok := t.Elem.(*TupleType); ok {
+			s.IterSetTupleStruct = tupleStructName(tt)
+			s.IterSetTupleFieldTypes = tupleFieldGoTypes(tt)
+		}
 		c.scope.Define(&Symbol{Name: s.Value, Type: t.Elem})
 	default:
 		if iterType.Equals(TypeStr) {
@@ -961,6 +965,24 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				e.SliceMethod = true
 				e.SliceConvTarget = "string"
 				return &SliceType{Elem: TypeStr}
+			case "max":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "max() takes no arguments, got %d", len(e.Args))
+				}
+				if !IsNumeric(sliceType.Elem) {
+					c.errorf(e.Pos(), "max() requires a numeric array, got %s", objType)
+				}
+				e.SliceMethod = true
+				return sliceType.Elem
+			case "min":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "min() takes no arguments, got %d", len(e.Args))
+				}
+				if !IsNumeric(sliceType.Elem) {
+					c.errorf(e.Pos(), "min() requires a numeric array, got %s", objType)
+				}
+				e.SliceMethod = true
+				return sliceType.Elem
 			}
 		}
 		// Check for built-in file methods
@@ -1163,6 +1185,42 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.StringMethod = "contains"
 				return TypeBool
+			case "strip_prefix":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "strip_prefix() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !argType.Equals(TypeStr) {
+						c.errorf(e.Args[0].Pos(), "strip_prefix() argument must be str, got %s", argType)
+					}
+				}
+				e.StringMethod = "strip_prefix"
+				return TypeStr
+			case "strip_suffix":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "strip_suffix() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !argType.Equals(TypeStr) {
+						c.errorf(e.Args[0].Pos(), "strip_suffix() argument must be str, got %s", argType)
+					}
+				}
+				e.StringMethod = "strip_suffix"
+				return TypeStr
+			case "repeat":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "repeat() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !IsInteger(argType) {
+						c.errorf(e.Args[0].Pos(), "repeat() argument must be int, got %s", argType)
+					}
+				}
+				e.StringMethod = "repeat"
+				return TypeStr
 			}
 		}
 
@@ -1203,6 +1261,13 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 
 		// Check for built-in set methods
 		if setType, ok := objType.(*SetType); ok {
+			// Helper to annotate tuple struct info on the call expression
+			annotateTupleStruct := func() {
+				if tt, ok := setType.Elem.(*TupleType); ok {
+					e.SetTupleStruct = tupleStructName(tt)
+					e.SetTupleFieldTypes = tupleFieldGoTypes(tt)
+				}
+			}
 			switch field.Field {
 			case "add":
 				if len(e.Args) != 1 {
@@ -1215,6 +1280,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 					}
 				}
 				e.SetMethod = "add"
+				annotateTupleStruct()
 				return TypeVoid
 			case "exists":
 				if len(e.Args) != 1 {
@@ -1227,6 +1293,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 					}
 				}
 				e.SetMethod = "exists"
+				annotateTupleStruct()
 				return TypeBool
 			case "remove":
 				if len(e.Args) != 1 {
@@ -1239,6 +1306,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 					}
 				}
 				e.SetMethod = "remove"
+				annotateTupleStruct()
 				return TypeVoid
 			case "length":
 				if len(e.Args) != 0 {
@@ -1837,6 +1905,21 @@ func (c *Checker) checkSetConstructor(e *ast.CallExpr) ZType {
 	}
 
 	e.SetCtor = true
+
+	// Handle set(tuple(...)) with struct representation
+	if tt, ok := elemType.(*TupleType); ok {
+		if !isComparableType(tt) {
+			c.errorf(e.Pos(), "set(tuple(...)) requires all tuple elements to be comparable types")
+			e.SetElemGoType = "interface{}"
+			return &SetType{Elem: elemType}
+		}
+		structName := tupleStructName(tt)
+		e.SetElemGoType = structName
+		e.SetTupleStruct = structName
+		e.SetTupleFieldTypes = tupleFieldGoTypes(tt)
+		return &SetType{Elem: elemType}
+	}
+
 	e.SetElemGoType = goTypeName(elemType)
 	return &SetType{Elem: elemType}
 }
@@ -1910,6 +1993,18 @@ func (c *Checker) resolveTypeRefArg(arg ast.Node) ZType {
 				return &SetType{Elem: elem}
 			}
 		}
+	}
+	// TupleLitExpr: tuple(T1, T2) parsed as a tuple literal in expression context
+	if tup, ok := arg.(*ast.TupleLitExpr); ok {
+		elems := make([]ZType, 0, len(tup.Elements))
+		for _, elem := range tup.Elements {
+			et := c.resolveTypeRefArg(elem)
+			if et == nil {
+				return nil
+			}
+			elems = append(elems, et)
+		}
+		return &TupleType{Elems: elems, Names: nil}
 	}
 	c.errorf(arg.Pos(), "type arguments must be type names, got %T", arg)
 	return nil
@@ -2114,6 +2209,45 @@ func (c *Checker) checkMatchExpr(e *ast.MatchExpr) ZType {
 	return firstType
 }
 
+// isComparableType checks if a Zenth type maps to a comparable Go type (usable as map key).
+func isComparableType(t ZType) bool {
+	switch ty := t.(type) {
+	case *BuiltinType:
+		return true // all builtin types are comparable in Go
+	case *ObjType:
+		return true // obj types are structs, comparable if all fields are comparable
+	case *TupleType:
+		// Tuples become []interface{} normally (not comparable), but if all
+		// elements are comparable builtins we can generate a struct instead.
+		for _, elem := range ty.Elems {
+			if !isComparableType(elem) {
+				return false
+			}
+		}
+		return true
+	default:
+		return false // slices, maps, sets, etc. are not comparable
+	}
+}
+
+// tupleStructName generates a Go struct name for a comparable tuple used as set/map key.
+func tupleStructName(tt *TupleType) string {
+	parts := make([]string, len(tt.Elems))
+	for i, elem := range tt.Elems {
+		parts[i] = goTypeName(elem)
+	}
+	return "ZenthTuple_" + strings.Join(parts, "_")
+}
+
+// tupleFieldGoTypes returns the Go type names for each tuple element.
+func tupleFieldGoTypes(tt *TupleType) []string {
+	types := make([]string, len(tt.Elems))
+	for i, elem := range tt.Elems {
+		types[i] = goTypeName(elem)
+	}
+	return types
+}
+
 func goTypeName(t ZType) string {
 	switch ty := t.(type) {
 	case *BuiltinType:
@@ -2159,6 +2293,9 @@ func goTypeName(t ZType) string {
 		}
 		return "map[" + keyName + "]" + goTypeName(ty.Value)
 	case *SetType:
+		if tt, ok := ty.Elem.(*TupleType); ok {
+			return "map[" + tupleStructName(tt) + "]struct{}"
+		}
 		return "map[" + goTypeName(ty.Elem) + "]struct{}"
 	case *TupleType:
 		return "[]interface{}"
