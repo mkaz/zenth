@@ -55,7 +55,28 @@ let t: tuple(name: str, age: int) = tuple("Alice", 30);  // error: type mismatch
 
 ## Function Parameters and Return Types
 
-Tuples work in function signatures like any other type:
+Tuples work in function signatures like any other type. For multi-return functions, use the `(T1, T2)` shorthand return type:
+
+```zenth
+fn min_max(nums: array(int)) -> (int, int) {
+    var lo = nums[0];
+    var hi = nums[0];
+    for n in nums {
+        if n < lo { lo = n; }
+        if n > hi { hi = n; }
+    }
+    return lo, hi;
+}
+
+fn main() {
+    let (lo, hi) = min_max([3, 1, 4, 1, 5, 9]);
+    println("{lo} {hi}");  // "1 9"
+}
+```
+
+The `(T1, T2)` return type is shorthand for `tuple(T1, T2)`. The `return a, b;` syntax is shorthand for `return tuple(a, b);`.
+
+Named tuples also work in signatures:
 
 ```zenth
 fn make_person(name: str, age: int) -> tuple(name: str, age: int) {

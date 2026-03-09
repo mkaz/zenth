@@ -161,6 +161,23 @@ func (p *Parser) parseParams() []ast.Param {
 func (p *Parser) parseTypeExpr() *ast.TypeExpr {
 	pos := p.cur().Pos
 
+	// Shorthand tuple type: (T1, T2, ...)
+	if p.peek() == token.LParen {
+		p.advance() // consume (
+		var params []*ast.TypeExpr
+		if p.peek() != token.RParen {
+			for {
+				params = append(params, p.parseTypeExpr())
+				if p.peek() != token.Comma {
+					break
+				}
+				p.advance() // consume ,
+			}
+		}
+		p.expect(token.RParen)
+		return &ast.TypeExpr{TokenPos: pos, Name: "tuple", IsTuple: true, Params: params}
+	}
+
 	// Array type: array(T)
 	if p.peek() == token.Ident && p.cur().Literal == "array" && p.peekAt(1) == token.LParen {
 		p.advance() // array
@@ -391,7 +408,18 @@ func (p *Parser) parseReturnStmt() *ast.ReturnStmt {
 	tok := p.expect(token.Return)
 	stmt := &ast.ReturnStmt{TokenPos: tok.Pos}
 	if p.peek() != token.Semicolon {
-		stmt.Value = p.parseExpr(0)
+		first := p.parseExpr(0)
+		// Multi-value return: return a, b, c; — desugars to return tuple(a, b, c);
+		if p.peek() == token.Comma {
+			elems := []ast.Node{first}
+			for p.peek() == token.Comma {
+				p.advance() // consume ,
+				elems = append(elems, p.parseExpr(0))
+			}
+			stmt.Value = &ast.TupleLitExpr{TokenPos: tok.Pos, Elements: elems}
+		} else {
+			stmt.Value = first
+		}
 	}
 	p.expect(token.Semicolon)
 	return stmt

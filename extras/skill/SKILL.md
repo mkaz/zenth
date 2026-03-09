@@ -103,6 +103,27 @@ fn factorial(n: int) -> int {
 
 Function signatures require explicit types. Return type is omitted for void functions.
 
+**Multi-return functions** use parenthesized return types and `return a, b;` shorthand:
+
+```zenth
+fn min_max(nums: array(int)) -> (int, int) {
+    var lo = nums[0];
+    var hi = nums[0];
+    for n in nums {
+        if n < lo { lo = n; }
+        if n > hi { hi = n; }
+    }
+    return lo, hi;
+}
+
+fn main() {
+    let (lo, hi) = min_max([3, 1, 4, 1, 5, 9]);
+    println("{lo} {hi}");  // "1 9"
+}
+```
+
+`-> (int, int)` is shorthand for `-> tuple(int, int)`. `return a, b;` is shorthand for `return tuple(a, b);`.
+
 ### Strings
 
 Double-quoted strings support interpolation; single-quoted strings are raw:

@@ -48,6 +48,47 @@ fn clamp(value: int, low: int, high: int) -> int {
 }
 ```
 
+## Multi-Return Functions
+
+Functions can return multiple values using a parenthesized return type. The caller unpacks the result with tuple destructuring:
+
+```zenth
+fn min_max(nums: array(int)) -> (int, int) {
+    var lo = nums[0];
+    var hi = nums[0];
+    for n in nums {
+        if n < lo { lo = n; }
+        if n > hi { hi = n; }
+    }
+    return lo, hi;
+}
+
+fn main() {
+    let (lo, hi) = min_max([3, 1, 4, 1, 5, 9]);
+    println("{lo} {hi}");  // "1 9"
+}
+```
+
+The `return a, b;` syntax is shorthand for `return tuple(a, b);`. The return type `(T1, T2)` is shorthand for `tuple(T1, T2)`. Both forms are equivalent:
+
+```zenth
+fn divide(a: int, b: int) -> (int, int) {
+    return a / b, a % b;  // quotient and remainder
+}
+
+fn swap(x: str, y: str) -> (str, str) {
+    return y, x;
+}
+```
+
+You can also use the full `tuple(...)` syntax when you want to be explicit:
+
+```zenth
+fn get_pair() -> tuple(int, int) {
+    return tuple(10, 20);
+}
+```
+
 ## Default Arguments
 
 Function parameters can specify default values using `=`. If a caller omits a default parameter, the default value is used:

@@ -328,6 +328,10 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "assert.zn",
 			contains: []string{"all assertions passed"},
 		},
+		{
+			file:     "multi_return.zn",
+			contains: []string{"1 9", "3 2", "world hello"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -503,6 +507,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/sorted_non_sortable.zn",
 			errMsg: "sorted() requires a numeric or string array",
+		},
+		{
+			file:   "errors/multi_return_type_mismatch.zn",
+			errMsg: "return type mismatch",
 		},
 	}
 

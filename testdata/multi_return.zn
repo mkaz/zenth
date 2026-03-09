@@ -1,0 +1,33 @@
+fn min_max(nums: array(int)) -> (int, int) {
+    var lo = nums[0];
+    var hi = nums[0];
+    for n in nums {
+        if n < lo { lo = n; }
+        if n > hi { hi = n; }
+    }
+    return lo, hi;
+}
+
+fn divide(a: int, b: int) -> (int, int) {
+    return a / b, a % b;
+}
+
+fn swap(a: str, b: str) -> (str, str) {
+    return b, a;
+}
+
+fn main() {
+    let nums = [3, 1, 4, 1, 5, 9, 2, 6];
+    let (lo, hi) = min_max(nums);
+    println(str(lo) + " " + str(hi));
+
+    let (q, r) = divide(17, 5);
+    println(str(q) + " " + str(r));
+
+    let (x, y) = swap("hello", "world");
+    println(x + " " + y);
+
+    // Tuple type annotation still works
+    let result: tuple(int, int) = min_max(nums);
+    println(str(result.0) + " " + str(result.1));
+}
