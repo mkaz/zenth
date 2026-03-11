@@ -81,7 +81,7 @@ fn fibonacci(n: int) -> int {
 
 fn main() {
     for var i = 0; i < 15; i++ {
-        println(str(fibonacci(i)));
+        println(fibonacci(i));
     }
 }
 ```

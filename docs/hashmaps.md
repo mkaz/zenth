@@ -19,7 +19,7 @@ scores["Alice"] = 100;
 scores["Bob"] = 95;
 
 let aliceScore = scores["Alice"];
-println(str(aliceScore));
+println(aliceScore);
 ```
 
 ## Hashmap Length
@@ -27,7 +27,7 @@ println(str(aliceScore));
 Use `len()` to get the number of key-value pairs in the hashmap:
 
 ```zenth
-println(str(len(scores)));
+println(len(scores));
 ```
 
 ## Default Values
@@ -38,8 +38,8 @@ You can provide a default value for missing keys using the `default` named argum
 var counts = hashmap(str, int, default=0);
 counts["apples"] += 1;
 counts["apples"] += 2;
-println(str(counts["apples"])); // prints "3"
-println(str(counts["missing"])); // prints "0"
+println(counts["apples"]);       // prints "3"
+println(counts["missing"]);      // prints "0"
 ```
 
 When you access a missing key, the default is returned instead of Go's zero value. Compound assignments (`+=`, `-=`, `++`, etc.) on missing keys initialize from the default first.
@@ -89,7 +89,7 @@ let keys = m.keys();
 let vals = m.values();
 
 for v in vals {
-    println(str(v));
+    println(v);
 }
 ```
 

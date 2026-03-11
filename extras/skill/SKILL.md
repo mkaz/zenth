@@ -189,7 +189,7 @@ let label = if x > 10 { "big" } else { "small" };
 
 // C-style for loop
 for var i = 0; i < 10; i++ {
-    println(str(i));
+    println(i);
 }
 
 // for-in over arrays/slices
@@ -210,7 +210,7 @@ for i, ch in "hello" {
 
 // for-range with count
 for step in range(0, 100) {
-    println(str(step));
+    println(step);
 }
 
 // _ discard for unused loop variables
@@ -250,7 +250,7 @@ let label = match day {
 for var i = 0; i < 10; i++ {
     if i == 5 { break; }
     if i % 2 == 0 { continue; }
-    println(str(i));
+    println(i);
 }
 ```
 
@@ -261,9 +261,9 @@ let numbers = [1, 2, 3, 4, 5];
 let names: array(str) = [];       // empty with type annotation
 
 // Access and length
-println(str(numbers[0]));
-println(str(len(numbers)));
-println(str(numbers.length()));
+println(numbers[0]);
+println(len(numbers));
+println(numbers.length());
 
 // Mutating (requires var)
 var items: array(int) = [];
@@ -317,12 +317,12 @@ let floats = strs.to_f64();   // [1.0, 2.0, 3.0]
 // Positional tuple
 let pair = tuple("hello", 42);
 println(pair.0);           // "hello"
-println(str(pair.1));      // "42"
+println(pair.1);           // "42"
 
 // Named tuple
 let person = tuple(name="Alice", age=30);
 println(person.name);      // "Alice"
-println(str(person.age));  // "30"
+println(person.age);       // "30"
 println(person.0);         // also works by index
 
 // Type annotation
@@ -348,8 +348,8 @@ scores["Alice"] = 95;
 scores["Bob"] = 80;
 
 // Access
-println(str(scores["Alice"]));
-println(str(len(scores)));
+println(scores["Alice"]);
+println(len(scores));
 
 // Default values (like Python's defaultdict)
 var counts = hashmap(str, int, default=0);
@@ -389,19 +389,19 @@ visited.add("start");
 visited.add("middle");
 visited.exists("start");   // true
 visited.remove("middle");
-println(str(len(visited)));  // 1
-println(str(visited.length())); // 1
+println(len(visited));       // 1
+println(visited.length());   // 1
 
 // Integer set
 var nums = set(int);
 nums.add(1);
 nums.add(2);
 nums.add(2);  // duplicate, ignored
-println(str(len(nums)));  // 2
+println(len(nums));       // 2
 
 // Iterate over set
 for n in nums {
-    println(str(n));
+    println(n);
 }
 
 // Set of tuples (composite keys without string round-tripping)
@@ -444,8 +444,8 @@ obj Rectangle {
 
 // Constructor uses named arguments
 let r = Rectangle(width=10.0, height=5.0);
-println(str(r.area()));    // "50"
-println(str(r));           // "Rect(10x5)"
+println(r.area());         // "50"
+println(r);                // "Rect(10x5)"
 
 // Default field values
 obj Account {
@@ -657,7 +657,7 @@ fn main() {
     let values = data.lines().to_int();
     let big_doubled = values.filter(fn(x) x > 10).map(fn(x) x * 2);
     for v in big_doubled {
-        println(str(v));
+        println(v);
     }
 }
 ```

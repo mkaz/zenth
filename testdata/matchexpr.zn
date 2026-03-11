@@ -35,5 +35,5 @@ fn main() {
         "hi" => 2,
         _ => 0
     };
-    println(str(val));
+    println(val);
 }

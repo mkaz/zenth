@@ -28,7 +28,7 @@ x = 10;  // error: cannot assign to immutable variable 'x'
 var counter = 0;
 counter = counter + 1;
 counter += 1;
-println(str(counter));  // 2
+println(counter);  // 2
 ```
 
 ## Constants with `const`

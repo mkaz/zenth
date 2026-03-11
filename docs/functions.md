@@ -30,7 +30,7 @@ Functions without a `->` return type return nothing (void).
 fn main() {
     greet("World");
     let result = add(3, 4);
-    println(str(result));  // 7
+    println(result);       // 7
 }
 ```
 
@@ -154,7 +154,7 @@ fn main() {
     print("no newline");   // prints without newline
     let debug = false;
     println("debug line", debug); // prints only when debug is true
-    println(str(len("abc")));  // prints "3"
+    println(len("abc"));       // prints "3"
     println(str(42));      // prints "42"
     println(str(abs(-5)));  // prints "5"
 }

@@ -10,14 +10,14 @@ fn main() {
     // Slice slicing
     let nums = [10, 20, 30, 40, 50];
     let tail = nums[2:];
-    println(str(len(tail)));  // 3
-    println(str(tail[0]));    // 30
+    println(len(tail));  // 3
+    println(tail[0]);    // 30
 
     let head = nums[:3];
-    println(str(len(head)));  // 3
-    println(str(head[2]));    // 30
+    println(len(head));  // 3
+    println(head[2]);    // 30
 
     let mid = nums[1:4];
-    println(str(len(mid)));   // 3
-    println(str(mid[0]));     // 20
+    println(len(mid));   // 3
+    println(mid[0]);     // 20
 }

@@ -96,5 +96,5 @@ Use `str()` to convert an enum value to its variant name:
 
 ```zenth
 let c = Color.Green;
-println(str(c));  // prints "Green"
+println(c);       // prints "Green"
 ```

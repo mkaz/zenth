@@ -6,7 +6,7 @@ fn main() {
     visited.add("start");
     visited.add("middle");
     visited.add("end");
-    println(str(len(visited)));
+    println(len(visited));
 
     // exists() check
     if visited.exists("start") {
@@ -18,14 +18,14 @@ fn main() {
 
     // remove()
     visited.remove("middle");
-    println(str(len(visited)));
+    println(len(visited));
 
     // Duplicate add (should not increase size)
     visited.add("start");
-    println(str(len(visited)));
+    println(len(visited));
 
     // length() method
-    println(str(visited.length()));
+    println(visited.length());
 
     // Integer set
     var nums = set(int);
@@ -33,18 +33,18 @@ fn main() {
     nums.add(2);
     nums.add(3);
     nums.add(2);
-    println(str(len(nums)));
+    println(len(nums));
 
     // for-in iteration
     var total = 0;
     for n in nums {
         total += n;
     }
-    println(str(total));
+    println(total);
 
     // Set with explicit type annotation
     var flags: set(str) = set(str);
     flags.add("verbose");
     flags.add("debug");
-    println(str(len(flags)));
+    println(len(flags));
 }

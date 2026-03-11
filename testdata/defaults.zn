@@ -9,6 +9,6 @@ fn add(a: int, b: int, c: int = 0) -> int {
 fn main() {
     greet("Alice");
     greet("Bob", "Hi");
-    println(str(add(1, 2)));
-    println(str(add(1, 2, 3)));
+    println(add(1, 2));
+    println(add(1, 2, 3));
 }

@@ -39,7 +39,7 @@ Use `len()` to get the number of elements:
 
 ```zenth
 let items = [10, 20, 30];
-println(str(len(items)));  // 3
+println(len(items));       // 3
 ```
 
 ## Iterating
@@ -104,12 +104,12 @@ Use `.max()` and `.min()` to find the largest and smallest elements of a numeric
 
 ```zenth
 let nums = [3, 1, 4, 1, 5, 9, 2, 6];
-println(str(nums.max()));  // 9
-println(str(nums.min()));  // 1
+println(nums.max());       // 9
+println(nums.min());       // 1
 
 let floats = [3.14, 2.71, 1.41];
-println(str(floats.max())); // 3.14
-println(str(floats.min())); // 1.41
+println(floats.max());     // 3.14
+println(floats.min());     // 1.41
 ```
 
 These methods work on any numeric array (`int`, `f64`, `i32`, etc.) and panic at runtime if called on an empty array.
@@ -120,10 +120,10 @@ Use `.sum()` to compute the sum of a numeric array:
 
 ```zenth
 let nums = [1, 2, 3, 4, 5];
-println(str(nums.sum()));  // 15
+println(nums.sum());       // 15
 
 let floats = [1.5, 2.5, 3.0];
-println(str(floats.sum())); // 7
+println(floats.sum());     // 7
 ```
 
 Returns zero for empty arrays.

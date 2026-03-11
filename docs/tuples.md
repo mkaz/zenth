@@ -9,7 +9,7 @@ Use `tuple(...)` to create a tuple with values accessed by numeric index:
 ```zenth
 let t = tuple("hello", 42);
 println(t.0);       // "hello"
-println(str(t.1));  // "42"
+println(t.1);       // "42"
 ```
 
 With a type annotation:
@@ -25,14 +25,14 @@ Named tuples add field names so you can access elements by name. Use `=` for val
 ```zenth
 let person = tuple(name="Alice", age=30);
 println(person.name);       // "Alice"
-println(str(person.age));   // "30"
+println(person.age);        // "30"
 ```
 
 Numeric index access still works on named tuples:
 
 ```zenth
 println(person.0);          // "Alice"
-println(str(person.1));     // "30"
+println(person.1);          // "30"
 ```
 
 With a type annotation:
@@ -101,7 +101,7 @@ Tuple destructuring binds each element to a variable by position:
 let t = tuple("hello", 42);
 let (greeting, number) = t;
 println(greeting);       // "hello"
-println(str(number));    // "42"
+println(number);         // "42"
 ```
 
 This works with named tuples too — the names don't affect destructuring order:

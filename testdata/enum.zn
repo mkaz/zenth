@@ -14,13 +14,13 @@ enum Status {
 
 fn main() {
     let c = Color.Red;
-    println(str(c));
+    println(c);
 
     let g = Color.Green;
-    println(str(g));
+    println(g);
 
     let b = Color.Blue;
-    println(str(b));
+    println(b);
 
     // Enum comparison
     if c == Color.Red {
@@ -41,9 +41,9 @@ fn main() {
 
     // Explicit values
     let s = Status.Pending;
-    println(str(s));
+    println(s);
 
     // Enum with type annotation
     let s2: Status = Status.Active;
-    println(str(s2));
+    println(s2);
 }

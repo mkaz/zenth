@@ -46,8 +46,8 @@ let a3 = Account(interest=5.0, balance=1000); // override multiple
 Use dot notation:
 
 ```zenth
-println(str(corner.x));  // 3
-println(str(corner.y));  // 4
+println(corner.x);       // 3
+println(corner.y);       // 4
 ```
 
 ## Methods

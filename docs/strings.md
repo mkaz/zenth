@@ -127,8 +127,8 @@ Use `len()` or `.length()` to get the length of a string:
 
 ```zenth
 let s = "hello";
-println(str(len(s)));  // 5
-println(str(s.length())); // 5
+println(len(s));           // 5
+println(s.length());       // 5
 ```
 
 ## Containment
@@ -157,8 +157,8 @@ Use `.starts_with()` and `.ends_with()` to check for prefixes and suffixes:
 
 ```zenth
 let name = "zenth";
-println(str(name.starts_with("zen"))); // true
-println(str(name.ends_with("th")));    // true
+println(name.starts_with("zen"));      // true
+println(name.ends_with("th"));         // true
 ```
 
 Use `.strip_prefix()` and `.strip_suffix()` to remove a prefix or suffix from a string. If the string does not have the given prefix/suffix, it is returned unchanged:
@@ -188,8 +188,8 @@ println("--" + "..hi..".strip(".") + "--"); // --hi--
 Use `.find()` and `.count()` for substring search and counting:
 
 ```zenth
-println(str("banana".find("na")));  // 2
-println(str("banana".count("na"))); // 2
+println("banana".find("na"));       // 2
+println("banana".count("na"));      // 2
 ```
 
 Use `.replace(old, new)` to replace all matches, or `.replace(old, new, n)` to limit replacements:

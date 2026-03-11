@@ -38,10 +38,10 @@ import "math";
 
 fn main() {
     let x = math.sqrt(144.0);
-    println(str(x));  // 12
+    println(x);  // 12
 
     let y = math.pow(2.0, 10.0);
-    println(str(y));  // 1024
+    println(y);  // 1024
 }
 ```
 
@@ -66,6 +66,6 @@ The functions `print`, `println`, `len`, and `str` are built-in and always avail
 ```zenth
 fn main() {
     println("no import required");
-    println(str(len("hello")));
+    println(len("hello"));
 }
 ```

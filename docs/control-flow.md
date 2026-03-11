@@ -24,7 +24,7 @@ The classic three-part loop with init, condition, and post:
 
 ```zenth
 for var i = 0; i < 10; i++ {
-    println(str(i));
+    println(i);
 }
 ```
 
@@ -32,7 +32,7 @@ The init clause can declare a variable with `var` or `let`:
 
 ```zenth
 for let start = 0; start < 5; start++ {
-    println(str(start));
+    println(start);
 }
 ```
 
@@ -103,17 +103,17 @@ Using `range()` and `rangei()` for numeric iteration:
 ```zenth
 // range(start, end) — exclusive end
 for i in range(0, 5) {
-    println(str(i));  // 0 1 2 3 4
+    println(i);       // 0 1 2 3 4
 }
 
 // rangei(start, end) — inclusive end
 for i in rangei(1, 5) {
-    println(str(i));  // 1 2 3 4 5
+    println(i);       // 1 2 3 4 5
 }
 
 // Optional step parameter
 for i in range(0, 10, 2) {
-    println(str(i));  // 0 2 4 6 8
+    println(i);       // 0 2 4 6 8
 }
 ```
 
@@ -132,7 +132,7 @@ for _, item in items {   // discard index
     println(item);
 }
 for i, _ in items {      // discard value
-    println(str(i));
+    println(i);
 }
 ```
 
@@ -156,7 +156,7 @@ for var i = 0; i < 100; i++ {
     if i > 10 {
         break;     // stop after 10
     }
-    println(str(i));
+    println(i);
 }
 ```
 

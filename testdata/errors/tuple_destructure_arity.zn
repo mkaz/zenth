@@ -1,6 +1,6 @@
 fn main() {
     let (a, b, c) = tuple(1, 2);
-    println(str(a));
-    println(str(b));
-    println(str(c));
+    println(a);
+    println(b);
+    println(c);
 }

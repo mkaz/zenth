@@ -1,7 +1,7 @@
 fn main() {
     let t = tuple("a", 1);
     println(t.0);
-    println(str(t.1));
+    println(t.1);
 
     let u = tuple(1, "x", true);
     println(str(u.0) + "-" + u.1 + "-" + str(u.2));

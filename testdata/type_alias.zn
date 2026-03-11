@@ -21,7 +21,7 @@ fn sum(nums: Ints) -> int {
 fn main() {
     // Array alias
     var pts: Points = [Point(x=1, y=2), Point(x=3, y=4)];
-    println(str(len(pts)));
+    println(len(pts));
 
     // Hashmap alias
     var m: StringMap = hashmap(str, str);
@@ -31,9 +31,9 @@ fn main() {
     // Tuple alias
     let p: Pair = tuple("Alice", 42);
     println(p.0);
-    println(str(p.1));
+    println(p.1);
 
     // Use alias in function parameter
     let nums: Ints = [10, 20, 30];
-    println(str(sum(nums)));
+    println(sum(nums));
 }

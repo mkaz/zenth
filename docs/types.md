@@ -149,7 +149,7 @@ visited.add("start");
 visited.add("middle");
 visited.exists("start");  // true
 visited.remove("middle");
-println(str(len(visited)));  // 1
+println(len(visited));       // 1
 ```
 
 Sets support `int`, `str`, `bool`, and other comparable types as elements.
@@ -163,7 +163,7 @@ var dots = set(tuple(int, int));
 dots.add(tuple(6, 10));
 dots.add(tuple(0, 14));
 dots.add(tuple(6, 10));  // duplicate, ignored
-println(str(len(dots)));  // 2
+println(len(dots));       // 2
 
 if dots.exists(tuple(6, 10)) {
     println("found");

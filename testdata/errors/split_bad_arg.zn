@@ -1,5 +1,5 @@
 fn main() {
     let s = "a-b";
     let a = s.split(1);
-    println(str(len(a)));
+    println(len(a));
 }

@@ -1,5 +1,5 @@
 // Should fail: length() takes no args on str
 fn main() {
     let s = "hello";
-    println(str(s.length(1)));
+    println(s.length(1));
 }
