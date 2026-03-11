@@ -463,26 +463,28 @@ let c = Account(interest=5.0, balance=1000);  // any order
 
 ### Enums
 
+Enums are string-backed. Without explicit values, the variant name is the value.
+
 ```zenth
 enum Color {
-    Red;
-    Green;
-    Blue;
+    Red;        // value is "Red"
+    Green;      // value is "Green"
+    Blue;       // value is "Blue"
 }
 
-enum HttpStatus {
-    Ok = 200;
-    NotFound = 404;
-    InternalError = 500;
+enum HexColor {
+    Red = "#FF0000";
+    Green = "#00FF00";
+    Blue = "#0000FF";
 }
 ```
 
-- Access variants with `EnumName.Variant`: `Color.Red`, `HttpStatus.Ok`
-- Values auto-increment from 0 (or from the last explicit value)
+- Access variants with `EnumName.Variant`: `Color.Red`, `HexColor.Red`
+- Backed by strings: default is variant name, or explicit string value
 - Compare with `==` and `!=`
-- Convert to variant name string with `str()`: `str(Color.Red)` returns `"Red"`
+- Prints as its string value: `println(Color.Red)` prints `"Red"`, `println(HexColor.Red)` prints `"#FF0000"`
 - Use in `match` statements and expressions
-- Can be used as type annotations: `let c: Color = Color.Green;`
+- Use as type annotations to enforce valid values: `let c: Color = Color.Green;`
 
 ### Imports
 

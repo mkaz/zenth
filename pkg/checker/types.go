@@ -155,7 +155,7 @@ func (t *TupleType) typeMarker() {}
 // EnumType represents a user-defined enum type.
 type EnumType struct {
 	Name     string
-	Variants map[string]int64 // variant name -> integer value
+	Variants map[string]string // variant name -> string value
 }
 
 func (e *EnumType) String() string { return e.Name }

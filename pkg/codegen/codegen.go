@@ -785,14 +785,18 @@ func (g *Generator) genObjDecl(s *ast.ObjDecl) {
 }
 
 func (g *Generator) genEnumDecl(e *ast.EnumDecl) {
-	// type Color int
-	g.writef("type %s int\n\n", e.Name)
+	// type Color string
+	g.writef("type %s string\n\n", e.Name)
 
 	// const block
 	g.writeln("const (")
 	g.indent++
 	for _, v := range e.Variants {
-		g.writef("%s_%s %s = %d\n", e.Name, v.Name, e.Name, v.AutoVal)
+		val := v.Name // default: variant name
+		if v.StrValue != nil {
+			val = v.StrValue.Value
+		}
+		g.writef("%s_%s %s = %q\n", e.Name, v.Name, e.Name, val)
 	}
 	g.indent--
 	g.writeln(")")
@@ -801,19 +805,7 @@ func (g *Generator) genEnumDecl(e *ast.EnumDecl) {
 	// String() method for printing
 	g.writef("func (e %s) String() string {\n", e.Name)
 	g.indent++
-	g.writeln("switch e {")
-	for _, v := range e.Variants {
-		g.writef("case %s_%s:\n", e.Name, v.Name)
-		g.indent++
-		g.writef("return \"%s\"\n", v.Name)
-		g.indent--
-	}
-	g.writeln("default:")
-	g.indent++
-	g.imports["fmt"] = ""
-	g.writef("return fmt.Sprintf(\"%s(%%d)\", int(e))\n", e.Name)
-	g.indent--
-	g.writeln("}")
+	g.writeln("return string(e)")
 	g.indent--
 	g.writeln("}")
 	g.writeln("")

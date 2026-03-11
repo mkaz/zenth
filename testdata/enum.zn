@@ -6,10 +6,10 @@ enum Color {
     Blue;
 }
 
-enum Status {
-    Active = 1;
-    Inactive = 2;
-    Pending = 10;
+enum HexColor {
+    Red = "#FF0000";
+    Green = "#00FF00";
+    Blue = "#0000FF";
 }
 
 fn main() {
@@ -39,11 +39,11 @@ fn main() {
         _ => println("unknown");
     }
 
-    // Explicit values
-    let s = Status.Pending;
-    println(s);
+    // Explicit string values
+    let h = HexColor.Red;
+    println(h);
 
     // Enum with type annotation
-    let s2: Status = Status.Active;
-    println(s2);
+    let h2: HexColor = HexColor.Green;
+    println(h2);
 }

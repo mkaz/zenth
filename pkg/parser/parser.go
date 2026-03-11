@@ -1066,22 +1066,12 @@ func (p *Parser) parseEnumDecl() *ast.EnumDecl {
 		if p.peek() == token.Assign {
 			p.advance()
 			valTok := p.cur()
-			// Support negative values: -N
-			neg := false
-			if p.peek() == token.Minus {
-				neg = true
+			if valTok.Type != token.StringLit {
+				p.errorf(valTok.Pos, "enum value must be a string literal")
 				p.advance()
-				valTok = p.cur()
-			}
-			if valTok.Type != token.IntLit {
-				p.errorf(valTok.Pos, "enum value must be an integer literal")
 			} else {
 				p.advance()
-				val, _ := strconv.ParseInt(valTok.Literal, 10, 64)
-				if neg {
-					val = -val
-				}
-				variant.Value = &ast.IntLitExpr{TokenPos: valTok.Pos, Value: val}
+				variant.StrValue = &ast.StringLitExpr{TokenPos: valTok.Pos, Value: valTok.Literal}
 			}
 		}
 		p.expect(token.Semicolon)

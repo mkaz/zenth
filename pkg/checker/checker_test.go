@@ -177,7 +177,7 @@ func TestTupleTypeString(t *testing.T) {
 }
 
 func TestEnumTypeString(t *testing.T) {
-	e := &EnumType{Name: "Color", Variants: map[string]int64{"Red": 0}}
+	e := &EnumType{Name: "Color", Variants: map[string]string{"Red": "Red"}}
 	if got := e.String(); got != "Color" {
 		t.Errorf("EnumType.String() = %q, want %q", got, "Color")
 	}

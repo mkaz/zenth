@@ -31,8 +31,8 @@ type ObjInfo struct {
 // EnumInfo stores enum metadata.
 type EnumInfo struct {
 	Name     string
-	Variants map[string]int64 // variant name -> value
-	Order    []string         // variant order
+	Variants map[string]string // variant name -> string value
+	Order    []string          // variant order
 }
 
 // Checker performs type checking and semantic analysis on a Zenth AST.
@@ -212,18 +212,15 @@ func (c *Checker) registerObj(s *ast.ObjDecl) {
 func (c *Checker) registerEnum(e *ast.EnumDecl) {
 	info := &EnumInfo{
 		Name:     e.Name,
-		Variants: make(map[string]int64),
+		Variants: make(map[string]string),
 	}
-	var nextVal int64
-	for i := range e.Variants {
-		v := &e.Variants[i]
-		if v.Value != nil {
-			nextVal = v.Value.Value
+	for _, v := range e.Variants {
+		val := v.Name // default: variant name is the string value
+		if v.StrValue != nil {
+			val = v.StrValue.Value
 		}
-		v.AutoVal = nextVal
-		info.Variants[v.Name] = nextVal
+		info.Variants[v.Name] = val
 		info.Order = append(info.Order, v.Name)
-		nextVal++
 	}
 	c.enums[e.Name] = info
 }

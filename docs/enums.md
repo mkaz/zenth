@@ -1,6 +1,6 @@
 # Enums
 
-Enums define a type with a fixed set of named variants. Each variant has an integer value, starting from 0 by default.
+Enums define a type with a fixed set of named variants. Each variant is backed by a string value — by default the variant name itself.
 
 ## Declaring Enums
 
@@ -12,24 +12,23 @@ enum Color {
 }
 ```
 
-Variants are automatically assigned values starting from 0: `Red` is 0, `Green` is 1, `Blue` is 2.
+Without explicit values, each variant's string value is its name: `"Red"`, `"Green"`, `"Blue"`.
 
-## Explicit Values
+## Explicit String Values
 
-You can assign explicit integer values to variants. Subsequent variants auto-increment from the last explicit value:
+You can assign explicit string values to variants:
 
 ```zenth
-enum HttpStatus {
-    Ok = 200;
-    NotFound = 404;
-    InternalError = 500;
+enum HexColor {
+    Red = "#FF0000";
+    Green = "#00FF00";
+    Blue = "#0000FF";
 }
 
-enum Priority {
-    Low = 1;
-    Medium;    // 2
-    High;      // 3
-    Critical;  // 4
+enum Stoplight {
+    Red = "red";
+    Yellow = "yellow";
+    Green = "green";
 }
 ```
 
@@ -39,12 +38,12 @@ Access variants with `EnumName.Variant` syntax:
 
 ```zenth
 let c = Color.Red;
-let status = HttpStatus.NotFound;
+let hex = HexColor.Red;
 ```
 
-## Type Annotations
+## Type Safety
 
-Enums can be used as type annotations:
+Enums enforce that a variable can only hold one of the declared variants. Use type annotations to constrain values:
 
 ```zenth
 let c: Color = Color.Green;
@@ -58,6 +57,8 @@ fn describe(c: Color) {
     }
 }
 ```
+
+A `Stoplight` variable can only be `Stoplight.Red`, `Stoplight.Yellow`, or `Stoplight.Green` — no arbitrary strings allowed.
 
 ## Comparison
 
@@ -90,11 +91,14 @@ fn color_name(c: Color) -> str {
 }
 ```
 
-## String Conversion
+## Printing
 
-Use `str()` to convert an enum value to its variant name:
+Enum values print as their string value:
 
 ```zenth
 let c = Color.Green;
-println(c);       // prints "Green"
+println(c);  // prints "Green"
+
+let h = HexColor.Red;
+println(h);  // prints "#FF0000"
 ```

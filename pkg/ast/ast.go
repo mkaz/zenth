@@ -73,9 +73,8 @@ func (e *EnumDecl) nodeMarker()    {}
 
 // EnumVariant represents one variant in an enum.
 type EnumVariant struct {
-	Name     string
-	Value    *IntLitExpr // nil for auto-assigned
-	AutoVal  int64       // set by checker: resolved integer value
+	Name      string
+	StrValue  *StringLitExpr // explicit string value; nil means use variant name
 }
 
 // InterfaceDecl represents an interface declaration.

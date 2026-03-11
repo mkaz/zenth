@@ -341,8 +341,8 @@ func TestBuildAndRun(t *testing.T) {
 				"is red",
 				"not blue",
 				"matched green",
-				"Pending",
-				"Active",
+				"#FF0000",
+				"#00FF00",
 			},
 		},
 		{
