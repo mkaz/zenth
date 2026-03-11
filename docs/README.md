@@ -17,6 +17,7 @@ fn main() {
 - [Functions](functions.md) -- Declaring and calling functions
 - [Strings](strings.md) -- String literals, interpolation, and raw strings
 - [Control Flow](control-flow.md) -- `if`/`else`, `for` loops, and `match`
+- [Enums](enums.md) -- Named value types with fixed variants
 - [Objects](objects.md) -- Objects, methods, and `self`
 - [Slices](slices.md) -- Dynamic arrays
 - [Tuples](tuples.md) -- Fixed-size mixed-type values

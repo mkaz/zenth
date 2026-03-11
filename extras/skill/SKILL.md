@@ -461,6 +461,29 @@ let c = Account(interest=5.0, balance=1000);  // any order
 - Fields are accessed with dot notation: `r.width`
 - Constructors use named arguments: `Point(x=1, y=2)`
 
+### Enums
+
+```zenth
+enum Color {
+    Red;
+    Green;
+    Blue;
+}
+
+enum HttpStatus {
+    Ok = 200;
+    NotFound = 404;
+    InternalError = 500;
+}
+```
+
+- Access variants with `EnumName.Variant`: `Color.Red`, `HttpStatus.Ok`
+- Values auto-increment from 0 (or from the last explicit value)
+- Compare with `==` and `!=`
+- Convert to variant name string with `str()`: `str(Color.Red)` returns `"Red"`
+- Use in `match` statements and expressions
+- Can be used as type annotations: `let c: Color = Color.Green;`
+
 ### Imports
 
 ```zenth

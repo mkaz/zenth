@@ -205,6 +205,23 @@ let p = Point(x=1.0, y=2.0);
 
 See [Objects](objects.md) for methods and `self`.
 
+### Enums
+
+Enums define a type with a fixed set of named variants:
+
+```zenth
+enum Direction {
+    North;
+    South;
+    East;
+    West;
+}
+
+let d = Direction.North;
+```
+
+See [Enums](enums.md) for explicit values, comparison, and match usage.
+
 ## Type Conversions
 
 Use the `str()` built-in to convert any value to a string:

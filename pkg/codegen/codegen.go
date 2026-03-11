@@ -52,6 +52,7 @@ type Generator struct {
 	needsSliceSorted   bool
 	needsAssert        bool
 	needsAssertEq      bool
+	enums              map[string]*ast.EnumDecl
 	tupleStructs       map[string][]string // struct name -> field Go types
 	needsFlag          bool
 	flagDecls          []flagDecl
@@ -69,6 +70,7 @@ func New() *Generator {
 	return &Generator{
 		imports:      make(map[string]string),
 		objs:         make(map[string]*ast.ObjDecl),
+		enums:        make(map[string]*ast.EnumDecl),
 		funcs:        make(map[string]*ast.FnDecl),
 		typeAliases:  make(map[string]*ast.TypeExpr),
 		tupleStructs: make(map[string][]string),
@@ -85,6 +87,8 @@ func (g *Generator) Generate(prog *ast.Program) string {
 			for _, m := range s.Methods {
 				g.funcs[s.Name+"."+m.Name] = m
 			}
+		case *ast.EnumDecl:
+			g.enums[s.Name] = s
 		case *ast.FnDecl:
 			g.funcs[s.Name] = s
 		case *ast.ImportDecl:
@@ -659,6 +663,8 @@ func (g *Generator) genNode(node ast.Node) {
 		g.genFnDecl(n)
 	case *ast.ObjDecl:
 		g.genObjDecl(n)
+	case *ast.EnumDecl:
+		g.genEnumDecl(n)
 	case *ast.InterfaceDecl:
 		g.genInterfaceDecl(n)
 	case *ast.TypeAliasDecl:
@@ -776,6 +782,41 @@ func (g *Generator) genObjDecl(s *ast.ObjDecl) {
 	for _, m := range s.Methods {
 		g.genFnDecl(m)
 	}
+}
+
+func (g *Generator) genEnumDecl(e *ast.EnumDecl) {
+	// type Color int
+	g.writef("type %s int\n\n", e.Name)
+
+	// const block
+	g.writeln("const (")
+	g.indent++
+	for _, v := range e.Variants {
+		g.writef("%s_%s %s = %d\n", e.Name, v.Name, e.Name, v.AutoVal)
+	}
+	g.indent--
+	g.writeln(")")
+	g.writeln("")
+
+	// String() method for printing
+	g.writef("func (e %s) String() string {\n", e.Name)
+	g.indent++
+	g.writeln("switch e {")
+	for _, v := range e.Variants {
+		g.writef("case %s_%s:\n", e.Name, v.Name)
+		g.indent++
+		g.writef("return \"%s\"\n", v.Name)
+		g.indent--
+	}
+	g.writeln("default:")
+	g.indent++
+	g.imports["fmt"] = ""
+	g.writef("return fmt.Sprintf(\"%s(%%d)\", int(e))\n", e.Name)
+	g.indent--
+	g.writeln("}")
+	g.indent--
+	g.writeln("}")
+	g.writeln("")
 }
 
 func (g *Generator) genDefaultObjStringMethod(s *ast.ObjDecl) {
@@ -1492,6 +1533,8 @@ func (g *Generator) genExpr(node ast.Node) {
 				g.write(")")
 			}
 			g.write(")")
+		} else if ident, ok := n.Object.(*ast.IdentExpr); ok && g.enums[ident.Name] != nil {
+			g.write(ident.Name + "_" + n.Field)
 		} else {
 			g.genExpr(n.Object)
 			g.write(".")
@@ -2509,6 +2552,11 @@ func goOp(op token.Type) string {
 }
 
 func (g *Generator) genType(t *ast.TypeExpr) string {
+	if t != nil && !t.IsSlice && !t.IsHashmap && !t.IsTuple && !t.IsArray && len(t.Params) == 0 {
+		if _, ok := g.enums[t.Name]; ok {
+			return t.Name
+		}
+	}
 	return genTypeExprResolved(t, g.typeAliases)
 }
 

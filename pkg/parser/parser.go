@@ -88,6 +88,8 @@ func (p *Parser) parseTopLevel() ast.Node {
 		return p.parseFnDecl()
 	case token.Obj:
 		return p.parseObjDecl()
+	case token.Enum:
+		return p.parseEnumDecl()
 	case token.Interface:
 		return p.parseInterfaceDecl()
 	case token.Import:
@@ -1048,6 +1050,42 @@ func (p *Parser) parseObjDecl() *ast.ObjDecl {
 			p.expect(token.Semicolon)
 			decl.Fields = append(decl.Fields, ast.Field{Name: name, Type: typ, Default: def})
 		}
+	}
+	p.expect(token.RBrace)
+	return decl
+}
+
+func (p *Parser) parseEnumDecl() *ast.EnumDecl {
+	tok := p.expect(token.Enum)
+	decl := &ast.EnumDecl{TokenPos: tok.Pos}
+	decl.Name = p.expect(token.Ident).Literal
+	p.expect(token.LBrace)
+	for p.peek() != token.RBrace && p.peek() != token.EOF {
+		name := p.expect(token.Ident).Literal
+		variant := ast.EnumVariant{Name: name}
+		if p.peek() == token.Assign {
+			p.advance()
+			valTok := p.cur()
+			// Support negative values: -N
+			neg := false
+			if p.peek() == token.Minus {
+				neg = true
+				p.advance()
+				valTok = p.cur()
+			}
+			if valTok.Type != token.IntLit {
+				p.errorf(valTok.Pos, "enum value must be an integer literal")
+			} else {
+				p.advance()
+				val, _ := strconv.ParseInt(valTok.Literal, 10, 64)
+				if neg {
+					val = -val
+				}
+				variant.Value = &ast.IntLitExpr{TokenPos: valTok.Pos, Value: val}
+			}
+		}
+		p.expect(token.Semicolon)
+		decl.Variants = append(decl.Variants, variant)
 	}
 	p.expect(token.RBrace)
 	return decl

@@ -1,0 +1,49 @@
+// Test basic enum functionality
+
+enum Color {
+    Red;
+    Green;
+    Blue;
+}
+
+enum Status {
+    Active = 1;
+    Inactive = 2;
+    Pending = 10;
+}
+
+fn main() {
+    let c = Color.Red;
+    println(str(c));
+
+    let g = Color.Green;
+    println(str(g));
+
+    let b = Color.Blue;
+    println(str(b));
+
+    // Enum comparison
+    if c == Color.Red {
+        println("is red");
+    }
+
+    if c != Color.Blue {
+        println("not blue");
+    }
+
+    // Match on enum
+    match g {
+        Color.Red => println("matched red");
+        Color.Green => println("matched green");
+        Color.Blue => println("matched blue");
+        _ => println("unknown");
+    }
+
+    // Explicit values
+    let s = Status.Pending;
+    println(str(s));
+
+    // Enum with type annotation
+    let s2: Status = Status.Active;
+    println(str(s2));
+}

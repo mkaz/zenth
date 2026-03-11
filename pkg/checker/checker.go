@@ -28,11 +28,19 @@ type ObjInfo struct {
 	Defaults map[string]bool // fields that have default values
 }
 
+// EnumInfo stores enum metadata.
+type EnumInfo struct {
+	Name     string
+	Variants map[string]int64 // variant name -> value
+	Order    []string         // variant order
+}
+
 // Checker performs type checking and semantic analysis on a Zenth AST.
 type Checker struct {
 	scope           *Scope
 	funcs           map[string]*FuncInfo // "name" or "Type.name"
 	objs            map[string]*ObjInfo
+	enums           map[string]*EnumInfo
 	modules         map[string]bool
 	typeAliases     map[string]*ast.TypeExpr
 	errors          []string
@@ -48,6 +56,7 @@ func New() *Checker {
 		scope:       global,
 		funcs:       make(map[string]*FuncInfo),
 		objs:        make(map[string]*ObjInfo),
+		enums:       make(map[string]*EnumInfo),
 		modules:     make(map[string]bool),
 		typeAliases: make(map[string]*ast.TypeExpr),
 	}
@@ -147,6 +156,8 @@ func (c *Checker) Check(prog *ast.Program) error {
 		switch s := stmt.(type) {
 		case *ast.ObjDecl:
 			c.registerObj(s)
+		case *ast.EnumDecl:
+			c.registerEnum(s)
 		case *ast.FnDecl:
 			c.registerFunc(s)
 		case *ast.ImportDecl:
@@ -196,6 +207,25 @@ func (c *Checker) registerObj(s *ast.ObjDecl) {
 	for _, m := range s.Methods {
 		c.registerFunc(m)
 	}
+}
+
+func (c *Checker) registerEnum(e *ast.EnumDecl) {
+	info := &EnumInfo{
+		Name:     e.Name,
+		Variants: make(map[string]int64),
+	}
+	var nextVal int64
+	for i := range e.Variants {
+		v := &e.Variants[i]
+		if v.Value != nil {
+			nextVal = v.Value.Value
+		}
+		v.AutoVal = nextVal
+		info.Variants[v.Name] = nextVal
+		info.Order = append(info.Order, v.Name)
+		nextVal++
+	}
+	c.enums[e.Name] = info
 }
 
 func (c *Checker) registerFunc(f *ast.FnDecl) {
@@ -273,6 +303,9 @@ func (c *Checker) resolveTypeExpr(t *ast.TypeExpr) ZType {
 	if st, ok := c.objs[t.Name]; ok {
 		return &ObjType{Name: st.Name, Fields: st.Fields}
 	}
+	if ei, ok := c.enums[t.Name]; ok {
+		return &EnumType{Name: ei.Name, Variants: ei.Variants}
+	}
 	if alias, ok := c.typeAliases[t.Name]; ok {
 		return c.resolveTypeExpr(alias)
 	}
@@ -289,6 +322,8 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 		for _, m := range n.Methods {
 			c.checkFnDecl(m)
 		}
+		return TypeVoid
+	case *ast.EnumDecl:
 		return TypeVoid
 	case *ast.InterfaceDecl:
 		return TypeVoid // TODO: check interface
@@ -1723,6 +1758,16 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 }
 
 func (c *Checker) checkFieldExpr(e *ast.FieldExpr) ZType {
+	// Check for enum variant access: EnumName.Variant
+	if ident, ok := e.Object.(*ast.IdentExpr); ok {
+		if ei, ok := c.enums[ident.Name]; ok {
+			if _, ok := ei.Variants[e.Field]; ok {
+				return &EnumType{Name: ei.Name, Variants: ei.Variants}
+			}
+			c.errorf(e.Pos(), "enum %s has no variant '%s'", ei.Name, e.Field)
+			return TypeVoid
+		}
+	}
 	if ident, ok := e.Object.(*ast.IdentExpr); ok && c.isModuleName(ident.Name) {
 		return TypeVoid
 	}
@@ -1843,6 +1888,10 @@ func (c *Checker) checkIdentExpr(e *ast.IdentExpr) ZType {
 	// Could be a struct name used as a type constructor
 	if _, ok := c.objs[e.Name]; ok {
 		return TypeVoid // struct names aren't values
+	}
+	// Could be an enum name (used for EnumName.Variant access)
+	if _, ok := c.enums[e.Name]; ok {
+		return TypeVoid // enum names aren't values by themselves
 	}
 	if c.isModuleName(e.Name) {
 		return TypeVoid
@@ -2379,6 +2428,8 @@ func goTypeName(t ZType) string {
 		return "[]interface{}"
 	case *ObjType:
 		return "*" + ty.Name
+	case *EnumType:
+		return ty.Name
 	default:
 		return "interface{}"
 	}

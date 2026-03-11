@@ -152,6 +152,21 @@ func (t *TupleType) Equals(other ZType) bool {
 
 func (t *TupleType) typeMarker() {}
 
+// EnumType represents a user-defined enum type.
+type EnumType struct {
+	Name     string
+	Variants map[string]int64 // variant name -> integer value
+}
+
+func (e *EnumType) String() string { return e.Name }
+func (e *EnumType) Equals(other ZType) bool {
+	if o, ok := other.(*EnumType); ok {
+		return e.Name == o.Name
+	}
+	return false
+}
+func (e *EnumType) typeMarker() {}
+
 // FuncType represents a function type (for passing functions as values).
 type FuncType struct {
 	Params  []ZType

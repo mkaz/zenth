@@ -333,6 +333,19 @@ func TestBuildAndRun(t *testing.T) {
 			contains: []string{"1 9", "3 2", "world hello"},
 		},
 		{
+			file: "enum.zn",
+			contains: []string{
+				"Red",
+				"Green",
+				"Blue",
+				"is red",
+				"not blue",
+				"matched green",
+				"Pending",
+				"Active",
+			},
+		},
+		{
 			file: "int_limits.zn",
 			contains: []string{
 				"9223372036854775807",
@@ -525,6 +538,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/assign_int_max.zn",
 			errMsg: "cannot assign to constant",
+		},
+		{
+			file:   "errors/enum_bad_variant.zn",
+			errMsg: "has no variant",
 		},
 	}
 

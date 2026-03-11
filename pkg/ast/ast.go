@@ -61,6 +61,23 @@ type Field struct {
 	Default Node // nil if no default
 }
 
+// EnumDecl represents an enum declaration.
+type EnumDecl struct {
+	TokenPos token.Pos
+	Name     string
+	Variants []EnumVariant
+}
+
+func (e *EnumDecl) Pos() token.Pos { return e.TokenPos }
+func (e *EnumDecl) nodeMarker()    {}
+
+// EnumVariant represents one variant in an enum.
+type EnumVariant struct {
+	Name     string
+	Value    *IntLitExpr // nil for auto-assigned
+	AutoVal  int64       // set by checker: resolved integer value
+}
+
 // InterfaceDecl represents an interface declaration.
 type InterfaceDecl struct {
 	TokenPos token.Pos
