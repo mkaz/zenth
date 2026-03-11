@@ -1,0 +1,18 @@
+// Test INT_MAX and INT_MIN built-in constants
+
+fn main() {
+    println(str(INT_MAX));
+    println(str(INT_MIN));
+
+    // Can use in expressions
+    let big = INT_MAX - 1;
+    println(str(big));
+
+    // Comparison
+    if INT_MAX > 0 {
+        println("INT_MAX is positive");
+    }
+    if INT_MIN < 0 {
+        println("INT_MIN is negative");
+    }
+}

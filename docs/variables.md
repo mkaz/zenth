@@ -40,6 +40,19 @@ const PI = 3.14159;
 const MAX_SIZE = 1024;
 ```
 
+### Built-in Constants
+
+Zenth provides built-in integer limit constants:
+
+| Constant  | Value                | Description |
+|-----------|----------------------|-------------|
+| `INT_MAX` | 9223372036854775807  | Maximum `int` value (2^63-1) |
+| `INT_MIN` | -9223372036854775808 | Minimum `int` value (-2^63) |
+
+```zenth
+let infinity = INT_MAX;  // cleaner than magic numbers
+```
+
 ## Type Inference
 
 Types are inferred from the assigned value by default:

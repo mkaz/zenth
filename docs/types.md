@@ -27,6 +27,27 @@ Integer literals can use underscores for readability:
 let million = 1_000_000;
 ```
 
+### Built-in Integer Constants
+
+Zenth provides built-in constants for the integer range limits:
+
+| Constant  | Value                | Description |
+|-----------|----------------------|-------------|
+| `INT_MAX` | 9223372036854775807  | Maximum `int` value (2^63-1) |
+| `INT_MIN` | -9223372036854775808 | Minimum `int` value (-2^63) |
+
+These are true constants and cannot be reassigned:
+
+```zenth
+let big = INT_MAX;
+let small = INT_MIN;
+
+// Use in expressions
+if score < INT_MAX {
+    println("not at the limit yet");
+}
+```
+
 ### Base Conversion
 
 Use `.to_base(base)` to convert an integer to a string in a given base (2-36):

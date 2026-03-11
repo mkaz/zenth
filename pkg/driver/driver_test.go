@@ -332,6 +332,16 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "multi_return.zn",
 			contains: []string{"1 9", "3 2", "world hello"},
 		},
+		{
+			file: "int_limits.zn",
+			contains: []string{
+				"9223372036854775807",
+				"-9223372036854775808",
+				"9223372036854775806",
+				"INT_MAX is positive",
+				"INT_MIN is negative",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -511,6 +521,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/multi_return_type_mismatch.zn",
 			errMsg: "return type mismatch",
+		},
+		{
+			file:   "errors/assign_int_max.zn",
+			errMsg: "cannot assign to constant",
 		},
 	}
 

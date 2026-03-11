@@ -46,6 +46,8 @@ let x: int = 5;         // immutable, explicit type
 var counter = 0;         // mutable, type inferred
 var counter: int = 0;    // mutable, explicit type
 const PI = 3.14159;      // constant
+INT_MAX                  // built-in: max int value (9223372036854775807)
+INT_MIN                  // built-in: min int value (-9223372036854775808)
 ```
 
 - `let` is immutable (cannot reassign)
@@ -500,6 +502,22 @@ Available modules map to Go stdlib: `fmt`, `math`, `os`, `strings`
 | `exit(code)` | Exit program with status code |
 | `assert(cond)` | Panic if `cond` is false (reports file:line) |
 | `assert_eq(got, expected)` | Panic if `got != expected` (reports file:line and both values) |
+
+### Built-in Constants
+
+| Constant | Description |
+|---|---|
+| `INT_MAX` | Maximum `int` value (2^63-1 = 9223372036854775807) |
+| `INT_MIN` | Minimum `int` value (-2^63 = -9223372036854775808) |
+
+These are true constants and cannot be reassigned. Use them instead of magic numbers for sentinel values:
+
+```zenth
+var best = INT_MAX;       // use as "infinity"
+if cost < best {
+    best = cost;
+}
+```
 
 ### File I/O
 

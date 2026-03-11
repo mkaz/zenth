@@ -11,7 +11,7 @@ syn keyword zenthKeyword      fn let var const return if else for in match range
 syn keyword zenthKeyword      obj enum interface import from as break continue type
 
 " Constants
-syn keyword zenthConstant     true false nil
+syn keyword zenthConstant     true false nil INT_MAX INT_MIN
 syn keyword zenthIdentifier   self
 
 " Built-in types

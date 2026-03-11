@@ -1498,7 +1498,16 @@ func (g *Generator) genExpr(node ast.Node) {
 			g.write(goFieldName(n.Field, n.Object))
 		}
 	case *ast.IdentExpr:
-		g.write(n.Name)
+		switch n.Name {
+		case "INT_MAX":
+			g.imports["math"] = ""
+			g.write("math.MaxInt64")
+		case "INT_MIN":
+			g.imports["math"] = ""
+			g.write("math.MinInt64")
+		default:
+			g.write(n.Name)
+		}
 	case *ast.IntLitExpr:
 		g.write(fmt.Sprintf("%d", n.Value))
 	case *ast.FloatLitExpr:

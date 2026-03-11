@@ -120,6 +120,10 @@ func New() *Checker {
 		NumRequired: 1,
 	}
 
+	// Register built-in constants
+	global.Define(&Symbol{Name: "INT_MAX", Type: TypeInt, IsConst: true})
+	global.Define(&Symbol{Name: "INT_MIN", Type: TypeInt, IsConst: true})
+
 	return c
 }
 

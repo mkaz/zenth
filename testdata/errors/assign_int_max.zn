@@ -1,0 +1,4 @@
+// Should fail: assigning to built-in constant INT_MAX
+fn main() {
+    INT_MAX = 42;
+}
