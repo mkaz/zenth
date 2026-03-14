@@ -1044,6 +1044,37 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.SliceMethod = true
 				return sliceType
+			case "reduce":
+				if len(e.Args) < 1 || len(e.Args) > 2 {
+					c.errorf(e.Pos(), "reduce() takes 1 or 2 arguments (closure [, initial]), got %d", len(e.Args))
+					return TypeVoid
+				}
+				closure, ok := e.Args[0].(*ast.ClosureExpr)
+				if !ok {
+					c.errorf(e.Args[0].Pos(), "reduce() first argument must be a closure")
+					c.checkNode(e.Args[0])
+					return TypeVoid
+				}
+				if len(closure.Params) != 2 {
+					c.errorf(e.Args[0].Pos(), "reduce() closure must take exactly 2 parameters, got %d", len(closure.Params))
+					return TypeVoid
+				}
+				closureType := c.checkClosureExpr(closure, sliceType.Elem)
+				ft, ok := closureType.(*FuncType)
+				if !ok {
+					return TypeVoid
+				}
+				if !ft.Returns.Equals(sliceType.Elem) {
+					c.errorf(e.Args[0].Pos(), "reduce() closure must return %s, got %s", sliceType.Elem, ft.Returns)
+				}
+				if len(e.Args) == 2 {
+					initType := c.checkNode(e.Args[1])
+					if !initType.Equals(sliceType.Elem) {
+						c.errorf(e.Args[1].Pos(), "reduce() initial value type %s does not match element type %s", initType, sliceType.Elem)
+					}
+				}
+				e.SliceMethod = true
+				return sliceType.Elem
 			}
 		}
 		// Check for built-in file methods
@@ -1425,6 +1456,19 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 		if info, ok := c.funcs[ident.Name]; ok {
 			e.ResolvedFunc = ident.Name
 			c.checkArgs(e, info)
+			// int(str, base) — two-argument form
+			if info.Name == "int" && len(e.Args) == 2 {
+				argType := c.checkNode(e.Args[0])
+				baseType := c.checkNode(e.Args[1])
+				if !argType.Equals(TypeStr) {
+					c.errorf(e.Args[0].Pos(), "int() with base requires first argument to be str, got %s", argType)
+				}
+				if !IsInteger(baseType) {
+					c.errorf(e.Args[1].Pos(), "int() base must be int, got %s", baseType)
+				}
+				e.IntBaseCall = true
+				return TypeInt
+			}
 			// Conversion builtins on slices: int([]str) -> []int, etc.
 			if (info.Name == "int" || info.Name == "f64" || info.Name == "str") && len(e.Args) == 1 {
 				argType := c.checkNode(e.Args[0])
@@ -1626,7 +1670,7 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 		}
 		return
 	}
-	// Conversion builtins accept any single arg
+	// Conversion builtins accept any single arg (int() also accepts 2 for base)
 	if info.Name == "int" || info.Name == "f64" || info.Name == "str" {
 		for _, arg := range e.Args {
 			if named, ok := arg.(*ast.NamedArgExpr); ok {
@@ -1635,6 +1679,10 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 				continue
 			}
 			c.checkNode(arg)
+		}
+		if info.Name == "int" && len(e.Args) == 2 {
+			// int(str, base) form
+			return
 		}
 		if len(e.Args) != 1 {
 			c.errorf(e.Pos(), "%s() expects exactly 1 argument, got %d", info.Name, len(e.Args))

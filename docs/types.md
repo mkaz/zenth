@@ -232,6 +232,18 @@ let s = str(n);    // "42"
 println(str(3.14)); // "3.14"
 ```
 
+Use `int()` to convert strings or floats to integers. With two arguments, the second specifies the base:
+
+```zenth
+let a = int("42");         // 42
+let b = int(3.14);         // 3
+let bin = int("1010", 2);  // 10 (binary)
+let hex = int("ff", 16);   // 255 (hexadecimal)
+let oct = int("77", 8);    // 63 (octal)
+```
+
+This is equivalent to `"ff".to_int(16)` but reads more naturally as a conversion function.
+
 ## Operators
 
 ### Arithmetic

@@ -325,6 +325,25 @@ func TestBuildAndRun(t *testing.T) {
 			},
 		},
 		{
+			file: "reduce.zn",
+			contains: []string{
+				"15",
+				"120",
+				"5",
+				"115",
+				"7",
+			},
+		},
+		{
+			file: "int_base.zn",
+			contains: []string{
+				"10",
+				"255",
+				"63",
+				"42",
+			},
+		},
+		{
 			file:     "assert.zn",
 			contains: []string{"all assertions passed"},
 		},
@@ -542,6 +561,18 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/enum_bad_variant.zn",
 			errMsg: "has no variant",
+		},
+		{
+			file:   "errors/reduce_not_closure.zn",
+			errMsg: "reduce() first argument must be a closure",
+		},
+		{
+			file:   "errors/reduce_wrong_params.zn",
+			errMsg: "reduce() closure must take exactly 2 parameters",
+		},
+		{
+			file:   "errors/int_base_not_str.zn",
+			errMsg: "int() with base requires first argument to be str",
 		},
 	}
 

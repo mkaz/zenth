@@ -50,6 +50,7 @@ type Generator struct {
 	needsSliceMin      bool
 	needsSliceSum      bool
 	needsSliceSorted   bool
+	needsSliceReduce   bool
 	needsAssert        bool
 	needsAssertEq      bool
 	enums              map[string]*ast.EnumDecl
@@ -568,6 +569,20 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\tcopy(c, s)")
 		g.writeln("\tsort.Slice(c, func(i, j int) bool { return c[i] < c[j] })")
 		g.writeln("\treturn c")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsSliceReduce {
+		g.writeln("func zenth_slice_reduce[T any](s []T, f func(T, T) T, hasInit bool, init T) T {")
+		g.writeln("\tif !hasInit {")
+		g.writeln("\t\tif len(s) == 0 { panic(\"reduce() called on empty array with no initial value\") }")
+		g.writeln("\t\tacc := s[0]")
+		g.writeln("\t\tfor _, v := range s[1:] { acc = f(acc, v) }")
+		g.writeln("\t\treturn acc")
+		g.writeln("\t}")
+		g.writeln("\tacc := init")
+		g.writeln("\tfor _, v := range s { acc = f(acc, v) }")
+		g.writeln("\treturn acc")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -1683,15 +1698,22 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			g.write(")")
 			return
 		case "int":
-			if c.SliceConvFunc == "int" {
+			if c.IntBaseCall {
+				g.needsIntBase = true
+				g.write("zenth_int_base(")
+				g.genArgList(c.Args)
+				g.write(")")
+			} else if c.SliceConvFunc == "int" {
 				g.needsSliceToInt = true
 				g.write("zenth_slice_to_int(")
+				g.genArgList(c.Args)
+				g.write(")")
 			} else {
 				g.needsIntConv = true
 				g.write("zenth_int(")
+				g.genArgList(c.Args)
+				g.write(")")
 			}
-			g.genArgList(c.Args)
-			g.write(")")
 			return
 		case "f64":
 			if c.SliceConvFunc == "f64" {
@@ -2086,6 +2108,29 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.imports["sort"] = ""
 				g.write("zenth_slice_sorted(")
 				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "reduce":
+				g.needsSliceReduce = true
+				g.write("zenth_slice_reduce(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(", ")
+				if len(c.Args) == 2 {
+					g.write("true, ")
+					g.genExpr(c.Args[1])
+				} else {
+					// No initial value — pass zero value with hasInit=false
+					g.write("false, *new(")
+					// Determine the Go element type from the closure return type
+					if closure, ok := c.Args[0].(*ast.ClosureExpr); ok && closure.GoReturn != "" {
+						g.write(closure.GoReturn)
+					} else {
+						g.write("int") // fallback
+					}
+					g.write(")")
+				}
 				g.write(")")
 				return
 			}

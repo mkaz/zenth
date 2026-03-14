@@ -143,6 +143,38 @@ let sw = words.sorted();  // ["apple", "banana", "cherry"]
 
 The original array is not modified. Strings are sorted lexicographically.
 
+## Reduce
+
+Use `.reduce()` to combine all elements into a single value using a closure that takes an accumulator and element:
+
+```zenth
+let nums = [1, 2, 3, 4, 5];
+
+// Sum all elements
+let total = nums.reduce(fn(a, b) a + b);
+println(total);  // 15
+
+// Product with initial value
+let product = nums.reduce(fn(a, b) a * b, 1);
+println(product);  // 120
+
+// Find max using reduce
+let biggest = nums.reduce(fn(a, b) if a > b { a } else { b });
+println(biggest);  // 5
+```
+
+Without an initial value, the first element is used as the starting accumulator and reduction begins from the second element. Calling `reduce()` on an empty array without an initial value panics at runtime.
+
+With an initial value, reduction starts from that value and processes all elements:
+
+```zenth
+let nums = [1, 2, 3];
+let sum_from_100 = nums.reduce(fn(a, b) a + b, 100);
+println(sum_from_100);  // 106
+```
+
+Works on any array type — numeric, string, etc. The closure must take two parameters of the element type and return the same type.
+
 ## Transforming Slices
 
 Use `.map()` to transform each element and `.filter()` to select elements:

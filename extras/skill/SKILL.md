@@ -74,6 +74,8 @@ type Pair = tuple(str, int);
 let n = int("42");        // str to int
 let f = f64(42);          // int to f64
 let s = str(42);          // any to str
+let b = int("ff", 16);   // str to int with base (255)
+let bin = int("1010", 2); // binary string to int (10)
 ```
 
 ### Functions
@@ -301,6 +303,10 @@ let biggest = numbers.max();    // 5
 let smallest = numbers.min();   // 1
 let total = numbers.sum();      // 15
 
+// Reduce — combine elements with a closure
+let product = numbers.reduce(fn(a, b) a * b, 1);  // 120
+let sum = numbers.reduce(fn(a, b) a + b);          // 15
+
 // Sorted (returns new sorted copy)
 let s = [3, 1, 4].sorted();    // [1, 3, 4]
 let sw = ["b", "a"].sorted();  // ["a", "b"]
@@ -504,6 +510,7 @@ Available modules map to Go stdlib: `fmt`, `math`, `os`, `strings`
 | `len(x)` | Length of string, array, or hashmap |
 | `str(x)` | Convert any value to string |
 | `int(x)` | Convert string or float to int |
+| `int(str, base)` | Convert string to int with base (2, 8, 16, etc.) |
 | `f64(x)` | Convert to float64 |
 | `abs(x)` | Absolute value (int or float) |
 | `min(a, b)` | Minimum of two values |
