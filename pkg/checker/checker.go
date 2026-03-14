@@ -99,12 +99,12 @@ func New() *Checker {
 	c.funcs["range"] = &FuncInfo{
 		Name:   "range",
 		Params: []ZType{TypeInt, TypeInt},
-		Return: &SliceType{Elem: TypeInt},
+		Return: TypeRange,
 	}
 	c.funcs["rangei"] = &FuncInfo{
 		Name:   "rangei",
 		Params: []ZType{TypeInt, TypeInt},
-		Return: &SliceType{Elem: TypeInt},
+		Return: TypeRangei,
 	}
 	c.funcs["file"] = &FuncInfo{
 		Name:   "file",
@@ -684,6 +684,13 @@ func (c *Checker) checkForInStmt(s *ast.ForInStmt) ZType {
 
 	c.pushScope()
 	switch t := iterType.(type) {
+	case *RangeType:
+		s.IterRange = true
+		s.IterRangeInclusive = t.Inclusive
+		if s.Index != "" {
+			defineLoopVar(s.Index, TypeInt)
+		}
+		defineLoopVar(s.Value, TypeInt)
 	case *SliceType:
 		if s.Index != "" {
 			defineLoopVar(s.Index, TypeInt)
@@ -1110,6 +1117,29 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.SliceMethod = true
 				return TypeStr
+			}
+		}
+		// Check for built-in range methods
+		if _, ok := objType.(*RangeType); ok {
+			switch field.Field {
+			case "contains":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "contains() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !IsInteger(argType) {
+						c.errorf(e.Args[0].Pos(), "contains() argument must be int, got %s", argType)
+					}
+				}
+				e.RangeMethod = true
+				return TypeBool
+			default:
+				c.errorf(e.Pos(), "range has no method %q", field.Field)
+				for _, arg := range e.Args {
+					c.checkNode(arg)
+				}
+				return TypeVoid
 			}
 		}
 		// Check for built-in string methods
@@ -1702,10 +1732,12 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 			return
 		}
 		argType := c.checkNode(e.Args[0])
-		if _, ok := argType.(*SliceType); !ok && !argType.Equals(TypeStr) {
+		if _, ok := argType.(*RangeType); ok {
+			e.LenArgIsRange = true
+		} else if _, ok := argType.(*SliceType); !ok && !argType.Equals(TypeStr) {
 			if _, ok := argType.(*HashmapType); !ok {
 				if _, ok := argType.(*SetType); !ok {
-					c.errorf(e.Args[0].Pos(), "argument 1 to len has type %s, expected str, slice, hashmap, or set", argType)
+					c.errorf(e.Args[0].Pos(), "argument 1 to len has type %s, expected str, slice, hashmap, set, or range", argType)
 				}
 			}
 		}

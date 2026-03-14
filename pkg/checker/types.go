@@ -152,6 +152,29 @@ func (t *TupleType) Equals(other ZType) bool {
 
 func (t *TupleType) typeMarker() {}
 
+// RangeType represents a range object returned by range() or rangei().
+// It is iterable and supports O(1) .contains() checks.
+type RangeType struct {
+	Inclusive bool
+}
+
+func (r *RangeType) String() string {
+	if r.Inclusive {
+		return "rangei"
+	}
+	return "range"
+}
+func (r *RangeType) Equals(other ZType) bool {
+	_, ok := other.(*RangeType)
+	return ok
+}
+func (r *RangeType) typeMarker() {}
+
+var (
+	TypeRange  = &RangeType{Inclusive: false}
+	TypeRangei = &RangeType{Inclusive: true}
+)
+
 // EnumType represents a user-defined enum type.
 type EnumType struct {
 	Name     string

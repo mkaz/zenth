@@ -59,6 +59,15 @@ func TestBuildAndRun(t *testing.T) {
 			},
 		},
 		{
+			file: "range_contains.zn",
+			contains: []string{
+				"true",
+				"false",
+				"42 in range",
+				"point in bounds",
+			},
+		},
+		{
 			file: "interpolation.zn",
 			contains: []string{
 				"Hello World!",

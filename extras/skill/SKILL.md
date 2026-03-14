@@ -256,6 +256,37 @@ for var i = 0; i < 10; i++ {
 }
 ```
 
+### Range Objects
+
+`range()` and `rangei()` return a **range object** — lightweight, iterable, with O(1) `.contains()` check:
+
+```zenth
+let r  = range(0, 10);    // exclusive end: [0, 9]
+let ri = rangei(0, 10);   // inclusive end: [0, 10]
+
+// .contains() for bounds check (O(1))
+println(r.contains(5));   // true
+println(r.contains(10));  // false (exclusive)
+println(ri.contains(10)); // true (inclusive)
+
+// len() on range is O(1)
+println(len(range(0, 100, 3)));  // 34
+
+// Range objects are iterable in for-in
+for i in range(0, 5) {
+    println(i);  // 0 1 2 3 4
+}
+
+// Named ranges for reusable bounds checking
+let xrange = rangei(0, 100);
+let yrange = rangei(0, 50);
+if xrange.contains(x) && yrange.contains(y) {
+    println("in bounds");
+}
+```
+
+Note: `.contains()` is a bounds check only, not sequence membership.
+
 ### Arrays (Slices)
 
 ```zenth
@@ -521,10 +552,10 @@ Available modules map to Go stdlib: `fmt`, `math`, `os`, `strings`
 | `ceil(x)` | Ceiling of float |
 | `pow(base, exp)` | Exponentiation |
 | `sqrt(x)` | Square root |
-| `range(start, end)` | Exclusive range as array(int) |
-| `range(start, end, step)` | Exclusive range with step |
-| `rangei(start, end)` | Inclusive range |
-| `rangei(start, end, step)` | Inclusive range with step |
+| `range(start, end)` | Exclusive range object |
+| `range(start, end, step)` | Exclusive range object with step |
+| `rangei(start, end)` | Inclusive range object |
+| `rangei(start, end, step)` | Inclusive range object with step |
 | `hashmap(K, V)` | Create empty hashmap |
 | `hashmap(K, V, default=val)` | Create hashmap with default |
 | `set(T)` | Create empty set |

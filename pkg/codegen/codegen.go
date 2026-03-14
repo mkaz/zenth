@@ -18,6 +18,7 @@ type Generator struct {
 	typeAliases        map[string]*ast.TypeExpr
 	needsRange         bool
 	needsRangei        bool
+	needsRangeObj      bool
 	needsPop           bool
 	needsAdd           bool
 	needsPush          bool
@@ -166,27 +167,32 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("")
 	}
 
-	if g.needsRange {
-		g.writeln("func zenth_range(start, end, step int) []int {")
-		g.writeln("\tvar r []int")
-		g.writeln("\tif step > 0 {")
-		g.writeln("\t\tfor i := start; i < end; i += step { r = append(r, i) }")
-		g.writeln("\t} else if step < 0 {")
-		g.writeln("\t\tfor i := start; i > end; i += step { r = append(r, i) }")
+	if g.needsRangeObj {
+		g.writeln("type ZenthRange struct { Start, End, Step int; Inclusive bool }")
+		g.writeln("func (r ZenthRange) Contains(x int) bool {")
+		g.writeln("\tif r.Step > 0 {")
+		g.writeln("\t\tif r.Inclusive { return x >= r.Start && x <= r.End }")
+		g.writeln("\t\treturn x >= r.Start && x < r.End")
+		g.writeln("\t} else if r.Step < 0 {")
+		g.writeln("\t\tif r.Inclusive { return x <= r.Start && x >= r.End }")
+		g.writeln("\t\treturn x <= r.Start && x > r.End")
 		g.writeln("\t}")
-		g.writeln("\treturn r")
+		g.writeln("\treturn false")
 		g.writeln("}")
-		g.writeln("")
-	}
-	if g.needsRangei {
-		g.writeln("func zenth_rangei(start, end, step int) []int {")
-		g.writeln("\tvar r []int")
-		g.writeln("\tif step > 0 {")
-		g.writeln("\t\tfor i := start; i <= end; i += step { r = append(r, i) }")
-		g.writeln("\t} else if step < 0 {")
-		g.writeln("\t\tfor i := start; i >= end; i += step { r = append(r, i) }")
+		g.writeln("func (r ZenthRange) Len() int {")
+		g.writeln("\tif r.Step == 0 { return 0 }")
+		g.writeln("\tif r.Step > 0 {")
+		g.writeln("\t\tif !r.Inclusive && r.Start >= r.End { return 0 }")
+		g.writeln("\t\tif r.Inclusive && r.Start > r.End { return 0 }")
+		g.writeln("\t\td := r.End - r.Start")
+		g.writeln("\t\tif !r.Inclusive { return (d-1)/r.Step + 1 }")
+		g.writeln("\t\treturn d/r.Step + 1")
 		g.writeln("\t}")
-		g.writeln("\treturn r")
+		g.writeln("\tif !r.Inclusive && r.Start <= r.End { return 0 }")
+		g.writeln("\tif r.Inclusive && r.Start < r.End { return 0 }")
+		g.writeln("\td := r.Start - r.End")
+		g.writeln("\tif !r.Inclusive { return (d-1)/(-r.Step) + 1 }")
+		g.writeln("\treturn d/(-r.Step) + 1")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -1313,6 +1319,41 @@ func (g *Generator) genForInStmt(s *ast.ForInStmt) {
 			g.write(" {\n")
 			g.indent++
 		}
+	} else if s.IterRange {
+		tc := g.tempCounter
+		g.tempCounter++
+		rvar := fmt.Sprintf("_zr%d_", tc)
+		vvar := fmt.Sprintf("_zrv%d_", tc)
+		cvar := fmt.Sprintf("_zrc%d_", tc)
+		// writeIndent was already called; write the range temp-var assignment on that line
+		g.write(rvar + " := ")
+		g.genExpr(s.Iterable)
+		g.write("\n")
+		if s.Index != "" && s.Index != "_" {
+			g.writef("%s := 0\n", cvar)
+		}
+		g.writeIndent()
+		g.write("for ")
+		var cond string
+		if s.IterRangeInclusive {
+			cond = fmt.Sprintf("(%s.Step > 0 && %s <= %s.End) || (%s.Step < 0 && %s >= %s.End)",
+				rvar, vvar, rvar, rvar, vvar, rvar)
+		} else {
+			cond = fmt.Sprintf("(%s.Step > 0 && %s < %s.End) || (%s.Step < 0 && %s > %s.End)",
+				rvar, vvar, rvar, rvar, vvar, rvar)
+		}
+		g.write(fmt.Sprintf("%s := %s.Start; %s; %s += %s.Step {\n", vvar, rvar, cond, vvar, rvar))
+		g.indent++
+		if s.Value != "_" {
+			g.writeIndent()
+			g.write(fmt.Sprintf("%s := %s\n", s.Value, vvar))
+		}
+		if s.Index != "" && s.Index != "_" {
+			g.writeIndent()
+			g.write(fmt.Sprintf("%s := %s\n", s.Index, cvar))
+			g.writeIndent()
+			g.write(fmt.Sprintf("%s++\n", cvar))
+		}
 	} else {
 		indexIsDiscard := s.Index == "" || s.Index == "_"
 		valueIsDiscard := s.Value == "_"
@@ -1659,9 +1700,15 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			g.writef(", %q, %d)", pos.File, pos.Line)
 			return
 		case "len":
-			g.write("len(")
-			g.genArgList(c.Args)
-			g.write(")")
+			if c.LenArgIsRange {
+				g.write("(")
+				g.genArgList(c.Args)
+				g.write(").Len()")
+			} else {
+				g.write("len(")
+				g.genArgList(c.Args)
+				g.write(")")
+			}
 			return
 		case "str":
 			if c.SliceConvFunc == "str" {
@@ -1674,22 +1721,32 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			g.write(")")
 			return
 		case "range":
-			g.needsRange = true
-			g.write("zenth_range(")
-			g.genArgList(c.Args)
-			if len(c.Args) == 2 {
-				g.write(", 1")
+			g.needsRangeObj = true
+			g.write("ZenthRange{Start: ")
+			g.genExpr(c.Args[0])
+			g.write(", End: ")
+			g.genExpr(c.Args[1])
+			g.write(", Step: ")
+			if len(c.Args) == 3 {
+				g.genExpr(c.Args[2])
+			} else {
+				g.write("1")
 			}
-			g.write(")")
+			g.write(", Inclusive: false}")
 			return
 		case "rangei":
-			g.needsRangei = true
-			g.write("zenth_rangei(")
-			g.genArgList(c.Args)
-			if len(c.Args) == 2 {
-				g.write(", 1")
+			g.needsRangeObj = true
+			g.write("ZenthRange{Start: ")
+			g.genExpr(c.Args[0])
+			g.write(", End: ")
+			g.genExpr(c.Args[1])
+			g.write(", Step: ")
+			if len(c.Args) == 3 {
+				g.genExpr(c.Args[2])
+			} else {
+				g.write("1")
 			}
-			g.write(")")
+			g.write(", Inclusive: true}")
 			return
 		case "file":
 			g.needsFile = true
@@ -1939,6 +1996,24 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			case "length":
 				g.write("len(")
 				g.genExpr(field.Object)
+				g.write(")")
+				return
+			}
+		}
+	}
+
+	// Handle built-in range methods
+	if c.RangeMethod {
+		if field, ok := c.Callee.(*ast.FieldExpr); ok {
+			switch field.Field {
+			case "contains":
+				g.needsRangeObj = true
+				g.write("(")
+				g.genExpr(field.Object)
+				g.write(").Contains(")
+				if len(c.Args) == 1 {
+					g.genExpr(c.Args[0])
+				}
 				g.write(")")
 				return
 			}

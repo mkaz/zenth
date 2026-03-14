@@ -112,6 +112,59 @@ Primitive types (`int`, `str`, `bool`, `f64`) cannot be nil.
 
 ## Composite Types
 
+### Range Objects
+
+`range(start, end)` and `rangei(start, end)` return a **range object** — a lightweight value type that is iterable and supports O(1) containment checks.
+
+```zenth
+let r  = range(0, 10);    // exclusive: [0, 9]
+let ri = rangei(0, 10);   // inclusive: [0, 10]
+let rs = range(0, 20, 3); // with step: [0, 3, 6, 9, 12, 15, 18]
+```
+
+**Methods:**
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `.contains(x)` | `bool` | O(1) bounds check: is `x` within the range? |
+
+**Built-ins that work on range objects:**
+
+| Built-in | Description |
+|----------|-------------|
+| `len(r)` | Number of elements in the range (O(1)) |
+
+**Iteration:**
+
+Range objects are iterable in `for-in` loops:
+
+```zenth
+for i in range(0, 5) {
+    println(i);   // 0 1 2 3 4
+}
+
+for i, v in rangei(10, 13) {
+    println("{i}: {v}");
+}
+// 0: 10
+// 1: 11
+// 2: 12
+// 3: 13
+```
+
+**Containment checks:**
+
+```zenth
+let r = range(1, 10);
+println(r.contains(5));   // true
+println(r.contains(10));  // false (exclusive end)
+
+let ri = rangei(1, 10);
+println(ri.contains(10)); // true (inclusive end)
+```
+
+**Note:** `.contains()` is a bounds check, not a sequence membership test. For `range(0, 10, 3)` (sequence `[0, 3, 6, 9]`), `.contains(5)` returns `true` because 5 is within the bounds `[0, 10)`.
+
 ### Slices
 
 Dynamic arrays use `array(Type)` syntax:

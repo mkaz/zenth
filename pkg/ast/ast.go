@@ -268,6 +268,8 @@ type ForInStmt struct {
 	IterStr                bool     // set by checker when iterating over a string
 	IterHashmap            bool     // set by checker when iterating over a hashmap
 	IterSet                bool     // set by checker when iterating over a set
+	IterRange              bool     // set by checker when iterating over a range object
+	IterRangeInclusive     bool     // set by checker: true for rangei, false for range
 	IterSetTupleStruct     string   // set by checker: struct name for set(tuple) iteration
 	IterSetTupleFieldTypes []string // set by checker: Go types for set(tuple) conversion
 	IterHashmapObjKey      bool     // set by checker when hashmap key is an obj type
@@ -406,6 +408,8 @@ type CallExpr struct {
 	ResolvedFunc       string   // set by checker: function key ("name" or "Type.method")
 	FlagName           string   // set by checker: variable name for flag() calls
 	FlagGoType         string   // set by checker: "bool", "int", "string" for flag() calls
+	RangeMethod        bool     // set by checker for built-in range methods (e.g. "contains")
+	LenArgIsRange      bool     // set by checker when len() is called on a range object
 }
 
 func (c *CallExpr) Pos() token.Pos { return c.TokenPos }

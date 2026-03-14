@@ -117,6 +117,37 @@ for i in range(0, 10, 2) {
 }
 ```
 
+`range()` and `rangei()` return a **range object**, not an array. Range objects are lightweight and iterable. They also support an O(1) `.contains()` method for bounds checking:
+
+```zenth
+let xrange = rangei(0, 100);
+let yrange = rangei(0, 50);
+
+if xrange.contains(x) && yrange.contains(y) {
+    println("point in bounds");
+}
+```
+
+This replaces verbose compound comparisons:
+
+```zenth
+// before
+if x >= 0 && x <= 100 && y >= 0 && y <= 50 {
+
+// after
+if xrange.contains(x) && yrange.contains(y) {
+```
+
+Ranges can also be stored in variables and reused across multiple checks. `len()` on a range object returns the number of elements without materializing the sequence:
+
+```zenth
+let r = range(0, 100, 3);
+println(len(r));           // 34
+println(r.contains(99));   // false (99 is not a multiple of 3 from 0... but bounds check: 99 < 100 → true)
+```
+
+Note: `.contains()` performs a bounds check only. For `range(0, 10, 3)`, `.contains(5)` returns `true` because 5 is within the bounds `[0, 10)`, not because 5 is in the sequence `[0, 3, 6, 9]`.
+
 Use `_` to discard the loop variable when you only need the repetition:
 
 ```zenth
