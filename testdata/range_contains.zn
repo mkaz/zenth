@@ -1,0 +1,34 @@
+// Test range object .contains() method
+
+fn main() {
+    // Exclusive range contains
+    let r = range(1, 10);
+    println(str(r.contains(5)));   // true
+    println(str(r.contains(10)));  // false (exclusive)
+    println(str(r.contains(0)));   // false
+
+    // Inclusive range contains
+    let ri = rangei(1, 10);
+    println(str(ri.contains(10)));  // true (inclusive)
+    println(str(ri.contains(1)));   // true
+    println(str(ri.contains(11)));  // false
+
+    // Step range contains (bounds check)
+    let evens = range(0, 10, 2);
+    println(str(evens.contains(4)));   // true
+    println(str(evens.contains(10)));  // false (exclusive)
+
+    // Inline range in condition
+    if range(0, 100).contains(42) {
+        println("42 in range");
+    }
+
+    // Named range used in if
+    let xrange = range(10, 20);
+    let yrange = rangei(5, 15);
+    let x = 15;
+    let y = 10;
+    if xrange.contains(x) && yrange.contains(y) {
+        println("point in bounds");
+    }
+}
