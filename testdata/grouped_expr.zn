@@ -1,0 +1,16 @@
+// Test that parenthesized expressions preserve grouping
+fn main() {
+    let v = 5;
+
+    // (v + 1) / 2 must not lose the parens
+    let a = (v + 1) / 2;
+    println("a=" + str(a));  // (5+1)/2 = 3
+
+    // nested grouping
+    let b = (v + 1) * (v - 1);
+    println("b=" + str(b));  // 6 * 4 = 24
+
+    // grouping on right side
+    let c = 10 / (v - 3);
+    println("c=" + str(c));  // 10 / 2 = 5
+}

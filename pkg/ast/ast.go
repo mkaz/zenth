@@ -383,6 +383,15 @@ type UnaryExpr struct {
 func (u *UnaryExpr) Pos() token.Pos { return u.TokenPos }
 func (u *UnaryExpr) nodeMarker()    {}
 
+// GroupedExpr represents: (expr) — preserves explicit parenthesization for codegen.
+type GroupedExpr struct {
+	TokenPos token.Pos
+	Expr     Node
+}
+
+func (g *GroupedExpr) Pos() token.Pos { return g.TokenPos }
+func (g *GroupedExpr) nodeMarker()    {}
+
 // CallExpr represents: callee(args)
 type CallExpr struct {
 	TokenPos           token.Pos

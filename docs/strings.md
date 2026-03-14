@@ -220,6 +220,29 @@ println(cmd);   // "forward"
 println(value); // "10"
 ```
 
+## Character Classification
+
+Use `.is_digit()` to check if a single-character string is a decimal digit (`0`–`9`):
+
+```zenth
+println("5".is_digit());   // true
+println("0".is_digit());   // true
+println("a".is_digit());   // false
+println("[".is_digit());   // false
+```
+
+This is useful when iterating over a string character by character:
+
+```zenth
+var digits = 0;
+for ch in "abc123" {
+    if ch.is_digit() {
+        digits += 1;
+    }
+}
+println(digits);  // 3
+```
+
 ## Repeating
 
 Use `.repeat(n)` to repeat a string `n` times:

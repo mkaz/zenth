@@ -926,10 +926,11 @@ func (p *Parser) parsePrimary() ast.Node {
 		return &ast.IdentExpr{TokenPos: tok.Pos, Name: tok.Literal}
 
 	case token.LParen:
+		pos := tok.Pos
 		p.advance()
 		expr := p.parseExpr(0)
 		p.expect(token.RParen)
-		return expr
+		return &ast.GroupedExpr{TokenPos: pos, Expr: expr}
 
 	case token.LBracket:
 		return p.parseArrayLit()

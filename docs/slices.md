@@ -87,16 +87,31 @@ items.add(4);   // [2, 3, 4]
 items.push(1);  // [1, 2, 3, 4]
 ```
 
+### Inserting Elements
+
+- `.insert(index, value)` inserts an element at the specified index, shifting later elements right.
+
+```zenth
+var nums = [1, 2, 4, 5];
+nums.insert(2, 3);  // [1, 2, 3, 4, 5]
+```
+
 ### Removing Elements
 
 - `.pop()` removes and returns the last element of the slice.
 - `.pop(index)` removes and returns the element at the specified index.
+- `.remove(index)` removes the element at the specified index (discards it).
 
 ```zenth
 var letters = ["a", "b", "c", "d"];
 let last = letters.pop();    // "d", letters is now ["a", "b", "c"]
 let first = letters.pop(0);  // "a", letters is now ["b", "c"]
+
+var items = [10, 20, 30];
+items.remove(1);  // removes 20, items is now [10, 30]
 ```
+
+Use `.remove()` instead of `.pop()` when you don't need the removed value.
 
 ## Max and Min
 

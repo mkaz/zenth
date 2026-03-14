@@ -101,6 +101,18 @@ func TestBuildAndRun(t *testing.T) {
 			contains: []string{"after add: 4", "last=5", "after push: 5", "first=1", "second=2"},
 		},
 		{
+			file:     "array_insert_remove.zn",
+			contains: []string{"after insert: 5", "at[2]=3", "at[3]=4", "after remove: 4", "at[0]=1", "at[1]=3"},
+		},
+		{
+			file:     "str_is_digit.zn",
+			contains: []string{"5=true", "0=true", "9=true", "a=false", "[=false", ",=false", "digits=3"},
+		},
+		{
+			file:     "grouped_expr.zn",
+			contains: []string{"a=3", "b=24", "c=5"},
+		},
+		{
 			file:     "length.zn",
 			contains: []string{"len=2", "empty=0", "after=3"},
 		},

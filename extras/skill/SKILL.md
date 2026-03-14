@@ -163,6 +163,8 @@ len("hello")                 // 5
 "hello".to_int()             // error; use on numeric strings
 "42".to_int()                // 42
 "ff".to_int(16)              // 255 (with base)
+"5".is_digit()               // true (single char is a decimal digit 0-9)
+"a".is_digit()               // false
 ```
 
 **String indexing and slicing:**
@@ -304,6 +306,8 @@ items.add(10);         // append
 items.push(20);        // same as add
 let last = items.pop();     // remove and return last
 let at = items.pop(0);     // remove and return at index
+items.insert(1, 99);   // insert 99 at index 1, shifting later elements right
+items.remove(2);       // remove element at index 2 (discards it)
 
 // Containment
 if numbers.exists(3) {

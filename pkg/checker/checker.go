@@ -398,6 +398,8 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 		return c.checkIfExpr(n)
 	case *ast.MatchExpr:
 		return c.checkMatchExpr(n)
+	case *ast.GroupedExpr:
+		return c.checkNode(n.Expr)
 	case *ast.ClosureExpr:
 		return c.checkClosureExpr(n, nil)
 	case *ast.InterpStringExpr:
@@ -1082,6 +1084,36 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.SliceMethod = true
 				return sliceType.Elem
+			case "insert":
+				if len(e.Args) != 2 {
+					c.errorf(e.Pos(), "insert() takes exactly 2 arguments (index, elem), got %d", len(e.Args))
+				}
+				if len(e.Args) >= 1 {
+					argType := c.checkNode(e.Args[0])
+					if !IsInteger(argType) {
+						c.errorf(e.Args[0].Pos(), "insert() index must be integer, got %s", argType)
+					}
+				}
+				if len(e.Args) == 2 {
+					argType := c.checkNode(e.Args[1])
+					if !sliceType.Elem.Equals(argType) {
+						c.errorf(e.Args[1].Pos(), "insert() element type %s does not match slice element type %s", argType, sliceType.Elem)
+					}
+				}
+				e.SliceMethod = true
+				return TypeVoid
+			case "remove":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "remove() takes exactly 1 argument (index), got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !IsInteger(argType) {
+						c.errorf(e.Args[0].Pos(), "remove() index must be integer, got %s", argType)
+					}
+				}
+				e.SliceMethod = true
+				return TypeVoid
 			}
 		}
 		// Check for built-in file methods
@@ -1343,6 +1375,12 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.StringMethod = "repeat"
 				return TypeStr
+			case "is_digit":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "is_digit() takes no arguments, got %d", len(e.Args))
+				}
+				e.StringMethod = "is_digit"
+				return TypeBool
 			}
 		}
 

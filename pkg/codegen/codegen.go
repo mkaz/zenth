@@ -52,6 +52,9 @@ type Generator struct {
 	needsSliceSum      bool
 	needsSliceSorted   bool
 	needsSliceReduce   bool
+	needsIsDigit       bool
+	needsInsert        bool
+	needsRemove        bool
 	needsAssert        bool
 	needsAssertEq      bool
 	enums              map[string]*ast.EnumDecl
@@ -237,6 +240,26 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\t\tif v == elem { return true }")
 		g.writeln("\t}")
 		g.writeln("\treturn false")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsIsDigit {
+		g.writeln("func zenth_is_digit(s string) bool {")
+		g.writeln("\treturn len(s) == 1 && s[0] >= '0' && s[0] <= '9'")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsInsert {
+		g.writeln("func zenth_insert[T any](s *[]T, i int, elem T) {")
+		g.writeln("\t*s = append(*s, elem)")
+		g.writeln("\tcopy((*s)[i+1:], (*s)[i:])")
+		g.writeln("\t(*s)[i] = elem")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsRemove {
+		g.writeln("func zenth_remove[T any](s *[]T, i int) {")
+		g.writeln("\t*s = append((*s)[:i], (*s)[i+1:]...)")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -1628,6 +1651,10 @@ func (g *Generator) genExpr(node ast.Node) {
 			g.genExpr(elem)
 		}
 		g.write("}")
+	case *ast.GroupedExpr:
+		g.write("(")
+		g.genExpr(n.Expr)
+		g.write(")")
 	case *ast.NamedArgExpr:
 		g.genExpr(n.Value)
 	case *ast.IfExpr:
@@ -2208,6 +2235,24 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				}
 				g.write(")")
 				return
+			case "insert":
+				g.needsInsert = true
+				g.write("zenth_insert(&")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(", ")
+				g.genExpr(c.Args[1])
+				g.write(")")
+				return
+			case "remove":
+				g.needsRemove = true
+				g.write("zenth_remove(&")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(")")
+				return
 			}
 		}
 	}
@@ -2362,6 +2407,12 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.genExpr(field.Object)
 				g.write("), ")
 				g.genExpr(c.Args[0])
+				g.write(")")
+				return
+			case "is_digit":
+				g.needsIsDigit = true
+				g.write("zenth_is_digit(")
+				g.genExpr(field.Object)
 				g.write(")")
 				return
 			}

@@ -1,0 +1,18 @@
+// Test str.is_digit() character classification
+fn main() {
+    println("5=" + str("5".is_digit()));   // true
+    println("0=" + str("0".is_digit()));   // true
+    println("9=" + str("9".is_digit()));   // true
+    println("a=" + str("a".is_digit()));   // false
+    println("[=" + str("[".is_digit()));   // false
+    println(",=" + str(",".is_digit()));   // false
+
+    // typical use: classify chars in a string
+    var digits = 0;
+    for ch in "abc123" {
+        if ch.is_digit() {
+            digits += 1;
+        }
+    }
+    println("digits=" + str(digits));  // 3
+}
