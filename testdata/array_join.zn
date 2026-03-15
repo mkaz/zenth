@@ -1,0 +1,28 @@
+// Test array join method
+
+fn main() {
+    let words = ["hello", "world"];
+    println(words.join(" "));
+
+    let csv = ["a", "b", "c"];
+    println(csv.join(","));
+
+    // Join with empty separator
+    let letters = ["x", "y", "z"];
+    println(letters.join(""));
+
+    // Join single element
+    let one = ["solo"];
+    println(one.join("-"));
+
+    // Join with multi-char separator
+    let parts = ["2026", "03", "15"];
+    println(parts.join("-"));
+}
+
+// Expected output:
+// hello world
+// a,b,c
+// xyz
+// solo
+// 2026-03-15

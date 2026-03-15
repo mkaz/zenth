@@ -1153,6 +1153,21 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.SliceMethod = true
 				return TypeVoid
+			case "join":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "join() takes exactly 1 argument (separator), got %d", len(e.Args))
+				}
+				if !sliceType.Elem.Equals(TypeStr) {
+					c.errorf(e.Pos(), "join() requires array(str), got %s", objType)
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !argType.Equals(TypeStr) {
+						c.errorf(e.Args[0].Pos(), "join() separator must be str, got %s", argType)
+					}
+				}
+				e.SliceMethod = true
+				return TypeStr
 			}
 		}
 		// Check for built-in file methods

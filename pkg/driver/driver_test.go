@@ -412,6 +412,10 @@ func TestBuildAndRun(t *testing.T) {
 				"INT_MIN is negative",
 			},
 		},
+		{
+			file:     "array_join.zn",
+			contains: []string{"hello world", "a,b,c", "xyz", "solo", "2026-03-15"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -615,6 +619,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/array_destruct_non_array.zn",
 			errMsg: "array destructuring requires array value",
+		},
+		{
+			file:   "errors/array_join_non_string.zn",
+			errMsg: "join() requires array(str)",
 		},
 	}
 

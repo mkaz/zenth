@@ -2348,6 +2348,14 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.genExpr(c.Args[0])
 				g.write(")")
 				return
+			case "join":
+				g.imports["strings"] = ""
+				g.write("strings.Join(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(")")
+				return
 			}
 		}
 	}

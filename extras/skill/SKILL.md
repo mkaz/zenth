@@ -346,6 +346,11 @@ let sum = numbers.reduce(fn(a, b) a + b);          // 15
 let s = [3, 1, 4].sorted();    // [1, 3, 4]
 let sw = ["b", "a"].sorted();  // ["a", "b"]
 
+// Join string arrays into a single string
+let words = ["hello", "world"];
+println(words.join(" "));       // "hello world"
+println(["a", "b"].join(","));  // "a,b"
+
 // Type conversions for string arrays
 let strs = ["1", "2", "3"];
 let ints = strs.to_int();     // [1, 2, 3]

@@ -190,6 +190,28 @@ println(sum_from_100);  // 106
 
 Works on any array type — numeric, string, etc. The closure must take two parameters of the element type and return the same type.
 
+## Join
+
+Use `.join(separator)` to concatenate all elements of a string array into a single string, with the given separator between each element:
+
+```zenth
+let words = ["hello", "world"];
+println(words.join(" "));      // "hello world"
+
+let csv = ["a", "b", "c"];
+println(csv.join(","));        // "a,b,c"
+
+// Empty separator concatenates directly
+let letters = ["x", "y", "z"];
+println(letters.join(""));     // "xyz"
+
+// Multi-character separator
+let parts = ["2026", "03", "15"];
+println(parts.join("-"));      // "2026-03-15"
+```
+
+Only works on `array(str)`. Calling `.join()` on a non-string array is a compile-time error.
+
 ## Transforming Slices
 
 Use `.map()` to transform each element and `.filter()` to select elements:
