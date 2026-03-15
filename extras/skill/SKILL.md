@@ -350,6 +350,20 @@ let sw = ["b", "a"].sorted();  // ["a", "b"]
 let strs = ["1", "2", "3"];
 let ints = strs.to_int();     // [1, 2, 3]
 let floats = strs.to_f64();   // [1.0, 2.0, 3.0]
+
+// Array destructuring — bind elements directly to variables
+let [a, b, c] = [10, 20, 30];
+println(a);  // 10
+
+// Works with var (mutable) and any array expression
+var [x, y] = [1, 2];
+x = 99;
+
+// Use _ to discard positions
+let [first, _, third] = [1, 2, 3];
+
+// Destructure from a method chain
+let [l, w, h] = "12x4x8".split("x").to_int().sorted();
 ```
 
 ### Tuples
@@ -548,8 +562,8 @@ Available modules map to Go stdlib: `fmt`, `math`, `os`, `strings`
 | `int(str, base)` | Convert string to int with base (2, 8, 16, etc.) |
 | `f64(x)` | Convert to float64 |
 | `abs(x)` | Absolute value (int or float) |
-| `min(a, b)` | Minimum of two values |
-| `max(a, b)` | Maximum of two values |
+| `min(a, b, ...)` | Minimum of two or more values (all must be same type: int or f64) |
+| `max(a, b, ...)` | Maximum of two or more values (all must be same type: int or f64) |
 | `clamp(x, lo, hi)` | Clamp value to range |
 | `round(x)` | Round float to nearest int |
 | `floor(x)` | Floor of float |
@@ -594,6 +608,7 @@ let f = file("data.txt");
 if f.exists() {
     let content = f.read();       // entire file as str
     let lines = f.lines();        // array(str)
+    let parts = f.sections();     // split on blank lines -> array(str)
     println("Name: " + f.name()); // filename
     println("Ext: " + f.ext());   // extension
 }

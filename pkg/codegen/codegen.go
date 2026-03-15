@@ -36,8 +36,12 @@ type Generator struct {
 	needsFilter        bool
 	needsSplitOnce     bool
 	needsAbsInt        bool
-	needsMinInt        bool
-	needsMaxInt        bool
+	needsMinInt          bool
+	needsMaxInt          bool
+	needsMinIntVariadic  bool
+	needsMaxIntVariadic  bool
+	needsMinF64Variadic  bool
+	needsMaxF64Variadic  bool
 	needsClampInt      bool
 	needsClampF64      bool
 	needsIntBase       bool
@@ -290,6 +294,12 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("")
 		g.writeln("func zenth_file_ext(f ZenthFile) string { return filepath.Ext(f.Path) }")
 		g.writeln("")
+		g.writeln("func zenth_file_sections(f ZenthFile) []string {")
+		g.writeln("\tcontent := zenth_file_read(f)")
+		g.writeln("\tcontent = strings.TrimRight(content, \"\\n\")")
+		g.writeln("\treturn strings.Split(content, \"\\n\\n\")")
+		g.writeln("}")
+		g.writeln("")
 	}
 	if g.needsIntConv {
 		g.writeln("func zenth_int(v interface{}) int {")
@@ -496,6 +506,38 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("func zenth_max_int(a, b int) int {")
 		g.writeln("\tif a > b { return a }")
 		g.writeln("\treturn b")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsMinIntVariadic {
+		g.writeln("func zenth_min_int_variadic(vals ...int) int {")
+		g.writeln("\tm := vals[0]")
+		g.writeln("\tfor _, v := range vals[1:] { if v < m { m = v } }")
+		g.writeln("\treturn m")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsMaxIntVariadic {
+		g.writeln("func zenth_max_int_variadic(vals ...int) int {")
+		g.writeln("\tm := vals[0]")
+		g.writeln("\tfor _, v := range vals[1:] { if v > m { m = v } }")
+		g.writeln("\treturn m")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsMinF64Variadic {
+		g.writeln("func zenth_min_f64_variadic(vals ...float64) float64 {")
+		g.writeln("\tm := vals[0]")
+		g.writeln("\tfor _, v := range vals[1:] { if v < m { m = v } }")
+		g.writeln("\treturn m")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsMaxF64Variadic {
+		g.writeln("func zenth_max_f64_variadic(vals ...float64) float64 {")
+		g.writeln("\tm := vals[0]")
+		g.writeln("\tfor _, v := range vals[1:] { if v > m { m = v } }")
+		g.writeln("\treturn m")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -723,6 +765,8 @@ func (g *Generator) genNode(node ast.Node) {
 		g.genConstStmt(n)
 	case *ast.TupleDestructStmt:
 		g.genTupleDestructStmt(n)
+	case *ast.ArrayDestructStmt:
+		g.genArrayDestructStmt(n)
 	case *ast.AssignStmt:
 		g.genAssignStmt(n)
 	case *ast.MultiAssignStmt:
@@ -996,6 +1040,31 @@ func (g *Generator) genTupleDestructStmt(s *ast.TupleDestructStmt) {
 		if i < len(s.ElemGoTypes) && s.ElemGoTypes[i] != "" && s.ElemGoTypes[i] != "interface{}" {
 			g.write(".(" + s.ElemGoTypes[i] + ")")
 		}
+		g.write("\n")
+		if s.Kind != token.Var {
+			g.writef("_ = %s\n", name)
+		}
+	}
+}
+
+func (g *Generator) genArrayDestructStmt(s *ast.ArrayDestructStmt) {
+	tmp := fmt.Sprintf("__zarr%d", g.tempCounter)
+	g.tempCounter++
+	g.writeIndent()
+	g.write(tmp + " := ")
+	g.genExpr(s.Value)
+	g.write("\n")
+	for i, name := range s.Names {
+		if name == "_" {
+			continue
+		}
+		g.writeIndent()
+		if s.Kind == token.Var {
+			g.write("var " + name + " = ")
+		} else {
+			g.write(name + " := ")
+		}
+		g.writef("%s[%d]", tmp, i)
 		g.write("\n")
 		if s.Kind != token.Var {
 			g.writef("_ = %s\n", name)
@@ -1833,9 +1902,19 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write("zenth_min_int(")
 				g.genArgList(c.Args)
 				g.write(")")
+			case "min_int_variadic":
+				g.needsMinIntVariadic = true
+				g.write("zenth_min_int_variadic(")
+				g.genArgList(c.Args)
+				g.write(")")
 			case "min_f64":
 				g.imports["math"] = ""
 				g.write("math.Min(")
+				g.genArgList(c.Args)
+				g.write(")")
+			case "min_f64_variadic":
+				g.needsMinF64Variadic = true
+				g.write("zenth_min_f64_variadic(")
 				g.genArgList(c.Args)
 				g.write(")")
 			default:
@@ -1849,9 +1928,19 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write("zenth_max_int(")
 				g.genArgList(c.Args)
 				g.write(")")
+			case "max_int_variadic":
+				g.needsMaxIntVariadic = true
+				g.write("zenth_max_int_variadic(")
+				g.genArgList(c.Args)
+				g.write(")")
 			case "max_f64":
 				g.imports["math"] = ""
 				g.write("math.Max(")
+				g.genArgList(c.Args)
+				g.write(")")
+			case "max_f64_variadic":
+				g.needsMaxF64Variadic = true
+				g.write("zenth_max_f64_variadic(")
 				g.genArgList(c.Args)
 				g.write(")")
 			default:
@@ -2124,6 +2213,12 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			case "ext":
 				g.needsFile = true
 				g.write("zenth_file_ext(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "sections":
+				g.needsFile = true
+				g.write("zenth_file_sections(")
 				g.genExpr(field.Object)
 				g.write(")")
 				return

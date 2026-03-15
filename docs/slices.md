@@ -219,6 +219,45 @@ let processed = numbers.map(fn(x: int) -> int {
 });
 ```
 
+## Destructuring
+
+Use array destructuring to bind array elements directly to variables. The syntax mirrors slice literals: `let [a, b, c] = expr`:
+
+```zenth
+let nums = [10, 20, 30];
+let [a, b, c] = nums;
+println(a);  // 10
+println(b);  // 20
+println(c);  // 30
+```
+
+Works with `let`, `var`, and `const`:
+
+```zenth
+var [x, y] = [1, 2];
+x = 99;      // ok: x is mutable
+```
+
+Use `_` to discard positions you don't need:
+
+```zenth
+let [first, _, third] = [1, 2, 3];
+println(first);  // 1
+println(third);  // 3
+```
+
+Especially useful with method chains:
+
+```zenth
+let line = "12x4x8";
+let [l, w, h] = line.split("x").to_int().sorted();
+println(l);  // 4
+println(w);  // 8
+println(h);  // 12
+```
+
+The number of binding names must not exceed the array length at runtime; a runtime panic occurs if the array is too short.
+
 ## Example
 
 ```zenth

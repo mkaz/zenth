@@ -56,7 +56,7 @@ func TestVersion(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if !strings.Contains(stdout, "0.4.9") {
+	if !strings.Contains(stdout, "0.4.10") {
 		t.Errorf("expected version output to contain '0.4.9', got: %q", stdout)
 	}
 }

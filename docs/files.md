@@ -50,6 +50,28 @@ let f = file("/home/user/data.txt");
 println(f.name());  // data.txt
 ```
 
+### sections
+
+Splits the file contents on blank lines, returning `array(str)`. This is useful for input that has sections separated by empty lines (common in Advent of Code problems):
+
+```zenth
+let parts = file("input.txt").sections();
+for i, section in parts {
+    println("Section {i}: {section}");
+}
+```
+
+For a file containing:
+```
+first block
+
+second block
+
+third block
+```
+
+`sections()` returns an array of three strings: `["first block", "second block", "third block"]`.
+
 ### ext
 
 Returns the file extension, including the dot:

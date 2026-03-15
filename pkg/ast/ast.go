@@ -192,6 +192,18 @@ type TupleDestructStmt struct {
 func (t *TupleDestructStmt) Pos() token.Pos { return t.TokenPos }
 func (t *TupleDestructStmt) nodeMarker()    {}
 
+// ArrayDestructStmt represents: let|var|const [a, b, c] = expr;
+type ArrayDestructStmt struct {
+	TokenPos token.Pos
+	Kind     token.Type // Let, Var, or Const
+	Names    []string
+	Value    Node
+	ElemType string // set by checker; Go element type of the array
+}
+
+func (a *ArrayDestructStmt) Pos() token.Pos { return a.TokenPos }
+func (a *ArrayDestructStmt) nodeMarker()    {}
+
 // AssignStmt represents: target = expr; or target += expr; etc.
 type AssignStmt struct {
 	TokenPos token.Pos

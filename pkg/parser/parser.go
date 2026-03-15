@@ -313,6 +313,20 @@ func (p *Parser) parseTupleBindingNames() []string {
 	return names
 }
 
+func (p *Parser) parseArrayBindingNames() []string {
+	p.expect(token.LBracket)
+	var names []string
+	for {
+		names = append(names, p.expect(token.Ident).Literal)
+		if p.peek() != token.Comma {
+			break
+		}
+		p.advance()
+	}
+	p.expect(token.RBracket)
+	return names
+}
+
 func (p *Parser) parseLetStmt() ast.Node {
 	tok := p.expect(token.Let)
 	if p.peek() == token.LParen {
@@ -321,6 +335,13 @@ func (p *Parser) parseLetStmt() ast.Node {
 		value := p.parseExpr(0)
 		p.expect(token.Semicolon)
 		return &ast.TupleDestructStmt{TokenPos: tok.Pos, Kind: token.Let, Names: names, Value: value}
+	}
+	if p.peek() == token.LBracket {
+		names := p.parseArrayBindingNames()
+		p.expect(token.Assign)
+		value := p.parseExpr(0)
+		p.expect(token.Semicolon)
+		return &ast.ArrayDestructStmt{TokenPos: tok.Pos, Kind: token.Let, Names: names, Value: value}
 	}
 	stmt := &ast.LetStmt{TokenPos: tok.Pos}
 	stmt.Name = p.expect(token.Ident).Literal
@@ -353,6 +374,13 @@ func (p *Parser) parseVarStmt() ast.Node {
 		p.expect(token.Semicolon)
 		return &ast.TupleDestructStmt{TokenPos: tok.Pos, Kind: token.Var, Names: names, Value: value}
 	}
+	if p.peek() == token.LBracket {
+		names := p.parseArrayBindingNames()
+		p.expect(token.Assign)
+		value := p.parseExpr(0)
+		p.expect(token.Semicolon)
+		return &ast.ArrayDestructStmt{TokenPos: tok.Pos, Kind: token.Var, Names: names, Value: value}
+	}
 	stmt := &ast.VarStmt{TokenPos: tok.Pos}
 	stmt.Name = p.expect(token.Ident).Literal
 
@@ -383,6 +411,13 @@ func (p *Parser) parseConstStmt() ast.Node {
 		value := p.parseExpr(0)
 		p.expect(token.Semicolon)
 		return &ast.TupleDestructStmt{TokenPos: tok.Pos, Kind: token.Const, Names: names, Value: value}
+	}
+	if p.peek() == token.LBracket {
+		names := p.parseArrayBindingNames()
+		p.expect(token.Assign)
+		value := p.parseExpr(0)
+		p.expect(token.Semicolon)
+		return &ast.ArrayDestructStmt{TokenPos: tok.Pos, Kind: token.Const, Names: names, Value: value}
 	}
 	stmt := &ast.ConstStmt{TokenPos: tok.Pos}
 	stmt.Name = p.expect(token.Ident).Literal

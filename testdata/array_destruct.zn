@@ -1,0 +1,32 @@
+fn main() {
+    // Basic array destructuring
+    let nums = [10, 20, 30];
+    let [a, b, c] = nums;
+    println(a);
+    println(b);
+    println(c);
+
+    // Destructure from inline array
+    let [x, y] = [100, 200];
+    println(x);
+    println(y);
+
+    // Discard with _
+    let [first, _, third] = [1, 2, 3];
+    println(first);
+    println(third);
+
+    // var destructuring (mutable)
+    var [p, q] = [5, 6];
+    p = 99;
+    println(p);
+    println(q);
+
+    // Destructure from method chain
+    let line = "12x4x8";
+    let dims = line.split("x").to_int().sorted();
+    let [l, w, h] = dims;
+    println(l);
+    println(w);
+    println(h);
+}

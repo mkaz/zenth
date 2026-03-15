@@ -338,6 +338,8 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 		return c.checkConstStmt(n)
 	case *ast.TupleDestructStmt:
 		return c.checkTupleDestructStmt(n)
+	case *ast.ArrayDestructStmt:
+		return c.checkArrayDestructStmt(n)
 	case *ast.AssignStmt:
 		return c.checkAssignStmt(n)
 	case *ast.MultiAssignStmt:
@@ -541,6 +543,43 @@ func (c *Checker) checkTupleDestructStmt(s *ast.TupleDestructStmt) ZType {
 			continue
 		}
 		sym := &Symbol{Name: name, Type: tt.Elems[i]}
+		switch s.Kind {
+		case token.Var:
+			sym.Mutable = true
+		case token.Const:
+			sym.IsConst = true
+		}
+		c.scope.Define(sym)
+	}
+	return TypeVoid
+}
+
+func (c *Checker) checkArrayDestructStmt(s *ast.ArrayDestructStmt) ZType {
+	valueType := c.checkNode(s.Value)
+	st, ok := valueType.(*SliceType)
+	if !ok {
+		c.errorf(s.Pos(), "array destructuring requires array value, got %s", valueType)
+		for _, name := range s.Names {
+			if name == "_" {
+				continue
+			}
+			sym := &Symbol{Name: name, Type: TypeVoid}
+			switch s.Kind {
+			case token.Var:
+				sym.Mutable = true
+			case token.Const:
+				sym.IsConst = true
+			}
+			c.scope.Define(sym)
+		}
+		return TypeVoid
+	}
+	s.ElemType = goTypeName(st.Elem)
+	for _, name := range s.Names {
+		if name == "_" {
+			continue
+		}
+		sym := &Symbol{Name: name, Type: st.Elem}
 		switch s.Kind {
 		case token.Var:
 			sym.Mutable = true
@@ -1149,6 +1188,12 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.SliceMethod = true
 				return TypeStr
+			case "sections":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "sections() takes no arguments, got %d", len(e.Args))
+				}
+				e.SliceMethod = true
+				return &SliceType{Elem: TypeStr}
 			}
 		}
 		// Check for built-in range methods
@@ -1620,24 +1665,41 @@ func (c *Checker) checkNumericBuiltinCall(e *ast.CallExpr, name string) ZType {
 		c.errorf(args[0].Pos(), "abs() argument must be int or f64, got %s", t)
 		return TypeVoid
 	case "min", "max":
-		if len(args) != 2 {
-			c.errorf(e.Pos(), "%s() takes exactly 2 arguments, got %d", name, len(args))
+		if len(args) < 2 {
+			c.errorf(e.Pos(), "%s() requires at least 2 arguments, got %d", name, len(args))
 			for _, arg := range args {
 				c.checkNode(arg)
 			}
 			return TypeVoid
 		}
-		t1 := c.checkNode(args[0])
-		t2 := c.checkNode(args[1])
-		if t1.Equals(TypeInt) && t2.Equals(TypeInt) {
-			e.NumericMethod = name + "_int"
+		allInt := true
+		allF64 := true
+		for _, arg := range args {
+			t := c.checkNode(arg)
+			if !t.Equals(TypeInt) {
+				allInt = false
+			}
+			if !t.Equals(TypeF64) {
+				allF64 = false
+			}
+		}
+		if allInt {
+			if len(args) == 2 {
+				e.NumericMethod = name + "_int"
+			} else {
+				e.NumericMethod = name + "_int_variadic"
+			}
 			return TypeInt
 		}
-		if t1.Equals(TypeF64) && t2.Equals(TypeF64) {
-			e.NumericMethod = name + "_f64"
+		if allF64 {
+			if len(args) == 2 {
+				e.NumericMethod = name + "_f64"
+			} else {
+				e.NumericMethod = name + "_f64_variadic"
+			}
 			return TypeF64
 		}
-		c.errorf(e.Pos(), "%s() arguments must both be int or both be f64, got %s and %s", name, t1, t2)
+		c.errorf(e.Pos(), "%s() arguments must all be int or all be f64", name)
 		return TypeVoid
 	case "clamp":
 		if len(args) != 3 {

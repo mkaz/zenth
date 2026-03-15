@@ -133,6 +133,15 @@ func TestBuildAndRun(t *testing.T) {
 			contains: []string{"exists=true", "name=file.zn", "ext=.zn", "read=ok", "lines=ok", "nope=false"},
 		},
 		{
+			file: "file_sections.zn",
+			contains: []string{
+				"count=3",
+				"first=first section line 1\nfirst section line 2",
+				"second=second section line 1",
+				"third=third section line 1\nthird section line 2\nthird section line 3",
+			},
+		},
+		{
 			file: "conversions.zn",
 			contains: []string{
 				"int_str=42",
@@ -369,6 +378,14 @@ func TestBuildAndRun(t *testing.T) {
 			contains: []string{"all assertions passed"},
 		},
 		{
+			file:     "array_destruct.zn",
+			contains: []string{"10", "20", "30", "100", "200", "1", "3", "99", "6", "4", "12"},
+		},
+		{
+			file:     "variadic_minmax.zn",
+			contains: []string{"3", "7", "2", "8", "1", "9", "0.5", "2.5"},
+		},
+		{
 			file:     "multi_return.zn",
 			contains: []string{"1 9", "3 2", "world hello"},
 		},
@@ -493,7 +510,7 @@ func TestCompileErrors(t *testing.T) {
 		},
 		{
 			file:   "errors/numeric_min_type_mismatch.zn",
-			errMsg: "min() arguments must both be int or both be f64",
+			errMsg: "min() arguments must all be int or all be f64",
 		},
 		{
 			file:   "errors/flag_no_default.zn",
@@ -594,6 +611,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/int_base_not_str.zn",
 			errMsg: "int() with base requires first argument to be str",
+		},
+		{
+			file:   "errors/array_destruct_non_array.zn",
+			errMsg: "array destructuring requires array value",
 		},
 	}
 

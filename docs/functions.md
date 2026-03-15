@@ -142,7 +142,7 @@ Zenth provides several built-in functions that are always available:
 | `len(x)` | Return the length of a string or slice |
 | `str(x)` | Convert any value to its string representation |
 | `abs(x)` | Absolute value for `int` or `f64` |
-| `min(a, b)` / `max(a, b)` | Minimum / maximum for two `int` or two `f64` values |
+| `min(a, b, ...)` / `max(a, b, ...)` | Minimum / maximum for two or more `int` or `f64` values (all args must be the same type) |
 | `clamp(x, lo, hi)` | Clamp `x` between `lo` and `hi` (`int` or `f64`) |
 | `round(x)` / `floor(x)` / `ceil(x)` | Floating-point rounding helpers (return `f64`) |
 | `pow(x, y)` / `sqrt(x)` | Power and square root (return `f64`) |
