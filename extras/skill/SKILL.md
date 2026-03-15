@@ -438,6 +438,13 @@ obj Point {
 var grid = hashmap(Point, str);
 grid[Point(x=1, y=2)] = "#";
 println(grid[Point(x=1, y=2)]);  // "#" (same-value lookup works)
+
+// Tuple keys (composite keys for multi-dimensional lookups)
+var cells = hashmap(tuple(int, int), str);
+cells[tuple(0, 0)] = "origin";
+cells[tuple(1, 2)] = "point";
+println(cells[tuple(0, 0)]);        // "origin"
+println(cells.exists(tuple(1, 2))); // true
 ```
 
 ### Sets

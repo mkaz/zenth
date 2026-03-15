@@ -284,8 +284,10 @@ type ForInStmt struct {
 	IterRangeInclusive     bool     // set by checker: true for rangei, false for range
 	IterSetTupleStruct     string   // set by checker: struct name for set(tuple) iteration
 	IterSetTupleFieldTypes []string // set by checker: Go types for set(tuple) conversion
-	IterHashmapObjKey      bool     // set by checker when hashmap key is an obj type
-	IterHashmapObjType     string   // Go type name of the obj key (e.g. "Point")
+	IterHashmapObjKey          bool     // set by checker when hashmap key is an obj type
+	IterHashmapObjType         string   // Go type name of the obj key (e.g. "Point")
+	IterHashmapTupleStruct     string   // set by checker: struct name for hashmap(tuple, V) iteration
+	IterHashmapTupleFieldTypes []string // set by checker: Go types for hashmap(tuple) conversion
 }
 
 func (f *ForInStmt) Pos() token.Pos { return f.TokenPos }
@@ -420,6 +422,8 @@ type CallExpr struct {
 	HashmapKeyGoType   string   // concrete Go key type for hashmap constructor
 	HashmapValGoType   string   // concrete Go value type for hashmap constructor
 	HashmapDefaultVal  Node     // set by checker: default value expression for hashmap
+	HashmapTupleStruct     string   // set by checker: struct name for hashmap(tuple(...), V) operations
+	HashmapTupleFieldTypes []string // set by checker: Go types of tuple fields for hashmap(tuple) conversion
 	HashmapMethod      string   // set by checker: "keys" or "values" for hashmap methods
 	SetCtor            bool     // set by checker for set(T) constructor
 	SetElemGoType      string   // concrete Go element type for set constructor
@@ -442,8 +446,10 @@ type IndexExpr struct {
 	Object            Node
 	Index             Node
 	StrIndex          bool // set by checker when indexing a string
-	HashmapObjKey     bool // set by checker when indexing a hashmap with obj keys
-	HashmapDefaultVal Node // set by checker: default value for missing keys
+	HashmapObjKey          bool     // set by checker when indexing a hashmap with obj keys
+	HashmapTupleStruct     string   // set by checker: struct name for hashmap(tuple(...), V) indexing
+	HashmapTupleFieldTypes []string // set by checker: Go types for hashmap(tuple) conversion
+	HashmapDefaultVal      Node     // set by checker: default value for missing keys
 }
 
 func (i *IndexExpr) Pos() token.Pos { return i.TokenPos }

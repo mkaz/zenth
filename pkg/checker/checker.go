@@ -743,6 +743,10 @@ func (c *Checker) checkForInStmt(s *ast.ForInStmt) ZType {
 			s.IterHashmapObjKey = true
 			s.IterHashmapObjType = objKey.Name
 		}
+		if tt, ok := t.Key.(*TupleType); ok {
+			s.IterHashmapTupleStruct = tupleStructName(tt)
+			s.IterHashmapTupleFieldTypes = tupleFieldGoTypes(tt)
+		}
 		if s.Index != "" {
 			defineLoopVar(s.Index, t.Key)
 			defineLoopVar(s.Value, t.Value)
@@ -1463,6 +1467,11 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 
 		// Check for built-in hashmap methods
 		if hmType, ok := objType.(*HashmapType); ok {
+			// Propagate tuple key info for codegen
+			if tt, ok := hmType.Key.(*TupleType); ok {
+				e.HashmapTupleStruct = tupleStructName(tt)
+				e.HashmapTupleFieldTypes = tupleFieldGoTypes(tt)
+			}
 			switch field.Field {
 			case "keys":
 				if len(e.Args) != 0 {
@@ -2024,6 +2033,11 @@ func (c *Checker) checkIndexExpr(e *ast.IndexExpr) ZType {
 		if _, ok := t.Key.(*ObjType); ok {
 			e.HashmapObjKey = true
 		}
+		if tt, ok := t.Key.(*TupleType); ok {
+			structName := tupleStructName(tt)
+			e.HashmapTupleStruct = structName
+			e.HashmapTupleFieldTypes = tupleFieldGoTypes(tt)
+		}
 		// Propagate default value from symbol to IndexExpr
 		if ident, ok := e.Object.(*ast.IdentExpr); ok {
 			if sym := c.scope.Lookup(ident.Name); sym != nil && sym.DefaultExpr != nil {
@@ -2174,6 +2188,11 @@ func (c *Checker) checkHashmapConstructor(e *ast.CallExpr) ZType {
 	if objKey, ok := keyType.(*ObjType); ok {
 		e.HashmapObjKey = true
 		e.HashmapKeyGoType = objKey.Name
+	} else if tt, ok := keyType.(*TupleType); ok {
+		structName := tupleStructName(tt)
+		e.HashmapKeyGoType = structName
+		e.HashmapTupleStruct = structName
+		e.HashmapTupleFieldTypes = tupleFieldGoTypes(tt)
 	} else {
 		e.HashmapKeyGoType = goTypeName(keyType)
 	}
@@ -2299,9 +2318,11 @@ func (c *Checker) resolveTypeRefArg(arg ast.Node) ZType {
 }
 
 func isHashmapKeyType(t ZType) bool {
-	switch t.(type) {
+	switch ty := t.(type) {
 	case *BuiltinType, *ObjType:
 		return true
+	case *TupleType:
+		return isComparableType(ty)
 	default:
 		return false
 	}
@@ -2609,6 +2630,10 @@ func goTypeName(t ZType) string {
 		// Obj keys use struct value types (not pointers) in Go maps
 		if _, ok := ty.Key.(*ObjType); ok {
 			keyName = strings.TrimPrefix(keyName, "*")
+		}
+		// Tuple keys use comparable struct types
+		if tt, ok := ty.Key.(*TupleType); ok {
+			keyName = tupleStructName(tt)
 		}
 		return "map[" + keyName + "]" + goTypeName(ty.Value)
 	case *SetType:

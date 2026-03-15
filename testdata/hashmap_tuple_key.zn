@@ -1,0 +1,56 @@
+// Test hashmap with tuple keys
+
+fn main() {
+    // Create hashmap with tuple keys
+    var grid = hashmap(tuple(int, int), str);
+    grid[tuple(0, 0)] = "origin";
+    grid[tuple(1, 2)] = "point";
+    grid[tuple(3, 4)] = "far";
+
+    // Read values
+    println(grid[tuple(0, 0)]);
+    println(grid[tuple(1, 2)]);
+
+    // Check existence
+    println(grid.exists(tuple(0, 0)));
+    println(grid.exists(tuple(9, 9)));
+
+    // Iterate (count only)
+    var count = 0;
+    for _, _ in grid {
+        count++;
+    }
+    println(count);
+
+    // Iterate with key access
+    var small = hashmap(tuple(int, int), str);
+    small[tuple(1, 2)] = "yes";
+    for k in small {
+        println(k.0);
+        println(k.1);
+    }
+
+    // Iterate with key and value
+    for _, v in small {
+        println(v);
+    }
+
+    // String tuple keys
+    var lookup = hashmap(tuple(str, str), int);
+    lookup[tuple("a", "b")] = 1;
+    lookup[tuple("c", "d")] = 2;
+    println(lookup[tuple("a", "b")]);
+    println(lookup[tuple("c", "d")]);
+}
+
+// Expected output:
+// origin
+// point
+// true
+// false
+// 3
+// 1
+// 2
+// yes
+// 1
+// 2

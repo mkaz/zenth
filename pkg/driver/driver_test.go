@@ -416,6 +416,10 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "array_join.zn",
 			contains: []string{"hello world", "a,b,c", "xyz", "solo", "2026-03-15"},
 		},
+		{
+			file:     "hashmap_tuple_key.zn",
+			contains: []string{"origin", "point", "true", "false", "3", "yes", "1", "2"},
+		},
 	}
 
 	for _, tt := range tests {

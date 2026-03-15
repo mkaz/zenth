@@ -112,6 +112,23 @@ let (n, a) = person;
 println(n);              // "Alice"
 ```
 
+## Tuples as Hashmap and Set Keys
+
+Tuples with comparable element types (built-in types like `int`, `str`, `f64`, `bool`) can be used as hashmap keys and set elements:
+
+```zenth
+var grid = hashmap(tuple(int, int), str);
+grid[tuple(0, 0)] = "origin";
+grid[tuple(1, 2)] = "point";
+println(grid[tuple(0, 0)]);  // "origin"
+
+var visited = set(tuple(int, int));
+visited.add(tuple(3, 4));
+println(visited.exists(tuple(3, 4)));  // true
+```
+
+See the [Hashmaps](hashmaps.md) and [Sets](sets.md) docs for more details.
+
 ## Arrays of Tuples
 
 Tuples nest naturally inside arrays:

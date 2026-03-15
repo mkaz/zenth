@@ -1080,21 +1080,11 @@ func (g *Generator) genAssignStmt(s *ast.AssignStmt) {
 			g.write("if _, ok := ")
 			g.genExpr(idx.Object)
 			g.write("[")
-			if idx.HashmapObjKey {
-				g.write("*")
-				g.genExpr(idx.Index)
-			} else {
-				g.genExpr(idx.Index)
-			}
+			g.genHashmapKeyExpr(idx)
 			g.write("]; !ok { ")
 			g.genExpr(idx.Object)
 			g.write("[")
-			if idx.HashmapObjKey {
-				g.write("*")
-				g.genExpr(idx.Index)
-			} else {
-				g.genExpr(idx.Index)
-			}
+			g.genHashmapKeyExpr(idx)
 			g.write("] = ")
 			g.genExpr(idx.HashmapDefaultVal)
 			g.write(" }\n")
@@ -1123,16 +1113,27 @@ func (g *Generator) genAssignStmt(s *ast.AssignStmt) {
 	g.write("\n")
 }
 
+// genHashmapKeyExpr generates the key expression for hashmap indexing,
+// handling obj keys (dereference) and tuple keys (struct conversion).
+func (g *Generator) genHashmapKeyExpr(idx *ast.IndexExpr) {
+	if idx.HashmapObjKey {
+		g.write("*")
+		g.genExpr(idx.Index)
+	} else if idx.HashmapTupleStruct != "" {
+		g.tupleStructs[idx.HashmapTupleStruct] = idx.HashmapTupleFieldTypes
+		g.writef("zenth_to_%s(", idx.HashmapTupleStruct)
+		g.genExpr(idx.Index)
+		g.write(")")
+	} else {
+		g.genExpr(idx.Index)
+	}
+}
+
 // genRawIndexExpr generates m[key] without mapget wrapper
 func (g *Generator) genRawIndexExpr(idx *ast.IndexExpr) {
 	g.genExpr(idx.Object)
 	g.write("[")
-	if idx.HashmapObjKey {
-		g.write("*")
-		g.genExpr(idx.Index)
-	} else {
-		g.genExpr(idx.Index)
-	}
+	g.genHashmapKeyExpr(idx)
 	g.write("]")
 }
 
@@ -1342,6 +1343,14 @@ func (g *Generator) genForInStmt(s *ast.ForInStmt) {
 		// Go's range over map yields (key, value)
 		indexIsDiscard := s.Index == "_"
 		valueIsDiscard := s.Value == "_"
+		// Handle both-discard case first for all key types
+		if s.Index != "" && indexIsDiscard && valueIsDiscard {
+			g.write("for range ")
+			g.genExpr(s.Iterable)
+			g.write(" {\n")
+			g.indent++
+			goto hashmapDone
+		}
 		g.write("for ")
 		if s.IterHashmapObjKey {
 			// Obj keys are stored as struct values in Go maps;
@@ -1352,15 +1361,22 @@ func (g *Generator) genForInStmt(s *ast.ForInStmt) {
 			} else {
 				g.write("_objkey_")
 			}
+		} else if s.IterHashmapTupleStruct != "" {
+			// Tuple keys are stored as struct values in Go maps;
+			// iterate with a temp name and convert back to []interface{} below.
+			g.tupleStructs[s.IterHashmapTupleStruct] = s.IterHashmapTupleFieldTypes
+			if s.Index != "" && indexIsDiscard {
+				// Key is discarded, just use _, value directly
+				g.write("_, ")
+				g.write(s.Value)
+			} else if s.Index != "" {
+				g.write("_tupkey_, ")
+				g.write(s.Value)
+			} else {
+				g.write("_tupkey_")
+			}
 		} else if s.Index != "" {
-			if indexIsDiscard && valueIsDiscard {
-				g.write("range ")
-				g.genExpr(s.Iterable)
-				g.write(" {\n")
-				g.indent++
-				// Skip the rest of hashmap iteration setup
-				goto hashmapDone
-			} else if valueIsDiscard {
+			if valueIsDiscard {
 				// for k, _ in m => for k := range m
 				g.write(s.Index)
 			} else {
@@ -1385,6 +1401,16 @@ func (g *Generator) genForInStmt(s *ast.ForInStmt) {
 			}
 			g.writef("%s := &%s{}\n", keyVar, s.IterHashmapObjType)
 			g.writef("*%s = _objkey_\n", keyVar)
+		} else if s.IterHashmapTupleStruct != "" {
+			// Convert struct key back to []interface{} for Zenth usage
+			keyVar := s.Value
+			if s.Index != "" {
+				keyVar = s.Index
+			}
+			if keyVar != "_" {
+				g.writeIndent()
+				g.writef("%s := zenth_from_%s(_tupkey_)\n", keyVar, s.IterHashmapTupleStruct)
+			}
 		}
 	hashmapDone:
 	} else if s.IterSet {
@@ -1531,21 +1557,11 @@ func (g *Generator) genIncDecStmt(s *ast.IncDecStmt) {
 		g.write("if _, ok := ")
 		g.genExpr(idx.Object)
 		g.write("[")
-		if idx.HashmapObjKey {
-			g.write("*")
-			g.genExpr(idx.Index)
-		} else {
-			g.genExpr(idx.Index)
-		}
+		g.genHashmapKeyExpr(idx)
 		g.write("]; !ok { ")
 		g.genExpr(idx.Object)
 		g.write("[")
-		if idx.HashmapObjKey {
-			g.write("*")
-			g.genExpr(idx.Index)
-		} else {
-			g.genExpr(idx.Index)
-		}
+		g.genHashmapKeyExpr(idx)
 		g.write("] = ")
 		g.genExpr(idx.HashmapDefaultVal)
 		g.write(" }\n")
@@ -1610,25 +1626,12 @@ func (g *Generator) genExpr(node ast.Node) {
 			g.write("zenth_mapget(")
 			g.genExpr(n.Object)
 			g.write(", ")
-			if n.HashmapObjKey {
-				g.write("*")
-				g.genExpr(n.Index)
-			} else {
-				g.genExpr(n.Index)
-			}
+			g.genHashmapKeyExpr(n)
 			g.write(", ")
 			g.genExpr(n.HashmapDefaultVal)
 			g.write(")")
 		} else {
-			g.genExpr(n.Object)
-			g.write("[")
-			if n.HashmapObjKey {
-				g.write("*")
-				g.genExpr(n.Index)
-			} else {
-				g.genExpr(n.Index)
-			}
-			g.write("]")
+			g.genRawIndexExpr(n)
 		}
 	case *ast.SliceExpr:
 		if n.StrSlice {
@@ -1998,6 +2001,10 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			return
 		case "hashmap":
 			if c.HashmapCtor {
+				// Register tuple struct if this is a hashmap(tuple(...), V)
+				if c.HashmapTupleStruct != "" {
+					g.tupleStructs[c.HashmapTupleStruct] = c.HashmapTupleFieldTypes
+				}
 				g.write("make(map[")
 				g.write(c.HashmapKeyGoType)
 				g.write("]")
@@ -2037,12 +2044,25 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 	// Handle built-in hashmap methods
 	if c.HashmapMethod != "" {
 		if field, ok := c.Callee.(*ast.FieldExpr); ok {
+			// Register tuple struct if needed
+			if c.HashmapTupleStruct != "" {
+				g.tupleStructs[c.HashmapTupleStruct] = c.HashmapTupleFieldTypes
+			}
 			switch c.HashmapMethod {
 			case "keys":
-				g.needsHashmapKeys = true
-				g.write("zenth_hashmap_keys(")
-				g.genExpr(field.Object)
-				g.write(")")
+				if c.HashmapTupleStruct != "" {
+					// For tuple-keyed hashmaps, convert struct keys back to tuples
+					tc := g.tempCounter
+					g.tempCounter++
+					g.writef("func() [][]interface{} { var _r%d_ [][]interface{}; for _k%d_ := range ", tc, tc)
+					g.genExpr(field.Object)
+					g.writef(" { _r%d_ = append(_r%d_, zenth_from_%s(_k%d_)) }; return _r%d_ }()", tc, tc, c.HashmapTupleStruct, tc, tc)
+				} else {
+					g.needsHashmapKeys = true
+					g.write("zenth_hashmap_keys(")
+					g.genExpr(field.Object)
+					g.write(")")
+				}
 				return
 			case "values":
 				g.needsHashmapValues = true
@@ -2051,12 +2071,21 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write(")")
 				return
 			case "exists":
-				g.needsHashmapExists = true
-				g.write("zenth_hashmap_exists(")
-				g.genExpr(field.Object)
-				g.write(", ")
-				g.genExpr(c.Args[0])
-				g.write(")")
+				if c.HashmapTupleStruct != "" {
+					g.needsHashmapExists = true
+					g.writef("zenth_hashmap_exists(")
+					g.genExpr(field.Object)
+					g.writef(", zenth_to_%s(", c.HashmapTupleStruct)
+					g.genExpr(c.Args[0])
+					g.write("))")
+				} else {
+					g.needsHashmapExists = true
+					g.write("zenth_hashmap_exists(")
+					g.genExpr(field.Object)
+					g.write(", ")
+					g.genExpr(c.Args[0])
+					g.write(")")
+				}
 				return
 			}
 		}

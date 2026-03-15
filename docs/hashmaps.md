@@ -110,3 +110,28 @@ let pt2 = Point(x=1, y=2);
 grid[pt1] = "#";
 println(grid[pt2]); // Prints "#"
 ```
+
+## Tuple Keys
+
+Tuples can also be used as hashmap keys, which is useful for multi-dimensional lookups or composite keys:
+
+```zenth
+var grid = hashmap(tuple(int, int), str);
+grid[tuple(0, 0)] = "origin";
+grid[tuple(1, 2)] = "point";
+
+println(grid[tuple(0, 0)]);  // "origin"
+println(grid[tuple(1, 2)]);  // "point"
+
+// Check existence
+if grid.exists(tuple(0, 0)) {
+    println("found origin");
+}
+
+// Iterate
+for key in grid {
+    println(str(key.0) + "," + str(key.1));
+}
+```
+
+All tuple element types must be comparable (built-in types like `int`, `str`, `f64`, `bool`). Tuples containing arrays or other non-comparable types cannot be used as keys.
