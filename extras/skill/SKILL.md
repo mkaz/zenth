@@ -308,6 +308,11 @@ let last = items.pop();     // remove and return last
 let at = items.pop(0);     // remove and return at index
 items.insert(1, 99);   // insert 99 at index 1, shifting later elements right
 items.remove(2);       // remove element at index 2 (discards it)
+items.extend([30, 40]);  // append all elements from another array
+
+// Repeat — create arrays filled with repeated values
+let zeros = [0].repeat(10);      // [0, 0, 0, ..., 0] (10 zeros)
+let pattern = [1, 2].repeat(6);  // [1, 2, 1, 2, 1, 2]
 
 // Containment
 if numbers.exists(3) {
@@ -350,6 +355,14 @@ let sw = ["b", "a"].sorted();  // ["a", "b"]
 let words = ["hello", "world"];
 println(words.join(" "));       // "hello world"
 println(["a", "b"].join(","));  // "a,b"
+
+// Zip — combine parallel arrays into array of tuples
+let names = ["Alice", "Bob"];
+let scores = [95, 87];
+for pair in zip(names, scores) {
+    println(pair.0 + "=" + str(pair.1));
+}
+// Zip 3+ arrays: zip(a, b, c) → array(tuple(T1, T2, T3))
 
 // Type conversions for string arrays
 let strs = ["1", "2", "3"];

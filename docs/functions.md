@@ -146,6 +146,7 @@ Zenth provides several built-in functions that are always available:
 | `clamp(x, lo, hi)` | Clamp `x` between `lo` and `hi` (`int` or `f64`) |
 | `round(x)` / `floor(x)` / `ceil(x)` | Floating-point rounding helpers (return `f64`) |
 | `pow(x, y)` / `sqrt(x)` | Power and square root (return `f64`) |
+| `zip(a, b, ...)` | Combine two or more arrays into an array of tuples |
 | `flag(default=val)` | Declare a command-line flag with a default value |
 
 ```zenth
@@ -158,6 +159,41 @@ fn main() {
     println(str(42));      // prints "42"
     println(str(abs(-5)));  // prints "5"
 }
+```
+
+## Zip
+
+The `zip()` function combines two or more arrays into an array of tuples, pairing elements at corresponding positions:
+
+```zenth
+let names = ["Alice", "Bob", "Charlie"];
+let scores = [95, 87, 92];
+
+for pair in zip(names, scores) {
+    println(pair.0 + ": " + str(pair.1));
+}
+// Alice: 95
+// Bob: 87
+// Charlie: 92
+```
+
+With three or more arrays:
+
+```zenth
+let x = [1, 2, 3];
+let y = [4, 5, 6];
+let z = [7, 8, 9];
+for t in zip(x, y, z) {
+    println(str(t.0) + "," + str(t.1) + "," + str(t.2));
+}
+```
+
+When arrays have different lengths, `zip()` stops at the shortest:
+
+```zenth
+let a = [1, 2, 3, 4];
+let b = [10, 20];
+let zipped = zip(a, b);  // [tuple(1, 10), tuple(2, 20)]
 ```
 
 ## Command-Line Flags

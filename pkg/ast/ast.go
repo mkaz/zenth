@@ -435,6 +435,8 @@ type CallExpr struct {
 	FlagGoType         string   // set by checker: "bool", "int", "string" for flag() calls
 	RangeMethod        bool     // set by checker for built-in range methods (e.g. "contains")
 	LenArgIsRange      bool     // set by checker when len() is called on a range object
+	ZipCall            bool     // set by checker for zip() calls
+	ZipElemGoTypes     []string // set by checker: Go types of each input array's elements
 }
 
 func (c *CallExpr) Pos() token.Pos { return c.TokenPos }

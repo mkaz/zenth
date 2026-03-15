@@ -420,6 +420,18 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "hashmap_tuple_key.zn",
 			contains: []string{"origin", "point", "true", "false", "3", "yes", "1", "2"},
 		},
+		{
+			file:     "array_extend.zn",
+			contains: []string{"6", "1 2 3 4 5 6", "2", "hello world !"},
+		},
+		{
+			file:     "zip.zn",
+			contains: []string{"Alice=95", "Bob=87", "Charlie=92", "1+10", "2+20", "1,4,7", "2,5,8", "3,6,9"},
+		},
+		{
+			file:     "array_repeat.zn",
+			contains: []string{"5", "0 0 0 0 0", "---", "1 2 1 2 1 2", "3"},
+		},
 	}
 
 	for _, tt := range tests {

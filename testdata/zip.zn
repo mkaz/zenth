@@ -1,0 +1,36 @@
+// Test zip built-in function
+
+fn main() {
+    let names = ["Alice", "Bob", "Charlie"];
+    let scores = [95, 87, 92];
+
+    // Basic zip and iterate
+    for pair in zip(names, scores) {
+        println(pair.0 + "=" + str(pair.1));
+    }
+
+    // Zip with different length arrays (uses shorter length)
+    let a = [1, 2, 3, 4];
+    let b = [10, 20];
+    for t in zip(a, b) {
+        println(str(t.0) + "+" + str(t.1));
+    }
+
+    // Zip three arrays
+    let x = [1, 2, 3];
+    let y = [4, 5, 6];
+    let z = [7, 8, 9];
+    for t in zip(x, y, z) {
+        println(str(t.0) + "," + str(t.1) + "," + str(t.2));
+    }
+}
+
+// Expected output:
+// Alice=95
+// Bob=87
+// Charlie=92
+// 1+10
+// 2+20
+// 1,4,7
+// 2,5,8
+// 3,6,9

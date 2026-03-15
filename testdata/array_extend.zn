@@ -1,0 +1,29 @@
+// Test array extend method
+
+fn main() {
+    var nums = [1, 2, 3];
+    let more = [4, 5, 6];
+    nums.extend(more);
+    println(len(nums));
+    for n in nums {
+        print(str(n) + " ");
+    }
+    println("");
+
+    // Extend with empty array
+    var items = [10, 20];
+    let empty: array(int) = [];
+    items.extend(empty);
+    println(len(items));
+
+    // Extend strings
+    var words = ["hello"];
+    words.extend(["world", "!"]);
+    println(words.join(" "));
+}
+
+// Expected output:
+// 6
+// 1 2 3 4 5 6
+// 2
+// hello world !

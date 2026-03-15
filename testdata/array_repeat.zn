@@ -1,0 +1,33 @@
+// Test array repeat method
+
+fn main() {
+    // Basic repeat - fill with zeros
+    let zeros = [0].repeat(5);
+    println(len(zeros));
+    for z in zeros {
+        print(str(z) + " ");
+    }
+    println("");
+
+    // Repeat strings
+    let dashes = ["-"].repeat(3);
+    println(dashes.join(""));
+
+    // Repeat pattern
+    let pattern = [1, 2].repeat(6);
+    for p in pattern {
+        print(str(p) + " ");
+    }
+    println("");
+
+    // Repeat with single element
+    let trues = [true].repeat(3);
+    println(len(trues));
+}
+
+// Expected output:
+// 5
+// 0 0 0 0 0
+// ---
+// 1 2 1 2 1 2
+// 3

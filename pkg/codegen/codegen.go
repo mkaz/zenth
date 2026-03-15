@@ -59,6 +59,8 @@ type Generator struct {
 	needsIsDigit       bool
 	needsInsert        bool
 	needsRemove        bool
+	needsExtend        bool
+	needsRepeat        bool
 	needsAssert        bool
 	needsAssertEq      bool
 	enums              map[string]*ast.EnumDecl
@@ -264,6 +266,22 @@ func (g *Generator) Generate(prog *ast.Program) string {
 	if g.needsRemove {
 		g.writeln("func zenth_remove[T any](s *[]T, i int) {")
 		g.writeln("\t*s = append((*s)[:i], (*s)[i+1:]...)")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsExtend {
+		g.writeln("func zenth_extend[T any](s *[]T, other []T) {")
+		g.writeln("\t*s = append(*s, other...)")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsRepeat {
+		g.writeln("func zenth_repeat[T any](src []T, n int) []T {")
+		g.writeln("\tr := make([]T, n)")
+		g.writeln("\tfor i := 0; i < n; i++ {")
+		g.writeln("\t\tr[i] = src[i % len(src)]")
+		g.writeln("\t}")
+		g.writeln("\treturn r")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -1798,6 +1816,40 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			g.genExpr(c.Args[1])
 			g.writef(", %q, %d)", pos.File, pos.Line)
 			return
+		case "zip":
+			if c.ZipCall {
+				tc := g.tempCounter
+				g.tempCounter++
+				n := len(c.Args)
+				// Generate: func() [][]interface{} {
+				//   _n_ := min(len(a0), len(a1), ...)
+				//   _r_ := make([][]interface{}, _n_)
+				//   for _i_ := 0; _i_ < _n_; _i_++ { _r_[_i_] = []interface{}{a0[_i_], a1[_i_], ...} }
+				//   return _r_
+				// }()
+				g.write("func() [][]interface{} { ")
+				// Assign each arg to a temp to avoid re-evaluating
+				for i, arg := range c.Args {
+					g.writef("_za%d_%d_ := ", tc, i)
+					g.genExpr(arg)
+					g.write("; ")
+				}
+				g.writef("_zn%d_ := len(_za%d_0_)", tc, tc)
+				for i := 1; i < n; i++ {
+					g.writef("; if len(_za%d_%d_) < _zn%d_ { _zn%d_ = len(_za%d_%d_) }", tc, i, tc, tc, tc, i)
+				}
+				g.writef("; _zr%d_ := make([][]interface{}, _zn%d_); ", tc, tc)
+				g.writef("for _zi%d_ := 0; _zi%d_ < _zn%d_; _zi%d_++ { ", tc, tc, tc, tc)
+				g.writef("_zr%d_[_zi%d_] = []interface{}{", tc, tc)
+				for i := range c.Args {
+					if i > 0 {
+						g.write(", ")
+					}
+					g.writef("_za%d_%d_[_zi%d_]", tc, i, tc)
+				}
+				g.writef("} }; return _zr%d_ }()", tc)
+				return
+			}
 		case "len":
 			if c.LenArgIsRange {
 				g.write("(")
@@ -2372,6 +2424,22 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			case "remove":
 				g.needsRemove = true
 				g.write("zenth_remove(&")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(")")
+				return
+			case "repeat":
+				g.needsRepeat = true
+				g.write("zenth_repeat(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(")")
+				return
+			case "extend":
+				g.needsExtend = true
+				g.write("zenth_extend(&")
 				g.genExpr(field.Object)
 				g.write(", ")
 				g.genExpr(c.Args[0])

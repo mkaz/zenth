@@ -24,6 +24,16 @@ var points: array(Point) = [];
 points.add(Point(x=1, y=2));
 ```
 
+Use `.repeat(n)` to create an array by repeating elements:
+
+```zenth
+var zeros = [0].repeat(10);      // [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+let dashes = ["-"].repeat(5);    // ["-", "-", "-", "-", "-"]
+let pattern = [1, 2].repeat(6);  // [1, 2, 1, 2, 1, 2]
+```
+
+When the source array has multiple elements, they tile to fill the requested count.
+
 ## Accessing Elements
 
 Use bracket indexing (zero-based):
@@ -80,11 +90,15 @@ Zenth provides methods to append, prepend, and remove elements from a slice. The
 
 - `.add(value)` appends an element to the end of the slice.
 - `.push(value)` prepends an element to the beginning of the slice.
+- `.extend(other)` appends all elements from another array of the same type.
 
 ```zenth
 var items = [2, 3];
 items.add(4);   // [2, 3, 4]
 items.push(1);  // [1, 2, 3, 4]
+
+var nums = [1, 2];
+nums.extend([3, 4, 5]);  // [1, 2, 3, 4, 5]
 ```
 
 ### Inserting Elements

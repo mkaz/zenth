@@ -1157,6 +1157,30 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.SliceMethod = true
 				return TypeVoid
+			case "repeat":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "repeat() takes exactly 1 argument (count), got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !IsInteger(argType) {
+						c.errorf(e.Args[0].Pos(), "repeat() argument must be int, got %s", argType)
+					}
+				}
+				e.SliceMethod = true
+				return sliceType
+			case "extend":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "extend() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if otherSlice, ok := argType.(*SliceType); !ok || !sliceType.Elem.Equals(otherSlice.Elem) {
+						c.errorf(e.Args[0].Pos(), "extend() argument type %s does not match slice type %s", argType, objType)
+					}
+				}
+				e.SliceMethod = true
+				return TypeVoid
 			case "join":
 				if len(e.Args) != 1 {
 					c.errorf(e.Pos(), "join() takes exactly 1 argument (separator), got %d", len(e.Args))
@@ -1570,6 +1594,9 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 	if ident, ok := e.Callee.(*ast.IdentExpr); ok {
 		if isNumericBuiltin(ident.Name) {
 			return c.checkNumericBuiltinCall(e, ident.Name)
+		}
+		if ident.Name == "zip" {
+			return c.checkZipCall(e)
 		}
 		if ident.Name == "hashmap" {
 			return c.checkHashmapConstructor(e)
@@ -2139,6 +2166,29 @@ func (c *Checker) checkTupleLit(e *ast.TupleLitExpr) ZType {
 		return &TupleType{Elems: elems, Names: e.Names}
 	}
 	return &TupleType{Elems: elems}
+}
+
+func (c *Checker) checkZipCall(e *ast.CallExpr) ZType {
+	if len(e.Args) < 2 {
+		c.errorf(e.Pos(), "zip() requires at least 2 arguments, got %d", len(e.Args))
+		return &SliceType{Elem: TypeVoid}
+	}
+	var elemTypes []ZType
+	var goTypes []string
+	for _, arg := range e.Args {
+		argType := c.checkNode(arg)
+		st, ok := argType.(*SliceType)
+		if !ok {
+			c.errorf(arg.Pos(), "zip() arguments must be arrays, got %s", argType)
+			return &SliceType{Elem: TypeVoid}
+		}
+		elemTypes = append(elemTypes, st.Elem)
+		goTypes = append(goTypes, goTypeName(st.Elem))
+	}
+	e.ZipCall = true
+	e.ZipElemGoTypes = goTypes
+	e.ResolvedFunc = "zip"
+	return &SliceType{Elem: &TupleType{Elems: elemTypes}}
 }
 
 func (c *Checker) checkHashmapConstructor(e *ast.CallExpr) ZType {
