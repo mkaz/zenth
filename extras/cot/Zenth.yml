@@ -1,0 +1,123 @@
+attributes: []
+characters: []
+commands:
+- beginString: abs
+- beginString: append
+- beginString: assert
+- beginString: assert_eq
+- beginString: ceil
+- beginString: clamp
+- beginString: extend
+- beginString: file
+- beginString: filter
+- beginString: flag
+- beginString: floor
+- beginString: join
+- beginString: len
+- beginString: max
+- beginString: min
+- beginString: pop
+- beginString: pow
+- beginString: print
+- beginString: println
+- beginString: push
+- beginString: reduce
+- beginString: repeat
+- beginString: round
+- beginString: sqrt
+- beginString: str
+- beginString: to_base
+- beginString: zip
+commentDelimiters:
+  beginDelimiter: /*
+  endDelimiter: '*/'
+  inlineDelimiter: //
+comments: []
+completions: []
+extensions:
+- keyString: zn
+filenames: []
+interpreters: []
+keywords:
+- beginString: as
+- beginString: break
+- beginString: const
+- beginString: continue
+- beginString: else
+- beginString: enum
+- beginString: fn
+- beginString: for
+- beginString: from
+- beginString: if
+- beginString: import
+- beginString: in
+- beginString: interface
+- beginString: let
+- beginString: match
+- beginString: obj
+- beginString: range
+- beginString: return
+- beginString: type
+- beginString: var
+kind: code
+metadata:
+  author: mkaz
+  distributionURL: https://github.com/mkaz/zenth
+  lastModified: '2026-03-16'
+  license: MIT
+  version: 1.0.0
+numbers:
+- beginString: 0[xX][0-9a-fA-F]+
+  regularExpression: true
+- beginString: \b\d+\.\d*\b
+  regularExpression: true
+- beginString: \b\d+\b
+  regularExpression: true
+outlineMenu:
+- beginString: ([\t ]*)fn[\t ]+(\w+)
+  description: function
+  keyString: $1$2
+- beginString: ([\t ]*)obj[\t ]+(\w+)
+  bold: true
+  description: object
+  keyString: $1obj $2
+- beginString: ([\t ]*)enum[\t ]+(\w+)
+  bold: true
+  description: enum
+  keyString: $1enum $2
+- beginString: ([\t ]*)interface[\t ]+(\w+)
+  italic: true
+  description: interface
+  keyString: $1interface $2
+strings:
+- beginString: '"'
+  endString: '"'
+- beginString: ''''
+  endString: ''''
+types:
+- beginString: array
+- beginString: bool
+- beginString: byte
+- beginString: f32
+- beginString: f64
+- beginString: hashmap
+- beginString: i16
+- beginString: i32
+- beginString: i64
+- beginString: i8
+- beginString: int
+- beginString: set
+- beginString: str
+- beginString: tuple
+- beginString: u16
+- beginString: u32
+- beginString: u64
+- beginString: u8
+values:
+- beginString: 'false'
+- beginString: INT_MAX
+- beginString: INT_MIN
+- beginString: nil
+- beginString: self
+- beginString: 'true'
+variables: []
