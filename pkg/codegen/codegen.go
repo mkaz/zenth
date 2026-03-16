@@ -10,64 +10,64 @@ import (
 
 // Generator translates a Zenth AST to Go source code.
 type Generator struct {
-	buf                strings.Builder
-	indent             int
-	imports            map[string]string // Go import path -> alias (or empty)
-	objs               map[string]*ast.ObjDecl
-	funcs              map[string]*ast.FnDecl // "name" or "StructName.methodName"
-	typeAliases        map[string]*ast.TypeExpr
-	needsRange         bool
-	needsRangei        bool
-	needsRangeObj      bool
-	needsPop           bool
-	needsAdd           bool
-	needsPush          bool
-	loopCounter        int
-	needsContains      bool
-	needsFile          bool
-	needsIntConv       bool
-	needsF64Conv       bool
-	needsSliceToInt    bool
-	needsSliceToF64    bool
-	needsSliceToStr    bool
-	needsStrIndex      bool
-	needsStrSlice      bool
-	needsMap           bool
-	needsFilter        bool
-	needsSplitOnce     bool
-	needsAbsInt        bool
-	needsMinInt          bool
-	needsMaxInt          bool
-	needsMinIntVariadic  bool
-	needsMaxIntVariadic  bool
-	needsMinF64Variadic  bool
-	needsMaxF64Variadic  bool
-	needsClampInt      bool
-	needsClampF64      bool
-	needsIntBase       bool
-	needsToBase        bool
-	needsMapget        bool
-	needsHashmapKeys   bool
-	needsHashmapValues bool
-	needsHashmapExists bool
-	needsSetExists     bool
-	needsSliceMax      bool
-	needsSliceMin      bool
-	needsSliceSum      bool
-	needsSliceSorted   bool
-	needsSliceReduce   bool
-	needsIsDigit       bool
-	needsInsert        bool
-	needsRemove        bool
-	needsExtend        bool
-	needsRepeat        bool
-	needsAssert        bool
-	needsAssertEq      bool
-	enums              map[string]*ast.EnumDecl
-	tupleStructs       map[string][]string // struct name -> field Go types
-	needsFlag          bool
-	flagDecls          []flagDecl
-	tempCounter        int
+	buf                 strings.Builder
+	indent              int
+	imports             map[string]string // Go import path -> alias (or empty)
+	objs                map[string]*ast.ObjDecl
+	funcs               map[string]*ast.FnDecl // "name" or "StructName.methodName"
+	typeAliases         map[string]*ast.TypeExpr
+	needsRange          bool
+	needsRangei         bool
+	needsRangeObj       bool
+	needsPop            bool
+	needsAdd            bool
+	needsPush           bool
+	loopCounter         int
+	needsContains       bool
+	needsFile           bool
+	needsIntConv        bool
+	needsF64Conv        bool
+	needsSliceToInt     bool
+	needsSliceToF64     bool
+	needsSliceToStr     bool
+	needsStrIndex       bool
+	needsStrSlice       bool
+	needsMap            bool
+	needsFilter         bool
+	needsSplitOnce      bool
+	needsAbsInt         bool
+	needsMinInt         bool
+	needsMaxInt         bool
+	needsMinIntVariadic bool
+	needsMaxIntVariadic bool
+	needsMinF64Variadic bool
+	needsMaxF64Variadic bool
+	needsClampInt       bool
+	needsClampF64       bool
+	needsIntBase        bool
+	needsToBase         bool
+	needsMapget         bool
+	needsHashmapKeys    bool
+	needsHashmapValues  bool
+	needsHashmapExists  bool
+	needsSetExists      bool
+	needsSliceMax       bool
+	needsSliceMin       bool
+	needsSliceSum       bool
+	needsSliceSorted    bool
+	needsSliceReduce    bool
+	needsIsDigit        bool
+	needsInsert         bool
+	needsRemove         bool
+	needsExtend         bool
+	needsRepeat         bool
+	needsAssert         bool
+	needsAssertEq       bool
+	enums               map[string]*ast.EnumDecl
+	tupleStructs        map[string][]string // struct name -> field Go types
+	needsFlag           bool
+	flagDecls           []flagDecl
+	tempCounter         int
 }
 
 type flagDecl struct {
@@ -653,10 +653,14 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("")
 	}
 	if g.needsSliceSorted {
-		g.writeln("func zenth_slice_sorted[T interface{ ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 | ~string }](s []T) []T {")
+		g.writeln("func zenth_slice_sorted[T interface{ ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 | ~string }](s []T, desc bool) []T {")
 		g.writeln("\tc := make([]T, len(s))")
 		g.writeln("\tcopy(c, s)")
-		g.writeln("\tsort.Slice(c, func(i, j int) bool { return c[i] < c[j] })")
+		g.writeln("\tif desc {")
+		g.writeln("\t\tsort.Slice(c, func(i, j int) bool { return c[i] > c[j] })")
+		g.writeln("\t} else {")
+		g.writeln("\t\tsort.Slice(c, func(i, j int) bool { return c[i] < c[j] })")
+		g.writeln("\t}")
 		g.writeln("\treturn c")
 		g.writeln("}")
 		g.writeln("")
@@ -2384,9 +2388,19 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			case "sorted":
 				g.needsSliceSorted = true
 				g.imports["sort"] = ""
+				desc := false
+				if len(c.Args) == 1 {
+					if strLit, ok := c.Args[0].(*ast.StringLitExpr); ok && strLit.Value == "desc" {
+						desc = true
+					}
+				}
 				g.write("zenth_slice_sorted(")
 				g.genExpr(field.Object)
-				g.write(")")
+				if desc {
+					g.write(", true)")
+				} else {
+					g.write(", false)")
+				}
 				return
 			case "reduce":
 				g.needsSliceReduce = true

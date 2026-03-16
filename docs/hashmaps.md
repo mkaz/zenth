@@ -82,7 +82,7 @@ if !scores.exists("Bob") {
 
 ### keys() and values()
 
-Use `.keys()` and `.values()` to get slices of keys or values:
+Use `.keys()` and `.values()` to get arrays of keys or values:
 
 ```zenth
 let keys = m.keys();

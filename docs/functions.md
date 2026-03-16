@@ -139,7 +139,7 @@ Zenth provides several built-in functions that are always available:
 |----------|-------------|
 | `print(x, [enabled])` | Print `x` without a newline; print only when `enabled` is `true` (default) |
 | `println(x, [enabled])` | Print `x` with a newline; print only when `enabled` is `true` (default) |
-| `len(x)` | Return the length of a string or slice |
+| `len(x)` | Return the length of a string or array |
 | `str(x)` | Convert any value to its string representation |
 | `abs(x)` | Absolute value for `int` or `f64` |
 | `min(a, b, ...)` / `max(a, b, ...)` | Minimum / maximum for two or more `int` or `f64` values (all args must be the same type) |
@@ -229,7 +229,7 @@ When no flags are provided, the default values are used. Boolean flags are set t
 
 ## Closures
 
-Closures are anonymous functions declared with `fn` in expression position. They are used with slice methods like `.map()` and `.filter()`:
+Closures are anonymous functions declared with `fn` in expression position. They are used with array methods like `.map()` and `.filter()`:
 
 ```zenth
 let doubled = [1, 2, 3].map(fn(x) x * 2);

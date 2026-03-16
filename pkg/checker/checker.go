@@ -1088,8 +1088,17 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				e.SliceMethod = true
 				return sliceType.Elem
 			case "sorted":
-				if len(e.Args) != 0 {
-					c.errorf(e.Pos(), "sorted() takes no arguments, got %d", len(e.Args))
+				if len(e.Args) > 1 {
+					c.errorf(e.Pos(), "sorted() takes 0 or 1 arguments, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					c.checkNode(e.Args[0])
+					strLit, ok := e.Args[0].(*ast.StringLitExpr)
+					if !ok {
+						c.errorf(e.Args[0].Pos(), "sorted() argument must be a string literal (\"asc\" or \"desc\")")
+					} else if strLit.Value != "asc" && strLit.Value != "desc" {
+						c.errorf(e.Args[0].Pos(), "sorted() argument must be \"asc\" or \"desc\", got %q", strLit.Value)
+					}
 				}
 				if !IsNumeric(sliceType.Elem) && !sliceType.Elem.Equals(TypeStr) {
 					c.errorf(e.Pos(), "sorted() requires a numeric or string array, got %s", objType)

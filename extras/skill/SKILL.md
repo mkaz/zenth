@@ -196,7 +196,7 @@ for var i = 0; i < 10; i++ {
     println(i);
 }
 
-// for-in over arrays/slices
+// for-in over arrays
 for item in items {
     println(item);
 }
@@ -289,7 +289,7 @@ if xrange.contains(x) && yrange.contains(y) {
 
 Note: `.contains()` is a bounds check only, not sequence membership.
 
-### Arrays (Slices)
+### Arrays
 
 ```zenth
 let numbers = [1, 2, 3, 4, 5];
@@ -348,8 +348,10 @@ let product = numbers.reduce(fn(a, b) a * b, 1);  // 120
 let sum = numbers.reduce(fn(a, b) a + b);          // 15
 
 // Sorted (returns new sorted copy)
-let s = [3, 1, 4].sorted();    // [1, 3, 4]
-let sw = ["b", "a"].sorted();  // ["a", "b"]
+let s = [3, 1, 4].sorted();          // [1, 3, 4]
+let sw = ["b", "a"].sorted();        // ["a", "b"]
+let desc = [3, 1, 4].sorted("desc"); // [4, 3, 1] — largest to smallest
+let asc = [3, 1, 4].sorted("asc");   // [1, 3, 4] — smallest to largest (default)
 
 // Join string arrays into a single string
 let words = ["hello", "world"];

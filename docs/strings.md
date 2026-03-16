@@ -201,7 +201,7 @@ println("a-b-a".replace("a", "x", 1)); // x-b-a
 
 ## Splitting Strings
 
-Use the `.split()` method to divide a string into a slice of substrings (`array(str)`). 
+Use the `.split()` method to divide a string into an array of substrings (`array(str)`). 
 By default, `.split()` splits on whitespace. You can also pass a delimiter string:
 
 ```zenth
@@ -266,7 +266,7 @@ let first = s[0];  // "h"
 
 ## Slicing
 
-Use slice syntax to extract a substring:
+Use slicing syntax to extract a substring:
 
 ```zenth
 let s = "hello";

@@ -101,7 +101,7 @@ Indexing into a string returns a one-character `str`.
 
 ## Nil
 
-`nil` represents the absence of a value for reference types (hashmaps, slices, objects). It must be used with an explicit type annotation:
+`nil` represents the absence of a value for reference types (hashmaps, arrays, objects). It must be used with an explicit type annotation:
 
 ```zenth
 var m: hashmap(str, int) = nil;
@@ -165,7 +165,7 @@ println(ri.contains(10)); // true (inclusive end)
 
 **Note:** `.contains()` is a bounds check, not a sequence membership test. For `range(0, 10, 3)` (sequence `[0, 3, 6, 9]`), `.contains(5)` returns `true` because 5 is within the bounds `[0, 10)`.
 
-### Slices
+### Arrays
 
 Dynamic arrays use `array(Type)` syntax:
 
@@ -173,7 +173,7 @@ Dynamic arrays use `array(Type)` syntax:
 let numbers: array(int) = [1, 2, 3, 4, 5];
 ```
 
-See [Slices](slices.md) for more details.
+See [Arrays](arrays.md) for more details.
 
 ### Hashmaps
 
@@ -227,7 +227,7 @@ for dot in dots {
 }
 ```
 
-Tuple elements must be comparable types (scalars, strings, booleans). Tuples containing slices or maps cannot be used as set elements.
+Tuple elements must be comparable types (scalars, strings, booleans). Tuples containing arrays or maps cannot be used as set elements.
 
 ### Tuples
 

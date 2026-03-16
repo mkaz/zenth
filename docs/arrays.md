@@ -1,10 +1,10 @@
-# Slices
+# Arrays
 
-Slices are dynamically-sized sequences of elements, all of the same type.
+Arrays are dynamically-sized sequences of elements, all of the same type.
 
-## Creating Slices
+## Creating Arrays
 
-Use bracket syntax for slice literals:
+Use bracket syntax for array literals:
 
 ```zenth
 let numbers = [1, 2, 3, 4, 5];
@@ -73,7 +73,7 @@ for i, fruit in fruits {
 
 ## Containment
 
-Use `.exists()` to check if a slice contains a value:
+Use `.exists()` to check if an array contains a value:
 
 ```zenth
 let nums = [10, 20, 30];
@@ -82,14 +82,14 @@ if nums.exists(20) {
 }
 ```
 
-## Modifying Slices
+## Modifying Arrays
 
-Zenth provides methods to append, prepend, and remove elements from a slice. The slice must be assigned to a mutable `var` to use these methods.
+Zenth provides methods to append, prepend, and remove elements from an array. The array must be assigned to a mutable `var` to use these methods.
 
 ### Adding Elements
 
-- `.add(value)` appends an element to the end of the slice.
-- `.push(value)` prepends an element to the beginning of the slice.
+- `.add(value)` appends an element to the end of the array.
+- `.push(value)` prepends an element to the beginning of the array.
 - `.extend(other)` appends all elements from another array of the same type.
 
 ```zenth
@@ -112,7 +112,7 @@ nums.insert(2, 3);  // [1, 2, 3, 4, 5]
 
 ### Removing Elements
 
-- `.pop()` removes and returns the last element of the slice.
+- `.pop()` removes and returns the last element of the array.
 - `.pop(index)` removes and returns the element at the specified index.
 - `.remove(index)` removes the element at the specified index (discards it).
 
@@ -168,6 +168,17 @@ let s = unsorted.sorted();  // [1, 1, 3, 4, 5, 9]
 
 let words = ["banana", "apple", "cherry"];
 let sw = words.sorted();  // ["apple", "banana", "cherry"]
+```
+
+Pass `"desc"` to sort in descending order (largest to smallest), or `"asc"` for ascending (smallest to largest, the default):
+
+```zenth
+let nums = [3, 1, 4, 1, 5];
+let asc = nums.sorted("asc");    // [1, 1, 3, 4, 5]
+let desc = nums.sorted("desc");  // [5, 4, 3, 1, 1]
+
+let words = ["banana", "apple", "cherry"];
+let rev = words.sorted("desc");  // ["cherry", "banana", "apple"]
 ```
 
 The original array is not modified. Strings are sorted lexicographically.
@@ -226,7 +237,7 @@ println(parts.join("-"));      // "2026-03-15"
 
 Only works on `array(str)`. Calling `.join()` on a non-string array is a compile-time error.
 
-## Transforming Slices
+## Transforming Arrays
 
 Use `.map()` to transform each element and `.filter()` to select elements:
 

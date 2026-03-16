@@ -45,4 +45,31 @@ fn main() {
         nresult = nresult + str(v);
     }
     println("negs=" + nresult);
+
+    // sorted descending
+    let desc = unsorted.sorted("desc");
+    var dresult = "";
+    for v in desc {
+        if dresult != "" { dresult = dresult + ","; }
+        dresult = dresult + str(v);
+    }
+    println("desc=" + dresult);
+
+    // sorted ascending (explicit)
+    let asc = unsorted.sorted("asc");
+    var aresult = "";
+    for v in asc {
+        if aresult != "" { aresult = aresult + ","; }
+        aresult = aresult + str(v);
+    }
+    println("asc=" + aresult);
+
+    // sorted strings descending
+    let wdesc = words.sorted("desc");
+    var wdresult = "";
+    for w in wdesc {
+        if wdresult != "" { wdresult = wdresult + ","; }
+        wdresult = wdresult + w;
+    }
+    println("wdesc=" + wdresult);
 }

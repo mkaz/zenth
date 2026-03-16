@@ -352,6 +352,9 @@ func TestBuildAndRun(t *testing.T) {
 				"sorted=1,1,2,3,4,5,6,9",
 				"words=apple,banana,cherry",
 				"negs=-5,-1,0,3,7",
+				"desc=9,6,5,4,3,2,1,1",
+				"asc=1,1,2,3,4,5,6,9",
+				"wdesc=cherry,banana,apple",
 			},
 		},
 		{
@@ -607,6 +610,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/sorted_non_sortable.zn",
 			errMsg: "sorted() requires a numeric or string array",
+		},
+		{
+			file:   "errors/sorted_bad_arg.zn",
+			errMsg: "sorted() argument must be \"asc\" or \"desc\"",
 		},
 		{
 			file:   "errors/multi_return_type_mismatch.zn",

@@ -19,7 +19,7 @@ fn main() {
 - [Control Flow](control-flow.md) -- `if`/`else`, `for` loops, and `match`
 - [Enums](enums.md) -- Named value types with fixed variants
 - [Objects](objects.md) -- Objects, methods, and `self`
-- [Slices](slices.md) -- Dynamic arrays
+- [Arrays](arrays.md) -- Dynamic arrays
 - [Tuples](tuples.md) -- Fixed-size mixed-type values
 - [Hashmaps](hashmaps.md) -- Key-value collections
 - [Files](files.md) -- Reading files and file paths

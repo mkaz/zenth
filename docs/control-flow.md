@@ -81,7 +81,7 @@ for {
 
 ### For-In
 
-Iterate over slices and strings:
+Iterate over arrays and strings:
 
 ```zenth
 let items = ["apple", "banana", "cherry"];
