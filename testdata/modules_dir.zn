@@ -1,0 +1,10 @@
+import "./testmods/shapes";
+
+fn main() {
+    let r = shapes.Rectangle(width=5.0, height=3.0);
+    println(str(r.area()));
+    println(str(r.perimeter()));
+
+    let area = shapes.circle_area(4.0);
+    println(str(area));
+}

@@ -577,6 +577,48 @@ import "math" as m;
 
 Available modules map to Go stdlib: `fmt`, `math`, `os`, `strings`
 
+### Local Modules
+
+Import your own `.zn` files using a path starting with `./` or `../`. The module name is the filename stem:
+
+```zenth
+import "./utils";
+import "./math/geometry" as geo;
+import "../shared/helpers" as h;
+```
+
+A module file is a regular `.zn` file without `fn main`. It can contain functions, objects, constants, and type aliases:
+
+```zenth
+// utils.zn
+fn double(x: int) -> int {
+    return x * 2;
+}
+```
+
+Call module definitions via `module.name()` syntax:
+
+```zenth
+import "./utils";
+
+fn main() {
+    println(str(utils.double(21)));  // "42"
+}
+```
+
+**Directory modules:** If the import path is a directory, all `.zn` files in that directory are merged into one module:
+
+```zenth
+import "./shapes";  // loads shapes/rect.zn, shapes/circle.zn, etc.
+
+fn main() {
+    let r = shapes.Rectangle(width=3.0, height=4.0);
+    println(str(r.area()));
+}
+```
+
+Module objects are constructed with `module.ObjName(field=value)` syntax and their methods work normally after construction.
+
 ### Built-in Functions
 
 | Function | Description |

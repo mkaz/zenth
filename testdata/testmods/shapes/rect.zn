@@ -1,0 +1,14 @@
+// rect.zn - Rectangle type in shapes module
+
+obj Rectangle {
+    width: f64;
+    height: f64;
+
+    fn area() -> f64 {
+        return self.width * self.height;
+    }
+
+    fn perimeter() -> f64 {
+        return 2.0 * (self.width + self.height);
+    }
+}

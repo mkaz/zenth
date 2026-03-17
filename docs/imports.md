@@ -59,6 +59,17 @@ fn main() {
 }
 ```
 
+## Local Module Imports
+
+To import your own `.zn` files, use a path starting with `./` or `../`:
+
+```zenth
+import "./utils";
+import "./math/geometry" as geo;
+```
+
+See [Modules](modules.md) for full documentation on splitting programs across multiple files.
+
 ## Note on Built-ins
 
 The functions `print`, `println`, `len`, and `str` are built-in and always available -- no import needed:

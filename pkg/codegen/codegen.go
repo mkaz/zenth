@@ -12,10 +12,13 @@ import (
 type Generator struct {
 	buf                 strings.Builder
 	indent              int
+	PackageName         string            // defaults to "main"; set to module name for module codegen
+	topLevel            bool              // true when generating package-level (non-function) code
 	imports             map[string]string // Go import path -> alias (or empty)
 	objs                map[string]*ast.ObjDecl
 	funcs               map[string]*ast.FnDecl // "name" or "StructName.methodName"
 	typeAliases         map[string]*ast.TypeExpr
+	needsFmt            bool
 	needsRange          bool
 	needsRangei         bool
 	needsRangeObj       bool
@@ -111,6 +114,7 @@ func (g *Generator) Generate(prog *ast.Program) string {
 
 	// Generate all top-level declarations into a buffer
 	var body strings.Builder
+	g.topLevel = true
 	for _, stmt := range prog.Stmts {
 		switch stmt.(type) {
 		case *ast.ImportDecl:
@@ -123,14 +127,21 @@ func (g *Generator) Generate(prog *ast.Program) string {
 			g.buf = old
 		}
 	}
+	g.topLevel = false
 
 	// Now build the final output
 	g.buf.Reset()
-	g.writeln("package main")
+	pkgName := g.PackageName
+	if pkgName == "" {
+		pkgName = "main"
+	}
+	g.writeln("package " + pkgName)
 	g.writeln("")
 
-	// Always import fmt for print/println
-	g.imports["fmt"] = ""
+	// Import fmt when used by print/println, interpolation, or helper functions
+	if g.needsFmt || g.needsIntConv || g.needsF64Conv || g.needsSliceToInt || g.needsSliceToStr || g.needsAssert || g.needsAssertEq {
+		g.imports["fmt"] = ""
+	}
 	if g.needsFile {
 		g.imports["os"] = ""
 		g.imports["strings"] = ""
@@ -723,6 +734,11 @@ func (g *Generator) Generate(prog *ast.Program) string {
 }
 
 func (g *Generator) addImport(imp *ast.ImportDecl) {
+	if imp.IsLocal {
+		// GoPackagePath is set by the driver (e.g., "zenth_output/utils")
+		g.imports[imp.GoPackagePath] = imp.Alias
+		return
+	}
 	goPath := mapImportPath(imp.Path)
 	g.imports[goPath] = imp.Alias
 }
@@ -828,6 +844,10 @@ func (g *Generator) genFnDecl(f *ast.FnDecl) {
 		g.write(f.OwnerObj)
 		g.write(") ")
 		g.write(exportName(f.Name))
+	} else if g.PackageName != "" && g.PackageName != "main" {
+		// Module packages need exported (capitalized) function names so they're
+		// accessible from other Go packages.
+		g.write(exportName(f.Name))
 	} else {
 		g.write(f.Name)
 	}
@@ -847,6 +867,10 @@ func (g *Generator) genFnDecl(f *ast.FnDecl) {
 	}
 	g.write(" {\n")
 	g.indent++
+	// Clear topLevel so declarations inside function bodies use local syntax
+	savedTopLevel := g.topLevel
+	g.topLevel = false
+	defer func() { g.topLevel = savedTopLevel }()
 	if f.Name == "main" && f.OwnerObj == "" {
 		// Generate body into temp buffer so we know if flag() was used
 		oldBuf := g.buf
@@ -946,6 +970,7 @@ func (g *Generator) genDefaultObjStringMethod(s *ast.ObjDecl) {
 	}
 	format.WriteString(")")
 
+	g.needsFmt = true
 	g.writeIndent()
 	g.writef("return fmt.Sprintf(%q", format.String())
 	for _, f := range s.Fields {
@@ -1009,6 +1034,17 @@ func (g *Generator) genBlock(b *ast.Block) {
 
 func (g *Generator) genLetStmt(s *ast.LetStmt) {
 	g.writeIndent()
+	if g.topLevel {
+		// Package-level: must use var declaration syntax
+		if s.Type != nil {
+			g.write("var " + s.Name + " " + g.genType(s.Type) + " = ")
+		} else {
+			g.write("var " + s.Name + " = ")
+		}
+		g.genExpr(s.Value)
+		g.write("\n")
+		return
+	}
 	if s.Infer || s.Type == nil {
 		g.write(s.Name + " := ")
 	} else {
@@ -1022,6 +1058,17 @@ func (g *Generator) genLetStmt(s *ast.LetStmt) {
 
 func (g *Generator) genVarStmt(s *ast.VarStmt) {
 	g.writeIndent()
+	if g.topLevel {
+		// Package-level: must use var declaration syntax
+		if s.Type != nil {
+			g.write("var " + s.Name + " " + g.genType(s.Type) + " = ")
+		} else {
+			g.write("var " + s.Name + " = ")
+		}
+		g.genExpr(s.Value)
+		g.write("\n")
+		return
+	}
 	if s.Infer || s.Type == nil {
 		g.write(s.Name + " := ")
 	} else {
@@ -1033,6 +1080,13 @@ func (g *Generator) genVarStmt(s *ast.VarStmt) {
 
 func (g *Generator) genConstStmt(s *ast.ConstStmt) {
 	g.writeIndent()
+	if g.topLevel {
+		// Package-level: use Go const declaration
+		g.write("const " + s.Name + " = ")
+		g.genExpr(s.Value)
+		g.write("\n")
+		return
+	}
 	// Go const requires compile-time constant expressions
 	// Use var for safety since Zenth const may reference runtime values
 	g.write(s.Name + " := ")
@@ -1769,6 +1823,7 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 	if ident, ok := c.Callee.(*ast.IdentExpr); ok {
 		switch ident.Name {
 		case "print":
+			g.needsFmt = true
 			if len(c.Args) == 2 {
 				g.write("if ")
 				g.genExpr(c.Args[1])
@@ -1782,6 +1837,7 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			}
 			return
 		case "println":
+			g.needsFmt = true
 			if len(c.Args) == 2 {
 				g.write("if ")
 				g.genExpr(c.Args[1])
@@ -1870,6 +1926,7 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.needsSliceToStr = true
 				g.write("zenth_slice_to_str(")
 			} else {
+				g.needsFmt = true
 				g.write("fmt.Sprint(")
 			}
 			g.genArgList(c.Args)
@@ -2633,6 +2690,27 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 		}
 	}
 
+	// Cross-module obj constructor: utils.Point(x=1.0, y=2.0) -> utils.Point{X: 1.0, Y: 2.0}
+	if c.LocalObjModule != "" {
+		if field, ok := c.Callee.(*ast.FieldExpr); ok {
+			g.genExpr(field.Object)
+			g.write("." + exportName(field.Field) + "{")
+			first := true
+			for _, arg := range c.Args {
+				if named, ok := arg.(*ast.NamedArgExpr); ok {
+					if !first {
+						g.write(", ")
+					}
+					g.write(exportName(named.Name) + ": ")
+					g.genExpr(named.Value)
+					first = false
+				}
+			}
+			g.write("}")
+			return
+		}
+	}
+
 	// Translate module function calls (fmt.println -> fmt.Println)
 	if field, ok := c.Callee.(*ast.FieldExpr); ok {
 		if ident, ok := field.Object.(*ast.IdentExpr); ok {
@@ -2829,6 +2907,7 @@ func (g *Generator) genInterpString(s *ast.InterpStringExpr) {
 			}
 		}
 	}
+	g.needsFmt = true
 	g.write("fmt.Sprintf(")
 	g.write(fmt.Sprintf("%q", format.String()))
 	for _, arg := range args {

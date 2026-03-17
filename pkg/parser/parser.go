@@ -1154,6 +1154,7 @@ func (p *Parser) parseImportDecl() *ast.ImportDecl {
 	tok := p.expect(token.Import)
 	decl := &ast.ImportDecl{TokenPos: tok.Pos}
 	decl.Path = p.expect(token.StringLit).Literal
+	decl.IsLocal = strings.HasPrefix(decl.Path, "./") || strings.HasPrefix(decl.Path, "../")
 	if p.peek() == token.As {
 		p.advance()
 		decl.Alias = p.expect(token.Ident).Literal

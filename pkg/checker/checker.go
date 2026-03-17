@@ -2,11 +2,15 @@ package checker
 
 import (
 	"fmt"
+	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/mkaz/zenth/pkg/ast"
+	"github.com/mkaz/zenth/pkg/lexer"
+	"github.com/mkaz/zenth/pkg/parser"
 	"github.com/mkaz/zenth/pkg/token"
 )
 
@@ -35,6 +39,14 @@ type EnumInfo struct {
 	Order    []string          // variant order
 }
 
+// ModuleInfo holds exported symbols from a local .zn module.
+type ModuleInfo struct {
+	Name  string
+	Funcs map[string]*FuncInfo
+	Objs  map[string]*ObjInfo
+	Enums map[string]*EnumInfo
+}
+
 // Checker performs type checking and semantic analysis on a Zenth AST.
 type Checker struct {
 	scope           *Scope
@@ -42,6 +54,8 @@ type Checker struct {
 	objs            map[string]*ObjInfo
 	enums           map[string]*EnumInfo
 	modules         map[string]bool
+	localModules    map[string]*ModuleInfo // local module symbol tables
+	sourceDir       string                 // directory of the source file being checked
 	typeAliases     map[string]*ast.TypeExpr
 	errors          []string
 	currentFunc     *FuncInfo // for checking return types
@@ -53,12 +67,13 @@ func New() *Checker {
 	global := NewScope(nil)
 
 	c := &Checker{
-		scope:       global,
-		funcs:       make(map[string]*FuncInfo),
-		objs:        make(map[string]*ObjInfo),
-		enums:       make(map[string]*EnumInfo),
-		modules:     make(map[string]bool),
-		typeAliases: make(map[string]*ast.TypeExpr),
+		scope:        global,
+		funcs:        make(map[string]*FuncInfo),
+		objs:         make(map[string]*ObjInfo),
+		enums:        make(map[string]*EnumInfo),
+		modules:      make(map[string]bool),
+		localModules: make(map[string]*ModuleInfo),
+		typeAliases:  make(map[string]*ast.TypeExpr),
 	}
 
 	// Known module names for qualified calls (fmt.println, math.sqrt, etc.).
@@ -133,6 +148,13 @@ func New() *Checker {
 	global.Define(&Symbol{Name: "INT_MAX", Type: TypeInt, IsConst: true})
 	global.Define(&Symbol{Name: "INT_MIN", Type: TypeInt, IsConst: true})
 
+	return c
+}
+
+// NewWithDir creates a Checker that resolves local imports relative to sourceDir.
+func NewWithDir(sourceDir string) *Checker {
+	c := New()
+	c.sourceDir = sourceDir
 	return c
 }
 
@@ -256,6 +278,10 @@ func (c *Checker) registerFunc(f *ast.FnDecl) {
 }
 
 func (c *Checker) registerImport(imp *ast.ImportDecl) {
+	if imp.IsLocal {
+		c.loadLocalModule(imp)
+		return
+	}
 	if imp.Alias != "" {
 		c.modules[imp.Alias] = true
 		return
@@ -265,6 +291,171 @@ func (c *Checker) registerImport(imp *ast.ImportDecl) {
 
 func (c *Checker) isModuleName(name string) bool {
 	return c.modules[name]
+}
+
+// loadLocalModule parses a local .zn module and registers its exported symbols.
+func (c *Checker) loadLocalModule(imp *ast.ImportDecl) {
+	moduleName := imp.Alias
+	if moduleName == "" {
+		rel := strings.TrimPrefix(imp.Path, "./")
+		rel = strings.TrimPrefix(rel, "../")
+		moduleName = filepath.Base(rel)
+	}
+
+	znFiles, err := ResolveModuleFiles(c.sourceDir, imp.Path)
+	if err != nil {
+		c.errorf(imp.Pos(), "%v", err)
+		return
+	}
+
+	// sub-checker for resolving types within the module
+	sub := New()
+
+	// First pass: parse all files and register obj/enum types
+	type parsedFile struct {
+		name string
+		prog *ast.Program
+	}
+	var parsedFiles []parsedFile
+	for _, znFile := range znFiles {
+		prog, err := parseZnFile(znFile)
+		if err != nil {
+			c.errorf(imp.Pos(), "error loading module %s: %v", znFile, err)
+			continue
+		}
+		parsedFiles = append(parsedFiles, parsedFile{znFile, prog})
+		for _, stmt := range prog.Stmts {
+			switch s := stmt.(type) {
+			case *ast.ObjDecl:
+				sub.registerObj(s)
+			case *ast.EnumDecl:
+				sub.registerEnum(s)
+			}
+		}
+	}
+
+	mi := &ModuleInfo{
+		Name:  moduleName,
+		Funcs: make(map[string]*FuncInfo),
+		Objs:  make(map[string]*ObjInfo),
+		Enums: make(map[string]*EnumInfo),
+	}
+
+	// Second pass: extract exported symbols
+	for _, pf := range parsedFiles {
+		for _, stmt := range pf.prog.Stmts {
+			switch s := stmt.(type) {
+			case *ast.FnDecl:
+				if s.Name == "main" {
+					c.errorf(s.Pos(), "module file %s cannot define fn main", pf.name)
+					continue
+				}
+				fi := &FuncInfo{Name: s.Name}
+				for _, p := range s.Params {
+					fi.Params = append(fi.Params, sub.resolveTypeExpr(p.Type))
+					fi.ParamNames = append(fi.ParamNames, p.Name)
+					if p.Default == nil {
+						fi.NumRequired++
+					}
+				}
+				fi.Return = sub.resolveTypeExpr(s.ReturnType)
+				mi.Funcs[s.Name] = fi
+			case *ast.ObjDecl:
+				oi := &ObjInfo{
+					Name:     s.Name,
+					Fields:   make(map[string]ZType),
+					Defaults: make(map[string]bool),
+				}
+				for _, f := range s.Fields {
+					oi.Fields[f.Name] = sub.resolveTypeExpr(f.Type)
+					oi.Order = append(oi.Order, f.Name)
+					if f.Default != nil {
+						oi.Defaults[f.Name] = true
+					}
+				}
+				mi.Objs[s.Name] = oi
+				for _, m := range s.Methods {
+					mFi := &FuncInfo{Name: m.Name, Receiver: s.Name}
+					for _, p := range m.Params {
+						mFi.Params = append(mFi.Params, sub.resolveTypeExpr(p.Type))
+						mFi.ParamNames = append(mFi.ParamNames, p.Name)
+						if p.Default == nil {
+							mFi.NumRequired++
+						}
+					}
+					mFi.Return = sub.resolveTypeExpr(m.ReturnType)
+					mi.Funcs[s.Name+"."+m.Name] = mFi
+				}
+			case *ast.EnumDecl:
+				mi.Enums[s.Name] = sub.enums[s.Name]
+			}
+		}
+	}
+
+	c.localModules[moduleName] = mi
+	c.modules[moduleName] = true
+
+	// Register the module's obj types and their methods into the main checker
+	// so that method calls on module-returned objects type-check correctly.
+	for objName, oi := range mi.Objs {
+		c.objs[objName] = oi
+	}
+	for fnKey, fi := range mi.Funcs {
+		// Only register method entries (contain ".") to avoid clobbering same-name free functions
+		if strings.Contains(fnKey, ".") {
+			c.funcs[fnKey] = fi
+		}
+	}
+}
+
+// ResolveModuleFiles finds all .zn files for a local import path relative to sourceDir.
+func ResolveModuleFiles(sourceDir, importPath string) ([]string, error) {
+	base := importPath
+	if !filepath.IsAbs(importPath) {
+		if sourceDir != "" {
+			base = filepath.Join(sourceDir, importPath)
+		}
+	}
+	// Normalize path (handles ./ and ../)
+	base = filepath.Clean(base)
+
+	// Try as .zn file
+	if _, err := os.Stat(base + ".zn"); err == nil {
+		return []string{base + ".zn"}, nil
+	}
+	// Try as directory
+	if info, err := os.Stat(base); err == nil && info.IsDir() {
+		entries, err := os.ReadDir(base)
+		if err != nil {
+			return nil, fmt.Errorf("cannot read directory %s: %w", base, err)
+		}
+		var files []string
+		for _, e := range entries {
+			if !e.IsDir() && strings.HasSuffix(e.Name(), ".zn") {
+				files = append(files, filepath.Join(base, e.Name()))
+			}
+		}
+		if len(files) == 0 {
+			return nil, fmt.Errorf("no .zn files in directory %s", base)
+		}
+		return files, nil
+	}
+	return nil, fmt.Errorf("module not found: %s (looked for %s.zn and %s/)", importPath, base, base)
+}
+
+// parseZnFile lexes and parses a single .zn source file.
+func parseZnFile(filename string) (*ast.Program, error) {
+	src, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("cannot read: %w", err)
+	}
+	l := lexer.New(filename, string(src))
+	tokens, err := l.Tokenize()
+	if err != nil {
+		return nil, fmt.Errorf("lex error: %w", err)
+	}
+	p := parser.New(tokens)
+	return p.Parse()
 }
 
 func (c *Checker) resolveTypeExpr(t *ast.TypeExpr) ZType {
@@ -909,6 +1100,11 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 	if field, ok := e.Callee.(*ast.FieldExpr); ok {
 		// Module function call (fmt.println, math.sqrt, etc.)
 		if ident, ok := field.Object.(*ast.IdentExpr); ok && c.isModuleName(ident.Name) {
+			// Local module — type-check properly
+			if mi, ok := c.localModules[ident.Name]; ok {
+				return c.checkLocalModuleCall(e, mi, ident.Name, field.Field)
+			}
+			// Stdlib module — check args but skip signature validation
 			for _, arg := range e.Args {
 				if named, ok := arg.(*ast.NamedArgExpr); ok {
 					c.errorf(named.Pos(), "named arguments are not supported for module call %s.%s", ident.Name, field.Field)
@@ -1670,6 +1866,28 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 	}
 
 	// Type check args even if we can't resolve
+	for _, arg := range e.Args {
+		c.checkNode(arg)
+	}
+	return TypeVoid
+}
+
+// checkLocalModuleCall type-checks a call to a function or obj constructor in a local module.
+func (c *Checker) checkLocalModuleCall(e *ast.CallExpr, mi *ModuleInfo, moduleName, name string) ZType {
+	// Obj constructor: utils.Point(x=1.0, y=2.0)
+	if oi, ok := mi.Objs[name]; ok {
+		e.LocalObjModule = moduleName
+		for _, arg := range e.Args {
+			c.checkNode(arg)
+		}
+		return &ObjType{Name: name, Fields: oi.Fields}
+	}
+	// Function call: utils.add(1, 2)
+	if fi, ok := mi.Funcs[name]; ok {
+		c.checkArgs(e, fi)
+		return fi.Return
+	}
+	c.errorf(e.Pos(), "module '%s' has no function or type '%s'", moduleName, name)
 	for _, arg := range e.Args {
 		c.checkNode(arg)
 	}

@@ -1,0 +1,10 @@
+// A module file that illegally defines fn main
+// This file is used as a module by modules_no_main_caller.zn,
+// but we test it directly since the error fires during module loading.
+// Error: module file cannot define fn main
+
+import "./modules_no_main_helper" as helper;
+
+fn main() {
+    println("should not reach here");
+}

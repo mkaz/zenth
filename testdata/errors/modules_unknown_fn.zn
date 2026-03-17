@@ -1,0 +1,6 @@
+import "../testmods/mathutils";
+
+// Error: module 'mathutils' has no function or type 'bogus'
+fn main() {
+    mathutils.bogus(1, 2);
+}

@@ -106,9 +106,11 @@ func (t *TypeAliasDecl) nodeMarker()    {}
 
 // ImportDecl represents an import statement.
 type ImportDecl struct {
-	TokenPos token.Pos
-	Path     string
-	Alias    string // empty means use default name
+	TokenPos      token.Pos
+	Path          string
+	Alias         string // empty means use default name
+	IsLocal       bool   // true when path starts with ./ or ../
+	GoPackagePath string // resolved Go package path, set by driver (e.g., "zenth_output/utils")
 }
 
 func (i *ImportDecl) Pos() token.Pos { return i.TokenPos }
@@ -431,6 +433,7 @@ type CallExpr struct {
 	SetTupleStruct     string   // set by checker: struct name for set(tuple(...)) operations
 	SetTupleFieldTypes []string // set by checker: Go types of tuple fields for set(tuple) conversion
 	ResolvedFunc       string   // set by checker: function key ("name" or "Type.method")
+	LocalObjModule     string   // set by checker: non-empty for cross-module obj constructor calls
 	FlagName           string   // set by checker: variable name for flag() calls
 	FlagGoType         string   // set by checker: "bool", "int", "string" for flag() calls
 	RangeMethod        bool     // set by checker for built-in range methods (e.g. "contains")

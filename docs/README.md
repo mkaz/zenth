@@ -24,6 +24,7 @@ fn main() {
 - [Hashmaps](hashmaps.md) -- Key-value collections
 - [Files](files.md) -- Reading files and file paths
 - [Imports](imports.md) -- Using standard library modules
+- [Modules](modules.md) -- Splitting programs across multiple files
 - [Testing](testing.md) -- Writing and running tests
 
 ## Design Philosophy

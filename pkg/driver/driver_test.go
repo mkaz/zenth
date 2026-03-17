@@ -435,6 +435,18 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "array_repeat.zn",
 			contains: []string{"5", "0 0 0 0 0", "---", "1 2 1 2 1 2", "3"},
 		},
+		{
+			file:     "modules_basic.zn",
+			contains: []string{"7", "42", "20"},
+		},
+		{
+			file:     "modules_alias.zn",
+			contains: []string{"300", "99"},
+		},
+		{
+			file:     "modules_dir.zn",
+			contains: []string{"15", "16", "50."},
+		},
 	}
 
 	for _, tt := range tests {
@@ -646,6 +658,14 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/array_join_non_string.zn",
 			errMsg: "join() requires array(str)",
+		},
+		{
+			file:   "errors/modules_no_main.zn",
+			errMsg: "cannot define fn main",
+		},
+		{
+			file:   "errors/modules_unknown_fn.zn",
+			errMsg: "has no function or type 'bogus'",
 		},
 	}
 
