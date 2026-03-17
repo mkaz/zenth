@@ -1,0 +1,4 @@
+// Should fail: assignment uses = not :=
+fn main() {
+    let x := 5;
+}

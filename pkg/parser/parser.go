@@ -357,6 +357,8 @@ func (p *Parser) parseLetStmt() ast.Node {
 		p.advance()
 		stmt.Infer = true
 		stmt.Value = p.parseExpr(0)
+	} else if p.peek() == token.Walrus {
+		p.errorf(tok.Pos, "Zenth uses '=' for assignment, not ':='")
 	} else {
 		p.errorf(tok.Pos, "expected = or : after let variable name")
 	}
@@ -395,6 +397,8 @@ func (p *Parser) parseVarStmt() ast.Node {
 		p.advance()
 		stmt.Infer = true
 		stmt.Value = p.parseExpr(0)
+	} else if p.peek() == token.Walrus {
+		p.errorf(tok.Pos, "Zenth uses '=' for assignment, not ':='")
 	} else {
 		p.errorf(tok.Pos, "expected = or : after var variable name")
 	}
@@ -433,6 +437,8 @@ func (p *Parser) parseConstStmt() ast.Node {
 		p.advance()
 		stmt.Infer = true
 		stmt.Value = p.parseExpr(0)
+	} else if p.peek() == token.Walrus {
+		p.errorf(tok.Pos, "Zenth uses '=' for assignment, not ':='")
 	} else {
 		p.errorf(tok.Pos, "expected = or : after const name")
 	}
@@ -727,6 +733,10 @@ func (p *Parser) parseExprOrAssignStmt() ast.Node {
 		}
 		p.expect(token.Semicolon)
 		return &ast.MultiAssignStmt{TokenPos: eqTok.Pos, Targets: targets, Values: values}
+	}
+
+	if p.peek() == token.Walrus {
+		p.errorf(p.cur().Pos, "Zenth uses '=' for assignment, not ':='")
 	}
 
 	// Assignment
