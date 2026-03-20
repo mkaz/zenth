@@ -17,7 +17,7 @@ Zenth is strongly typed with type inference for local variables. Function signat
 | `u64` | 64-bit unsigned | 0 to 2^64-1 |
 
 ```zenth
-let x = 42;          // int (inferred)
+let x = 42;          // Int (inferred)
 let big: i64 = 999;
 ```
 
@@ -44,7 +44,7 @@ let small = INT_MIN;
 
 // Use in expressions
 if score < INT_MAX {
-    println("not at the limit yet");
+    Println("not at the limit yet");
 }
 ```
 
@@ -66,7 +66,7 @@ let oct = 63.to_base(8);     // "77"
 | `f64` | 64-bit | Double precision (default for float literals) |
 
 ```zenth
-let pi = 3.14159;         // f64 (inferred)
+let pi = 3.14159;         // F64 (inferred)
 let ratio: f32 = 0.75;
 ```
 
@@ -104,7 +104,7 @@ Indexing into a string returns a one-character `str`.
 `nil` represents the absence of a value for reference types (hashmaps, arrays, objects). It must be used with an explicit type annotation:
 
 ```zenth
-var m: hashmap(str, int) = nil;
+var m: Hashmap(str, int) = nil;
 var items: array(int) = nil;
 ```
 
@@ -114,12 +114,12 @@ Primitive types (`int`, `str`, `bool`, `f64`) cannot be nil.
 
 ### Range Objects
 
-`range(start, end)` and `rangei(start, end)` return a **range object** — a lightweight value type that is iterable and supports O(1) containment checks.
+`Range(start, end)` and `Rangei(start, end)` return a **range object** — a lightweight value type that is iterable and supports O(1) containment checks.
 
 ```zenth
-let r  = range(0, 10);    // exclusive: [0, 9]
-let ri = rangei(0, 10);   // inclusive: [0, 10]
-let rs = range(0, 20, 3); // with step: [0, 3, 6, 9, 12, 15, 18]
+let r  = Range(0, 10);    // exclusive: [0, 9]
+let ri = Rangei(0, 10);   // inclusive: [0, 10]
+let rs = Range(0, 20, 3); // with step: [0, 3, 6, 9, 12, 15, 18]
 ```
 
 **Methods:**
@@ -132,19 +132,19 @@ let rs = range(0, 20, 3); // with step: [0, 3, 6, 9, 12, 15, 18]
 
 | Built-in | Description |
 |----------|-------------|
-| `len(r)` | Number of elements in the range (O(1)) |
+| `Len(r)` | Number of elements in the Range (O(1)) |
 
 **Iteration:**
 
 Range objects are iterable in `for-in` loops:
 
 ```zenth
-for i in range(0, 5) {
-    println(i);   // 0 1 2 3 4
+for i in Range(0, 5) {
+    Println(i);   // 0 1 2 3 4
 }
 
-for i, v in rangei(10, 13) {
-    println("{i}: {v}");
+for i, v in Rangei(10, 13) {
+    Println("{i}: {v}");
 }
 // 0: 10
 // 1: 11
@@ -155,15 +155,15 @@ for i, v in rangei(10, 13) {
 **Containment checks:**
 
 ```zenth
-let r = range(1, 10);
-println(r.contains(5));   // true
-println(r.contains(10));  // false (exclusive end)
+let r = Range(1, 10);
+Println(r.contains(5));   // true
+Println(r.contains(10));  // false (exclusive end)
 
-let ri = rangei(1, 10);
-println(ri.contains(10)); // true (inclusive end)
+let ri = Rangei(1, 10);
+Println(ri.contains(10)); // true (inclusive end)
 ```
 
-**Note:** `.contains()` is a bounds check, not a sequence membership test. For `range(0, 10, 3)` (sequence `[0, 3, 6, 9]`), `.contains(5)` returns `true` because 5 is within the bounds `[0, 10)`.
+**Note:** `.contains()` is a bounds check, not a sequence membership test. For `Range(0, 10, 3)` (sequence `[0, 3, 6, 9]`), `.contains(5)` returns `true` because 5 is within the bounds `[0, 10)`.
 
 ### Arrays
 
@@ -177,7 +177,7 @@ See [Arrays](arrays.md) for more details.
 
 ### Hashmaps
 
-Hashmaps are key/value collections. Create an empty hashmap with `hashmap(KeyType, ValueType)`:
+Hashmaps are key/value collections. Create an empty hashmap with `Hashmap(KeyType, ValueType)`:
 
 ```zenth
 obj Point {
@@ -185,7 +185,7 @@ obj Point {
     y: int;
 }
 
-var grid = hashmap(Point, str);
+var grid = Hashmap(Point, str);
 let pt = Point(x=1, y=2);
 grid[pt] = "#";
 ```
@@ -194,15 +194,15 @@ For object keys, hashmap lookup is value-based: another `Point(x=1, y=2)` resolv
 
 ### Sets
 
-Sets are unordered collections of unique values. Create an empty set with `set(Type)`:
+Sets are unordered collections of unique values. Create an empty set with `Set(Type)`:
 
 ```zenth
-var visited = set(str);
+var visited = Set(str);
 visited.add("start");
 visited.add("middle");
 visited.exists("start");  // true
 visited.remove("middle");
-println(len(visited));       // 1
+Println(Len(visited));       // 1
 ```
 
 Sets support `int`, `str`, `bool`, and other comparable types as elements.
@@ -212,18 +212,18 @@ Sets support `int`, `str`, `bool`, and other comparable types as elements.
 Sets can hold tuples, enabling composite keys without string round-tripping:
 
 ```zenth
-var dots = set(tuple(int, int));
-dots.add(tuple(6, 10));
-dots.add(tuple(0, 14));
-dots.add(tuple(6, 10));  // duplicate, ignored
-println(len(dots));       // 2
+var dots = Set(Tuple(int, int));
+dots.add(Tuple(6, 10));
+dots.add(Tuple(0, 14));
+dots.add(Tuple(6, 10));  // duplicate, ignored
+Println(Len(dots));       // 2
 
-if dots.exists(tuple(6, 10)) {
-    println("found");
+if dots.exists(Tuple(6, 10)) {
+    Println("found");
 }
 
 for dot in dots {
-    println("{dot.0},{dot.1}");
+    Println("{dot.0},{dot.1}");
 }
 ```
 
@@ -234,11 +234,11 @@ Tuple elements must be comparable types (scalars, strings, booleans). Tuples con
 Tuples are fixed-size ordered values that can hold mixed types. They support both positional and named fields:
 
 ```zenth
-let t = tuple("a", 1);
-println(t.0);      // positional access
+let t = Tuple("a", 1);
+Println(t.0);      // positional access
 
-let person = tuple(name="Alice", age=30);
-println(person.name);  // named access
+let person = Tuple(name="Alice", age=30);
+Println(person.name);  // named access
 ```
 
 See [Tuples](tuples.md) for named tuples, destructuring, and usage in functions.
@@ -277,22 +277,22 @@ See [Enums](enums.md) for explicit values, comparison, and match usage.
 
 ## Type Conversions
 
-Use the `str()` built-in to convert any value to a string:
+Use the `Str()` built-in to convert any value to a string:
 
 ```zenth
 let n = 42;
-let s = str(n);    // "42"
-println(str(3.14)); // "3.14"
+let s = Str(n);    // "42"
+Println(Str(3.14)); // "3.14"
 ```
 
-Use `int()` to convert strings or floats to integers. With two arguments, the second specifies the base:
+Use `Int()` to convert strings or floats to integers. With two arguments, the second specifies the base:
 
 ```zenth
-let a = int("42");         // 42
-let b = int(3.14);         // 3
-let bin = int("1010", 2);  // 10 (binary)
-let hex = int("ff", 16);   // 255 (hexadecimal)
-let oct = int("77", 8);    // 63 (octal)
+let a = Int("42");         // 42
+let b = Int(3.14);         // 3
+let bin = Int("1010", 2);  // 10 (binary)
+let hex = Int("ff", 16);   // 255 (hexadecimal)
+let oct = Int("77", 8);    // 63 (octal)
 ```
 
 This is equivalent to `"ff".to_int(16)` but reads more naturally as a conversion function.

@@ -1,4 +1,4 @@
 fn main() {
-    let x = flag();
-    println(x);
+    let x = Flag();
+    Println(x);
 }

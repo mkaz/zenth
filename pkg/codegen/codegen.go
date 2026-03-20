@@ -1827,7 +1827,7 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 	// Translate built-in functions
 	if ident, ok := c.Callee.(*ast.IdentExpr); ok {
 		switch ident.Name {
-		case "print":
+		case "Print":
 			g.needsFmt = true
 			if len(c.Args) == 2 {
 				g.write("if ")
@@ -1841,7 +1841,7 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write(")")
 			}
 			return
-		case "println":
+		case "Println":
 			g.needsFmt = true
 			if len(c.Args) == 2 {
 				g.write("if ")
@@ -1855,7 +1855,7 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write(")")
 			}
 			return
-		case "exit":
+		case "Exit":
 			g.imports["os"] = ""
 			if len(c.Args) == 0 {
 				g.write("os.Exit(0)")
@@ -1865,14 +1865,14 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write(")")
 			}
 			return
-		case "assert":
+		case "Assert":
 			g.needsAssert = true
 			pos := c.Pos()
 			g.writef("zenth_assert(")
 			g.genExpr(c.Args[0])
 			g.writef(", %q, %d)", pos.File, pos.Line)
 			return
-		case "assert_eq":
+		case "AssertEq":
 			g.needsAssertEq = true
 			pos := c.Pos()
 			g.writef("zenth_assert_eq(")
@@ -1881,7 +1881,7 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			g.genExpr(c.Args[1])
 			g.writef(", %q, %d)", pos.File, pos.Line)
 			return
-		case "zip":
+		case "Zip":
 			if c.ZipCall {
 				tc := g.tempCounter
 				g.tempCounter++
@@ -1915,7 +1915,7 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.writef("} }; return _zr%d_ }()", tc)
 				return
 			}
-		case "len":
+		case "Len":
 			if c.LenArgIsRange {
 				g.write("(")
 				g.genArgList(c.Args)
@@ -1926,8 +1926,8 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write(")")
 			}
 			return
-		case "str":
-			if c.SliceConvFunc == "str" {
+		case "Str":
+			if c.SliceConvFunc == "Str" {
 				g.needsSliceToStr = true
 				g.write("zenth_slice_to_str(")
 			} else {
@@ -1937,7 +1937,7 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			g.genArgList(c.Args)
 			g.write(")")
 			return
-		case "range":
+		case "Range":
 			g.needsRangeObj = true
 			g.write("ZenthRange{Start: ")
 			g.genExpr(c.Args[0])
@@ -1951,7 +1951,7 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			}
 			g.write(", Inclusive: false}")
 			return
-		case "rangei":
+		case "Rangei":
 			g.needsRangeObj = true
 			g.write("ZenthRange{Start: ")
 			g.genExpr(c.Args[0])
@@ -1965,19 +1965,19 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			}
 			g.write(", Inclusive: true}")
 			return
-		case "file":
+		case "File":
 			g.needsFile = true
 			g.write("zenth_file(")
 			g.genArgList(c.Args)
 			g.write(")")
 			return
-		case "int":
+		case "Int":
 			if c.IntBaseCall {
 				g.needsIntBase = true
 				g.write("zenth_int_base(")
 				g.genArgList(c.Args)
 				g.write(")")
-			} else if c.SliceConvFunc == "int" {
+			} else if c.SliceConvFunc == "Int" {
 				g.needsSliceToInt = true
 				g.write("zenth_slice_to_int(")
 				g.genArgList(c.Args)
@@ -1989,8 +1989,8 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write(")")
 			}
 			return
-		case "f64":
-			if c.SliceConvFunc == "f64" {
+		case "F64":
+			if c.SliceConvFunc == "F64" {
 				g.needsSliceToF64 = true
 				g.write("zenth_slice_to_f64(")
 			} else {
@@ -2000,7 +2000,7 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			g.genArgList(c.Args)
 			g.write(")")
 			return
-		case "abs":
+		case "Abs":
 			switch c.NumericMethod {
 			case "abs_int":
 				g.needsAbsInt = true
@@ -2016,7 +2016,7 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write("/* invalid abs() */")
 			}
 			return
-		case "min":
+		case "Min":
 			switch c.NumericMethod {
 			case "min_int":
 				g.needsMinInt = true
@@ -2042,7 +2042,7 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write("/* invalid min() */")
 			}
 			return
-		case "max":
+		case "Max":
 			switch c.NumericMethod {
 			case "max_int":
 				g.needsMaxInt = true
@@ -2068,7 +2068,7 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write("/* invalid max() */")
 			}
 			return
-		case "clamp":
+		case "Clamp":
 			switch c.NumericMethod {
 			case "clamp_int":
 				g.needsClampInt = true
@@ -2085,25 +2085,25 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write("/* invalid clamp() */")
 			}
 			return
-		case "round":
+		case "Round":
 			g.imports["math"] = ""
 			g.write("math.Round(float64(")
 			g.genExpr(c.Args[0])
 			g.write("))")
 			return
-		case "floor":
+		case "Floor":
 			g.imports["math"] = ""
 			g.write("math.Floor(float64(")
 			g.genExpr(c.Args[0])
 			g.write("))")
 			return
-		case "ceil":
+		case "Ceil":
 			g.imports["math"] = ""
 			g.write("math.Ceil(float64(")
 			g.genExpr(c.Args[0])
 			g.write("))")
 			return
-		case "pow":
+		case "Pow":
 			g.imports["math"] = ""
 			g.write("math.Pow(float64(")
 			g.genExpr(c.Args[0])
@@ -2111,13 +2111,13 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			g.genExpr(c.Args[1])
 			g.write("))")
 			return
-		case "sqrt":
+		case "Sqrt":
 			g.imports["math"] = ""
 			g.write("math.Sqrt(float64(")
 			g.genExpr(c.Args[0])
 			g.write("))")
 			return
-		case "hashmap":
+		case "Hashmap":
 			if c.HashmapCtor {
 				// Register tuple struct if this is a hashmap(tuple(...), V)
 				if c.HashmapTupleStruct != "" {
@@ -2132,7 +2132,7 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write("/* invalid hashmap() */")
 			}
 			return
-		case "set":
+		case "Set":
 			if c.SetCtor {
 				// Register tuple struct if this is a set(tuple(...))
 				if c.SetTupleStruct != "" {
@@ -2145,7 +2145,7 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write("/* invalid set() */")
 			}
 			return
-		case "flag":
+		case "Flag":
 			g.genFlagCall(c)
 			return
 		}

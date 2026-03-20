@@ -6,5 +6,5 @@
 import "./modules_no_main_helper" as helper;
 
 fn main() {
-    println("should not reach here");
+    Println("should not reach here");
 }

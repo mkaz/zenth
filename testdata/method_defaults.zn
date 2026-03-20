@@ -1,6 +1,6 @@
 obj Greeter {
     fn hello(name: str = "world") {
-        println("Hello, " + name);
+        Println("Hello, " + name);
     }
 }
 

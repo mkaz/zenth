@@ -2,26 +2,26 @@
 fn main() {
     let nums = [10, 20, 30];
     if nums.exists(20) {
-        println("found 20");
+        Println("found 20");
     }
     if nums.exists(99) {
-        println("found 99");
+        Println("found 99");
     } else {
-        println("no 99");
+        Println("no 99");
     }
 
     let names = ["alice", "bob", "carol"];
     if names.exists("bob") {
-        println("found bob");
+        Println("found bob");
     }
     if names.exists("dave") {
-        println("found dave");
+        Println("found dave");
     } else {
-        println("no dave");
+        Println("no dave");
     }
 
     let flags = [true, false];
     if flags.exists(true) {
-        println("found true");
+        Println("found true");
     }
 }

@@ -13,11 +13,11 @@ Zenth language transpiles to Go and then compiled to a native binary using Go's 
 ```zenth
 fn main() {
     let name = "World";
-    println("Hello, {name}!");
+    Println("Hello, {name}!");
 
     let numbers = [1, 2, 3, 4, 5];
     for i, n in numbers {
-        println("{i}: {n}");
+        Println("{i}: {n}");
     }
 }
 ```
@@ -37,15 +37,15 @@ fn fizzbuzz(n: int) -> str {
     return if n % 15 == 0 { "FizzBuzz" }
       else if n % 3 == 0  { "Fizz" }
       else if n % 5 == 0  { "Buzz" }
-      else                 { str(n) };
+      else                 { Str(n) };
 }
 
 fn main() {
     let c = Circle(radius=5.0);
-    println("Area: {c.area()}");
+    Println("Area: {c.area()}");
 
-    for i in range(1, 21) {
-        println(fizzbuzz(i));
+    for i in Range(1, 21) {
+        Println(fizzbuzz(i));
     }
 }
 ```
@@ -64,7 +64,7 @@ Write a program:
 
 ```zenth
 fn main() {
-    println("Hello from Zenth!");
+    Println("Hello from Zenth!");
 }
 ```
 

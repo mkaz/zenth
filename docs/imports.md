@@ -38,10 +38,10 @@ import "math";
 
 fn main() {
     let x = math.sqrt(144.0);
-    println(x);  // 12
+    Println(x);  // 12
 
     let y = math.pow(2.0, 10.0);
-    println(y);  // 1024
+    Println(y);  // 1024
 }
 ```
 
@@ -54,7 +54,7 @@ fn main() {
     let csv = "apple,banana,cherry";
     let parts = strings.split(csv, ",");
     for part in parts {
-        println(part);
+        Println(part);
     }
 }
 ```
@@ -86,7 +86,7 @@ fn main() {
         var id: int = 0;
         var name = "";
         rows.Scan(&id, &name);
-        println("{id}: {name}");
+        Println("{id}: {name}");
     }
 }
 ```
@@ -108,11 +108,11 @@ See [Modules](modules.md) for full documentation on splitting programs across mu
 
 ## Note on Built-ins
 
-The functions `print`, `println`, `len`, and `str` are built-in and always available -- no import needed:
+The functions `Print`, `Println`, `Len`, and `Str` are built-in and always available -- no import needed:
 
 ```zenth
 fn main() {
-    println("no import required");
-    println(len("hello"));
+    Println("no import required");
+    Println(Len("hello"));
 }
 ```

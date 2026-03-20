@@ -1,37 +1,37 @@
 // Test type conversion functions
 fn main() {
-    // int() conversions
-    let a = int("42");
-    println("int_str=" + str(a));
+    // Int() conversions
+    let a = Int("42");
+    Println("int_str=" + Str(a));
 
-    let b = int(3.14);
-    println("int_f64=" + str(b));
+    let b = Int(3.14);
+    Println("int_f64=" + Str(b));
 
-    let c = int(true);
-    let d = int(false);
-    println("int_true=" + str(c));
-    println("int_false=" + str(d));
+    let c = Int(true);
+    let d = Int(false);
+    Println("int_true=" + Str(c));
+    Println("int_false=" + Str(d));
 
-    // f64() conversions
-    let e = f64("3.14");
-    println("f64_str=" + str(e));
+    // F64() conversions
+    let e = F64("3.14");
+    Println("f64_str=" + Str(e));
 
-    let f = f64(42);
-    println("f64_int=" + str(f));
+    let f = F64(42);
+    Println("f64_int=" + Str(f));
 
     // Slice conversions
     let strs = ["1", "2", "3"];
     let nums = strs.to_int();
-    println("to_int_len=" + str(len(nums)));
-    println("to_int_first=" + str(nums[0]));
-    println("to_int_last=" + str(nums[2]));
+    Println("to_int_len=" + Str(Len(nums)));
+    Println("to_int_first=" + Str(nums[0]));
+    Println("to_int_last=" + Str(nums[2]));
 
     let fstrs = ["1.5", "2.5", "3.5"];
     let floats = fstrs.to_f64();
-    println("to_f64_len=" + str(len(floats)));
-    println("to_f64_first=" + str(floats[0]));
+    Println("to_f64_len=" + Str(Len(floats)));
+    Println("to_f64_first=" + Str(floats[0]));
 
     let vals = [10, 20, 30];
     let text = vals.to_str();
-    println("to_str=" + str(text[0]) + "," + str(text[1]) + "," + str(text[2]));
+    Println("to_str=" + Str(text[0]) + "," + Str(text[1]) + "," + Str(text[2]));
 }

@@ -7,7 +7,7 @@ obj Point {
 
 type Points = array(Point);
 type StringMap = hashmap[str]str;
-type Pair = tuple(str, int);
+type Pair = Tuple(str, int);
 type Ints = array(int);
 
 fn sum(nums: Ints) -> int {
@@ -21,19 +21,19 @@ fn sum(nums: Ints) -> int {
 fn main() {
     // Array alias
     var pts: Points = [Point(x=1, y=2), Point(x=3, y=4)];
-    println(len(pts));
+    Println(Len(pts));
 
     // Hashmap alias
-    var m: StringMap = hashmap(str, str);
+    var m: StringMap = Hashmap(str, str);
     m["hello"] = "world";
-    println(m["hello"]);
+    Println(m["hello"]);
 
     // Tuple alias
-    let p: Pair = tuple("Alice", 42);
-    println(p.0);
-    println(p.1);
+    let p: Pair = Tuple("Alice", 42);
+    Println(p.0);
+    Println(p.1);
 
     // Use alias in function parameter
     let nums: Ints = [10, 20, 30];
-    println(sum(nums));
+    Println(sum(nums));
 }

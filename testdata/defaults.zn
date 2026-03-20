@@ -1,5 +1,5 @@
 fn greet(name: str, greeting: str = "Hello") {
-    println(greeting + ", " + name + "!");
+    Println(greeting + ", " + name + "!");
 }
 
 fn add(a: int, b: int, c: int = 0) -> int {
@@ -9,6 +9,6 @@ fn add(a: int, b: int, c: int = 0) -> int {
 fn main() {
     greet("Alice");
     greet("Bob", "Hi");
-    println(add(1, 2));
-    println(add(1, 2, 3));
+    Println(add(1, 2));
+    Println(add(1, 2, 3));
 }

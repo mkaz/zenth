@@ -6,14 +6,14 @@ obj Point {
 fn main() {
     let pt = Point(x=1, y=2);
     let same = Point(x=1, y=2);
-    var grid = hashmap(Point, str);
+    var grid = Hashmap(Point, str);
     grid[pt] = "#";
 
-    println("val=" + grid[same]);
-    println("len=" + str(len(grid)));
+    Println("val=" + grid[same]);
+    Println("len=" + Str(Len(grid)));
 
-    var scores = hashmap(str, int);
+    var scores = Hashmap(str, int);
     scores["Alice"] = 95;
     scores["Bert"] = 80;
-    println(scores);
+    Println(scores);
 }

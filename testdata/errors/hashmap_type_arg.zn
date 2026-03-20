@@ -1,5 +1,5 @@
-// Should fail: hashmap() expects type names
+// Should fail: Hashmap() expects type names
 fn main() {
-    var bad = hashmap(1, str);
-    println(len(bad));
+    var bad = Hashmap(1, str);
+    Println(Len(bad));
 }

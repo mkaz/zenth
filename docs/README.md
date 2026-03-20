@@ -5,7 +5,7 @@ Zenth is a compiled programming language that blends Go's type discipline with P
 ```zenth
 fn main() {
     let name = "Zenth";
-    println("Hello from {name}!");
+    Println("Hello from {name}!");
 }
 ```
 

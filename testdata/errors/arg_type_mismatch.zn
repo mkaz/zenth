@@ -1,5 +1,5 @@
 fn takes_int(x: int) {
-    println(x);
+    Println(x);
 }
 
 fn main() {

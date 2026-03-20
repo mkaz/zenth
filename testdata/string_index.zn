@@ -1,8 +1,8 @@
 fn main() {
     let a = "abc";
     let ch = a[1];
-    println("ch={ch}");
+    Println("ch={ch}");
 
     let u = "hé";
-    println("u1={u[1]}");
+    Println("u1={u[1]}");
 }

@@ -2,8 +2,8 @@ import "./testmods/mathutils" as math;
 
 fn main() {
     let sum = math.add(100, 200);
-    println(str(sum));
+    Println(Str(sum));
 
     let big = math.max_of(5, 99);
-    println(str(big));
+    Println(Str(big));
 }

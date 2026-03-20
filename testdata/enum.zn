@@ -14,36 +14,36 @@ enum HexColor {
 
 fn main() {
     let c = Color.Red;
-    println(c);
+    Println(c);
 
     let g = Color.Green;
-    println(g);
+    Println(g);
 
     let b = Color.Blue;
-    println(b);
+    Println(b);
 
     // Enum comparison
     if c == Color.Red {
-        println("is red");
+        Println("is red");
     }
 
     if c != Color.Blue {
-        println("not blue");
+        Println("not blue");
     }
 
     // Match on enum
     match g {
-        Color.Red => println("matched red");
-        Color.Green => println("matched green");
-        Color.Blue => println("matched blue");
-        _ => println("unknown");
+        Color.Red => Println("matched red");
+        Color.Green => Println("matched green");
+        Color.Blue => Println("matched blue");
+        _ => Println("unknown");
     }
 
     // Explicit string values
     let h = HexColor.Red;
-    println(h);
+    Println(h);
 
     // Enum with type annotation
     let h2: HexColor = HexColor.Green;
-    println(h2);
+    Println(h2);
 }

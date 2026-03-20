@@ -56,8 +56,8 @@ func TestVersion(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if !strings.Contains(stdout, "0.5.1") {
-		t.Errorf("expected version output to contain '0.5.1', got: %q", stdout)
+	if !strings.Contains(stdout, "0.5.2") {
+		t.Errorf("expected version output to contain '0.5.2', got: %q", stdout)
 	}
 }
 
@@ -123,7 +123,7 @@ func TestBuildUnknownFlag(t *testing.T) {
 
 func TestBuildAndRunHello(t *testing.T) {
 	dir := t.TempDir()
-	src := writeZenthFile(t, dir, `fn main() { println("hello from test"); }`)
+	src := writeZenthFile(t, dir, `fn main() { Println("hello from test"); }`)
 
 	stdout, stderr, err := runZenth("run", src)
 	if err != nil {
@@ -136,7 +136,7 @@ func TestBuildAndRunHello(t *testing.T) {
 
 func TestBuildOutputFlag(t *testing.T) {
 	dir := t.TempDir()
-	src := writeZenthFile(t, dir, `fn main() { println("output flag test"); }`)
+	src := writeZenthFile(t, dir, `fn main() { Println("output flag test"); }`)
 	binPath := filepath.Join(dir, "mybin")
 
 	_, stderr, err := runZenth("build", "-o", binPath, src)
@@ -162,7 +162,7 @@ func TestBuildOutputFlag(t *testing.T) {
 
 func TestEmitGo(t *testing.T) {
 	dir := t.TempDir()
-	src := writeZenthFile(t, dir, `fn main() { println("emit go"); }`)
+	src := writeZenthFile(t, dir, `fn main() { Println("emit go"); }`)
 
 	stdout, stderr, err := runZenth("build", "--emit-go", src)
 	if err != nil {
@@ -176,8 +176,8 @@ func TestEmitGo(t *testing.T) {
 func TestRunWithArgs(t *testing.T) {
 	dir := t.TempDir()
 	src := writeZenthFile(t, dir, `fn main() {
-    let msg = flag(default="default_val");
-    println(msg);
+    let msg = Flag(default="default_val");
+    Println(msg);
 }`)
 
 	stdout, stderr, err := runZenth("run", src, "--msg", "custom_val")

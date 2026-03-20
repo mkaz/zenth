@@ -28,7 +28,7 @@ x = 10;  // error: cannot assign to immutable variable 'x'
 var counter = 0;
 counter = counter + 1;
 counter += 1;
-println(counter);  // 2
+Println(counter);  // 2
 ```
 
 ## Constants with `const`
@@ -36,8 +36,8 @@ println(counter);  // 2
 `const` declares a named constant:
 
 ```zenth
-const PI = 3.14159;
-const MAX_SIZE = 1024;
+const pi = 3.14159;
+const max_size = 1024;
 ```
 
 ### Built-in Constants
@@ -104,14 +104,14 @@ You can destructure tuples directly in `let`, `var`, and `const` declarations:
 
 ```zenth
 let (cmd, raw) = "forward 10".split_once(" ");
-let value = int(raw);
+let value = Int(raw);
 ```
 
 Destructuring arity must match the tuple size:
 
 ```zenth
-let (a, b) = tuple(1, 2);      // ok
-let (x, y, z) = tuple(1, 2);   // error
+let (a, b) = Tuple(1, 2);      // ok
+let (x, y, z) = Tuple(1, 2);   // error
 ```
 
 ## Increment and Decrement
@@ -129,3 +129,17 @@ i--;  // i is now 0
 | `let`   | No      | Most variables -- prefer immutable by default |
 | `var`   | Yes     | Counters, accumulators, anything that changes |
 | `const` | No      | Named constants |
+
+## Naming Rules
+
+User-defined variables must start with a lowercase letter:
+
+```zenth
+let count = 1;       // ok
+var total = 0;       // ok
+const max_size = 10; // ok
+
+let Count = 1;       // error
+var Total = 0;       // error
+const MaxSize = 10;  // error
+```

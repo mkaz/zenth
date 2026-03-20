@@ -45,11 +45,11 @@ let third = numbers[2];   // 3
 
 ## Length
 
-Use `len()` to get the number of elements:
+Use `Len()` to get the number of elements:
 
 ```zenth
 let items = [10, 20, 30];
-println(len(items));       // 3
+Println(Len(items));       // 3
 ```
 
 ## Iterating
@@ -59,7 +59,7 @@ Use `for-in` to loop over elements:
 ```zenth
 let fruits = ["apple", "banana", "cherry"];
 for fruit in fruits {
-    println(fruit);
+    Println(fruit);
 }
 ```
 
@@ -67,7 +67,7 @@ With an index:
 
 ```zenth
 for i, fruit in fruits {
-    println("{i}: {fruit}");
+    Println("{i}: {fruit}");
 }
 ```
 
@@ -78,7 +78,7 @@ Use `.exists()` to check if an array contains a value:
 ```zenth
 let nums = [10, 20, 30];
 if nums.exists(20) {
-    println("found 20");
+    Println("found 20");
 }
 ```
 
@@ -145,12 +145,12 @@ Use `.max()` and `.min()` to find the largest and smallest elements of a numeric
 
 ```zenth
 let nums = [3, 1, 4, 1, 5, 9, 2, 6];
-println(nums.max());       // 9
-println(nums.min());       // 1
+Println(nums.max());       // 9
+Println(nums.min());       // 1
 
 let floats = [3.14, 2.71, 1.41];
-println(floats.max());     // 3.14
-println(floats.min());     // 1.41
+Println(floats.max());     // 3.14
+Println(floats.min());     // 1.41
 ```
 
 These methods work on any numeric array (`int`, `f64`, `i32`, etc.) and panic at runtime if called on an empty array.
@@ -161,10 +161,10 @@ Use `.sum()` to compute the sum of a numeric array:
 
 ```zenth
 let nums = [1, 2, 3, 4, 5];
-println(nums.sum());       // 15
+Println(nums.sum());       // 15
 
 let floats = [1.5, 2.5, 3.0];
-println(floats.sum());     // 7
+Println(floats.sum());     // 7
 ```
 
 Returns zero for empty arrays.
@@ -204,15 +204,15 @@ let nums = [1, 2, 3, 4, 5];
 
 // Sum all elements
 let total = nums.reduce(fn(a, b) a + b);
-println(total);  // 15
+Println(total);  // 15
 
 // Product with initial value
 let product = nums.reduce(fn(a, b) a * b, 1);
-println(product);  // 120
+Println(product);  // 120
 
 // Find max using reduce
 let biggest = nums.reduce(fn(a, b) if a > b { a } else { b });
-println(biggest);  // 5
+Println(biggest);  // 5
 ```
 
 Without an initial value, the first element is used as the starting accumulator and reduction begins from the second element. Calling `reduce()` on an empty array without an initial value panics at runtime.
@@ -222,7 +222,7 @@ With an initial value, reduction starts from that value and processes all elemen
 ```zenth
 let nums = [1, 2, 3];
 let sum_from_100 = nums.reduce(fn(a, b) a + b, 100);
-println(sum_from_100);  // 106
+Println(sum_from_100);  // 106
 ```
 
 Works on any array type — numeric, string, etc. The closure must take two parameters of the element type and return the same type.
@@ -233,18 +233,18 @@ Use `.join(separator)` to concatenate all elements of a string array into a sing
 
 ```zenth
 let words = ["hello", "world"];
-println(words.join(" "));      // "hello world"
+Println(words.join(" "));      // "hello world"
 
 let csv = ["a", "b", "c"];
-println(csv.join(","));        // "a,b,c"
+Println(csv.join(","));        // "a,b,c"
 
 // Empty separator concatenates directly
 let letters = ["x", "y", "z"];
-println(letters.join(""));     // "xyz"
+Println(letters.join(""));     // "xyz"
 
 // Multi-character separator
 let parts = ["2026", "03", "15"];
-println(parts.join("-"));      // "2026-03-15"
+Println(parts.join("-"));      // "2026-03-15"
 ```
 
 Only works on `array(str)`. Calling `.join()` on a non-string array is a compile-time error.
@@ -285,9 +285,9 @@ Use array destructuring to bind array elements directly to variables. The syntax
 ```zenth
 let nums = [10, 20, 30];
 let [a, b, c] = nums;
-println(a);  // 10
-println(b);  // 20
-println(c);  // 30
+Println(a);  // 10
+Println(b);  // 20
+Println(c);  // 30
 ```
 
 Works with `let`, `var`, and `const`:
@@ -301,8 +301,8 @@ Use `_` to discard positions you don't need:
 
 ```zenth
 let [first, _, third] = [1, 2, 3];
-println(first);  // 1
-println(third);  // 3
+Println(first);  // 1
+Println(third);  // 3
 ```
 
 Especially useful with method chains:
@@ -310,9 +310,9 @@ Especially useful with method chains:
 ```zenth
 let line = "12x4x8";
 let [l, w, h] = line.split("x").to_int().sorted();
-println(l);  // 4
-println(w);  // 8
-println(h);  // 12
+Println(l);  // 4
+Println(w);  // 8
+Println(h);  // 12
 ```
 
 The number of binding names must not exceed the array length at runtime; a runtime panic occurs if the array is too short.
@@ -330,6 +330,6 @@ fn sum(numbers: array(int)) -> int {
 
 fn main() {
     let data = [1, 2, 3, 4, 5];
-    println("Sum: {sum(data)}");
+    Println("Sum: {sum(data)}");
 }
 ```

@@ -15,7 +15,7 @@ Zenth is a compiled programming language that blends Go's type discipline with P
 ```zenth
 // hello.zn
 fn main() {
-    println("Hello, World!");
+    Println("Hello, World!");
 }
 ```
 
@@ -45,7 +45,7 @@ let x = 5;              // immutable, type inferred
 let x: int = 5;         // immutable, explicit type
 var counter = 0;         // mutable, type inferred
 var counter: int = 0;    // mutable, explicit type
-const PI = 3.14159;      // constant
+const pi = 3.14159;      // constant
 INT_MAX                  // built-in: max int value (9223372036854775807)
 INT_MIN                  // built-in: min int value (-9223372036854775808)
 ```
@@ -53,6 +53,7 @@ INT_MIN                  // built-in: min int value (-9223372036854775808)
 - `let` is immutable (cannot reassign)
 - `var` is mutable (can reassign)
 - `const` is a compile-time constant
+- User-defined variable names must start with a lowercase letter
 - No `:=` operator; `let`/`var`/`const` is the declaration signal, `=` is always assignment
 - Compound assignment: `+=`, `-=`, `*=`, `/=`
 - Increment/decrement: `++`, `--` (statements, not expressions)
@@ -61,21 +62,21 @@ INT_MIN                  // built-in: min int value (-9223372036854775808)
 
 **Primitive:** `int`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`, `f32`, `f64`, `bool`, `str`, `byte`
 
-**Composite:** `array(int)`, `tuple(str, int)`, `hashmap(str, int)`, `set(str)`, `set(tuple(int, int))`, obj types
+**Composite:** `array(int)`, `Tuple(str, int)`, `Hashmap(str, int)`, `Set(str)`, `Set(Tuple(int, int))`, obj types
 
 **Type aliases:**
 ```zenth
-type Grid = hashmap(Point, int);
-type Pair = tuple(str, int);
+type Grid = Hashmap(Point, int);
+type Pair = Tuple(str, int);
 ```
 
 **Type conversions:**
 ```zenth
-let n = int("42");        // str to int
-let f = f64(42);          // int to f64
-let s = str(42);          // any to str
-let b = int("ff", 16);   // str to int with base (255)
-let bin = int("1010", 2); // binary string to int (10)
+let n = Int("42");        // str to int
+let f = F64(42);          // int to f64
+let s = Str(42);          // any to str
+let b = Int("ff", 16);   // str to int with base (255)
+let bin = Int("1010", 2); // binary string to Int (10)
 ```
 
 ### Functions
@@ -86,12 +87,12 @@ fn add(a: int, b: int) -> int {
 }
 
 fn greet(name: str) {
-    println("Hello, " + name);
+    Println("Hello, " + name);
 }
 
 // Default parameters
 fn connect(host: str, port: int = 8080) {
-    println("{host}:{port}");
+    Println("{host}:{port}");
 }
 
 // Named arguments at call site
@@ -106,6 +107,8 @@ fn factorial(n: int) -> int {
 ```
 
 Function signatures require explicit types. Return type is omitted for void functions.
+
+Top-level user-defined function names must start with a lowercase letter.
 
 **Multi-return functions** use parenthesized return types and `return a, b;` shorthand:
 
@@ -122,11 +125,11 @@ fn min_max(nums: array(int)) -> (int, int) {
 
 fn main() {
     let (lo, hi) = min_max([3, 1, 4, 1, 5, 9]);
-    println("{lo} {hi}");  // "1 9"
+    Println("{lo} {hi}");  // "1 9"
 }
 ```
 
-`-> (int, int)` is shorthand for `-> tuple(int, int)`. `return a, b;` is shorthand for `return tuple(a, b);`.
+`-> (int, int)` is shorthand for `-> Tuple(int, int)`. `return a, b;` is shorthand for `return Tuple(a, b);`.
 
 ### Strings
 
@@ -134,10 +137,10 @@ Double-quoted strings support interpolation; single-quoted strings are raw:
 
 ```zenth
 let name = "World";
-println("Hello {name}!");          // interpolation
-println("{a} + {b} = {a + b}");    // expressions in braces
-println('Raw {name} string');      // no interpolation
-println("Use \{braces\} literally"); // escaped braces
+Println("Hello {name}!");          // interpolation
+Println("{a} + {b} = {a + b}");    // expressions in braces
+Println('Raw {name} string');      // no interpolation
+Println("Use \{braces\} literally"); // escaped braces
 ```
 
 **String methods:**
@@ -158,7 +161,7 @@ println("Use \{braces\} literally"); // escaped braces
 "hello world".split()        // ["hello", "world"] (whitespace)
 "hi".contains("h")           // true
 ".".repeat(5)                // "....."
-len("hello")                 // 5
+Len("hello")                 // 5
 "hello".length()             // 5
 "hello".to_int()             // error; use on numeric strings
 "42".to_int()                // 42
@@ -181,11 +184,11 @@ let head = s[:3];   // "hel"
 ```zenth
 // if/else
 if x > 10 {
-    println("big");
+    Println("big");
 } else if x > 5 {
-    println("medium");
+    Println("medium");
 } else {
-    println("small");
+    Println("small");
 }
 
 // if as expression
@@ -193,36 +196,36 @@ let label = if x > 10 { "big" } else { "small" };
 
 // C-style for loop
 for var i = 0; i < 10; i++ {
-    println(i);
+    Println(i);
 }
 
 // for-in over arrays
 for item in items {
-    println(item);
+    Println(item);
 }
 for i, item in items {
-    println("{i}: {item}");
+    Println("{i}: {item}");
 }
 
 // for-in over strings (yields each character as str)
 for ch in "hello" {
-    print(ch);
+    Print(ch);
 }
 for i, ch in "hello" {
-    println("{i}: {ch}");
+    Println("{i}: {ch}");
 }
 
 // for-range with count
-for step in range(0, 100) {
-    println(step);
+for step in Range(0, 100) {
+    Println(step);
 }
 
 // _ discard for unused loop variables
-for _ in range(0, 10) {
-    println("tick");
+for _ in Range(0, 10) {
+    Println("tick");
 }
 for _, item in items {   // discard index
-    println(item);
+    Println(item);
 }
 
 // while-style
@@ -238,9 +241,9 @@ for {
 
 // match statement
 match day {
-    1 => println("Monday");
-    2 => println("Tuesday");
-    _ => println("Other");
+    1 => Println("Monday");
+    2 => Println("Tuesday");
+    _ => Println("Other");
 }
 
 // match as expression (arms use commas, not semicolons)
@@ -254,36 +257,36 @@ let label = match day {
 for var i = 0; i < 10; i++ {
     if i == 5 { break; }
     if i % 2 == 0 { continue; }
-    println(i);
+    Println(i);
 }
 ```
 
 ### Range Objects
 
-`range()` and `rangei()` return a **range object** — lightweight, iterable, with O(1) `.contains()` check:
+`Range()` and `Rangei()` return a **range object** — lightweight, iterable, with O(1) `.contains()` check:
 
 ```zenth
-let r  = range(0, 10);    // exclusive end: [0, 9]
-let ri = rangei(0, 10);   // inclusive end: [0, 10]
+let r  = Range(0, 10);    // exclusive end: [0, 9]
+let ri = Rangei(0, 10);   // inclusive end: [0, 10]
 
 // .contains() for bounds check (O(1))
-println(r.contains(5));   // true
-println(r.contains(10));  // false (exclusive)
-println(ri.contains(10)); // true (inclusive)
+Println(r.contains(5));   // true
+Println(r.contains(10));  // false (exclusive)
+Println(ri.contains(10)); // true (inclusive)
 
-// len() on range is O(1)
-println(len(range(0, 100, 3)));  // 34
+// Len() on range is O(1)
+Println(Len(Range(0, 100, 3)));  // 34
 
 // Range objects are iterable in for-in
-for i in range(0, 5) {
-    println(i);  // 0 1 2 3 4
+for i in Range(0, 5) {
+    Println(i);  // 0 1 2 3 4
 }
 
 // Named ranges for reusable bounds checking
-let xrange = rangei(0, 100);
-let yrange = rangei(0, 50);
+let xrange = Rangei(0, 100);
+let yrange = Rangei(0, 50);
 if xrange.contains(x) && yrange.contains(y) {
-    println("in bounds");
+    Println("in bounds");
 }
 ```
 
@@ -296,9 +299,9 @@ let numbers = [1, 2, 3, 4, 5];
 let names: array(str) = [];       // empty with type annotation
 
 // Access and length
-println(numbers[0]);
-println(len(numbers));
-println(numbers.length());
+Println(numbers[0]);
+Println(Len(numbers));
+Println(numbers.length());
 
 // Mutating (requires var)
 var items: array(int) = [];
@@ -318,7 +321,7 @@ let pattern = [1, 2].repeat(6);  // [1, 2, 1, 2, 1, 2]
 
 // Containment
 if numbers.exists(3) {
-    println("found");
+    Println("found");
 }
 
 // Closures: map and filter
@@ -357,16 +360,16 @@ let asc = [3, 1, 4].sorted("asc");   // [1, 3, 4] — smallest to largest (defau
 
 // Join string arrays into a single string
 let words = ["hello", "world"];
-println(words.join(" "));       // "hello world"
-println(["a", "b"].join(","));  // "a,b"
+Println(words.join(" "));       // "hello world"
+Println(["a", "b"].join(","));  // "a,b"
 
 // Zip — combine parallel arrays into array of tuples
 let names = ["Alice", "Bob"];
 let scores = [95, 87];
-for pair in zip(names, scores) {
-    println(pair.0 + "=" + str(pair.1));
+for pair in Zip(names, scores) {
+    Println(pair.0 + "=" + Str(pair.1));
 }
-// Zip 3+ arrays: zip(a, b, c) → array(tuple(T1, T2, T3))
+// Zip 3+ arrays: Zip(a, b, c) → array(Tuple(T1, T2, T3))
 
 // Type conversions for string arrays
 let strs = ["1", "2", "3"];
@@ -375,7 +378,7 @@ let floats = strs.to_f64();   // [1.0, 2.0, 3.0]
 
 // Array destructuring — bind elements directly to variables
 let [a, b, c] = [10, 20, 30];
-println(a);  // 10
+Println(a);  // 10
 
 // Works with var (mutable) and any array expression
 var [x, y] = [1, 2];
@@ -392,27 +395,27 @@ let [l, w, h] = "12x4x8".split("x").to_int().sorted();
 
 ```zenth
 // Positional tuple
-let pair = tuple("hello", 42);
-println(pair.0);           // "hello"
-println(pair.1);           // "42"
+let pair = Tuple("hello", 42);
+Println(pair.0);           // "hello"
+Println(pair.1);           // "42"
 
 // Named tuple
-let person = tuple(name="Alice", age=30);
-println(person.name);      // "Alice"
-println(person.age);       // "30"
-println(person.0);         // also works by index
+let person = Tuple(name="Alice", age=30);
+Println(person.name);      // "Alice"
+Println(person.age);       // "30"
+Println(person.0);         // also works by index
 
 // Type annotation
-let t: tuple(key: str, value: int) = tuple(key="x", value=42);
+let t: Tuple(key: str, value: int) = Tuple(key="x", value=42);
 
 // Destructuring
 let (k, v) = t;
 
 // Array of named tuples
-let pairs: array(tuple(name: str, score: int)) = [];
-pairs.add(tuple(name="Bob", score=95));
+let pairs: array(Tuple(name: str, score: int)) = [];
+pairs.add(Tuple(name="Bob", score=95));
 for p in pairs {
-    println("{p.name}: {str(p.score)}");
+    Println("{p.name}: {Str(p.score)}");
 }
 ```
 
@@ -420,31 +423,31 @@ for p in pairs {
 
 ```zenth
 // Create with type arguments
-var scores = hashmap(str, int);
+var scores = Hashmap(str, int);
 scores["Alice"] = 95;
 scores["Bob"] = 80;
 
 // Access
-println(scores["Alice"]);
-println(len(scores));
+Println(scores["Alice"]);
+Println(Len(scores));
 
 // Default values (like Python's defaultdict)
-var counts = hashmap(str, int, default=0);
+var counts = Hashmap(str, int, default=0);
 counts["x"] += 1;  // no KeyError, starts from 0
 
 // Iteration
 for key, val in scores {
-    println("{key}: {str(val)}");
+    Println("{key}: {Str(val)}");
 }
 for key in scores {       // keys only
-    println(key);
+    Println(key);
 }
 
 // Methods
 let keys = scores.keys();       // array(str)
 let vals = scores.values();     // array(int)
 if scores.exists("Alice") {     // check key existence
-    println("found");
+    Println("found");
 }
 
 // Object keys (value-based lookup)
@@ -452,53 +455,53 @@ obj Point {
     x: int;
     y: int;
 }
-var grid = hashmap(Point, str);
+var grid = Hashmap(Point, str);
 grid[Point(x=1, y=2)] = "#";
-println(grid[Point(x=1, y=2)]);  // "#" (same-value lookup works)
+Println(grid[Point(x=1, y=2)]);  // "#" (same-value lookup works)
 
 // Tuple keys (composite keys for multi-dimensional lookups)
-var cells = hashmap(tuple(int, int), str);
-cells[tuple(0, 0)] = "origin";
-cells[tuple(1, 2)] = "point";
-println(cells[tuple(0, 0)]);        // "origin"
-println(cells.exists(tuple(1, 2))); // true
+var cells = Hashmap(Tuple(int, int), str);
+cells[Tuple(0, 0)] = "origin";
+cells[Tuple(1, 2)] = "point";
+Println(cells[Tuple(0, 0)]);        // "origin"
+Println(cells.exists(Tuple(1, 2))); // true
 ```
 
 ### Sets
 
 ```zenth
 // Create a set
-var visited = set(str);
+var visited = Set(str);
 visited.add("start");
 visited.add("middle");
 visited.exists("start");   // true
 visited.remove("middle");
-println(len(visited));       // 1
-println(visited.length());   // 1
+Println(Len(visited));       // 1
+Println(visited.length());   // 1
 
 // Integer set
-var nums = set(int);
+var nums = Set(int);
 nums.add(1);
 nums.add(2);
 nums.add(2);  // duplicate, ignored
-println(len(nums));       // 2
+Println(Len(nums));       // 2
 
 // Iterate over set
 for n in nums {
-    println(n);
+    Println(n);
 }
 
 // Set of tuples (composite keys without string round-tripping)
-var dots = set(tuple(int, int));
-dots.add(tuple(6, 10));
-dots.add(tuple(0, 14));
-dots.add(tuple(6, 10));  // duplicate, ignored
-if dots.exists(tuple(6, 10)) {
-    println("found");
+var dots = Set(Tuple(int, int));
+dots.add(Tuple(6, 10));
+dots.add(Tuple(0, 14));
+dots.add(Tuple(6, 10));  // duplicate, ignored
+if dots.exists(Tuple(6, 10)) {
+    Println("found");
 }
-dots.remove(tuple(0, 14));
+dots.remove(Tuple(0, 14));
 for dot in dots {
-    println("{dot.0},{dot.1}");
+    Println("{dot.0},{dot.1}");
 }
 ```
 
@@ -528,8 +531,8 @@ obj Rectangle {
 
 // Constructor uses named arguments
 let r = Rectangle(width=10.0, height=5.0);
-println(r.area());         // "50"
-println(r);                // "Rect(10x5)"
+Println(r.area());         // "50"
+Println(r);                // "Rect(10x5)"
 
 // Default field values
 obj Account {
@@ -566,7 +569,7 @@ enum HexColor {
 - Access variants with `EnumName.Variant`: `Color.Red`, `HexColor.Red`
 - Backed by strings: default is variant name, or explicit string value
 - Compare with `==` and `!=`
-- Prints as its string value: `println(Color.Red)` prints `"Red"`, `println(HexColor.Red)` prints `"#FF0000"`
+- Prints as its string value: `Println(Color.Red)` prints `"Red"`, `Println(HexColor.Red)` prints `"#FF0000"`
 - Use in `match` statements and expressions
 - Use as type annotations to enforce valid values: `let c: Color = Color.Green;`
 
@@ -601,7 +604,7 @@ fn main() {
         var id: int = 0;
         var name = "";
         rows.Scan(&id, &name);
-        println("{id}: {name}");
+        Println("{id}: {name}");
     }
 }
 ```
@@ -631,7 +634,7 @@ Call module definitions via `module.name()` syntax:
 import "./utils";
 
 fn main() {
-    println(str(utils.double(21)));  // "42"
+    Println(Str(utils.double(21)));  // "42"
 }
 ```
 
@@ -642,7 +645,7 @@ import "./shapes";  // loads shapes/rect.zn, shapes/circle.zn, etc.
 
 fn main() {
     let r = shapes.Rectangle(width=3.0, height=4.0);
-    println(str(r.area()));
+    Println(Str(r.area()));
 }
 ```
 
@@ -652,35 +655,35 @@ Module objects are constructed with `module.ObjName(field=value)` syntax and the
 
 | Function | Description |
 |---|---|
-| `print(...)` | Print without newline |
-| `println(...)` | Print with newline |
-| `len(x)` | Length of string, array, or hashmap |
-| `str(x)` | Convert any value to string |
-| `int(x)` | Convert string or float to int |
-| `int(str, base)` | Convert string to int with base (2, 8, 16, etc.) |
-| `f64(x)` | Convert to float64 |
-| `abs(x)` | Absolute value (int or float) |
-| `min(a, b, ...)` | Minimum of two or more values (all must be same type: int or f64) |
-| `max(a, b, ...)` | Maximum of two or more values (all must be same type: int or f64) |
-| `clamp(x, lo, hi)` | Clamp value to range |
-| `round(x)` | Round float to nearest int |
-| `floor(x)` | Floor of float |
-| `ceil(x)` | Ceiling of float |
-| `pow(base, exp)` | Exponentiation |
-| `sqrt(x)` | Square root |
-| `range(start, end)` | Exclusive range object |
-| `range(start, end, step)` | Exclusive range object with step |
-| `rangei(start, end)` | Inclusive range object |
-| `rangei(start, end, step)` | Inclusive range object with step |
-| `hashmap(K, V)` | Create empty hashmap |
-| `hashmap(K, V, default=val)` | Create hashmap with default |
-| `set(T)` | Create empty set |
-| `tuple(...)` | Create tuple (positional or named) |
-| `file(path)` | Create file handle |
-| `flag(default=val)` | Command-line flag (name inferred from variable) |
-| `exit(code)` | Exit program with status code |
-| `assert(cond)` | Panic if `cond` is false (reports file:line) |
-| `assert_eq(got, expected)` | Panic if `got != expected` (reports file:line and both values) |
+| `Print(...)` | Print without newline |
+| `Println(...)` | Print with newline |
+| `Len(x)` | Length of string, array, or hashmap |
+| `Str(x)` | Convert any value to string |
+| `Int(x)` | Convert string or float to int |
+| `Int(str, base)` | Convert string to int with base (2, 8, 16, etc.) |
+| `F64(x)` | Convert to float64 |
+| `Abs(x)` | Absolute value (int or float) |
+| `Min(a, b, ...)` | Minimum of two or more values (all must be same type: int or f64) |
+| `Max(a, b, ...)` | Maximum of two or more values (all must be same type: int or f64) |
+| `Clamp(x, lo, hi)` | Clamp value to range |
+| `Round(x)` | Round float to nearest int |
+| `Floor(x)` | Floor of float |
+| `Ceil(x)` | Ceiling of float |
+| `Pow(base, exp)` | Exponentiation |
+| `Sqrt(x)` | Square root |
+| `Range(start, end)` | Exclusive range object |
+| `Range(start, end, step)` | Exclusive range object with step |
+| `Rangei(start, end)` | Inclusive range object |
+| `Rangei(start, end, step)` | Inclusive range object with step |
+| `Hashmap(K, V)` | Create empty hashmap |
+| `Hashmap(K, V, default=val)` | Create hashmap with default |
+| `Set(T)` | Create empty set |
+| `Tuple(...)` | Create Tuple (positional or named) |
+| `File(path)` | Create file handle |
+| `Flag(default=val)` | Command-line Flag (name inferred from variable) |
+| `Exit(code)` | Exit program with status code |
+| `Assert(cond)` | Panic if `cond` is false (reports file:line) |
+| `AssertEq(got, expected)` | Panic if `got != expected` (reports file:line and both values) |
 
 ### Built-in Constants
 
@@ -701,14 +704,14 @@ if cost < best {
 ### File I/O
 
 ```zenth
-let f = file("data.txt");
+let f = File("data.txt");
 
 if f.exists() {
     let content = f.read();       // entire file as str
     let lines = f.lines();        // array(str)
     let parts = f.sections();     // split on blank lines -> array(str)
-    println("Name: " + f.name()); // filename
-    println("Ext: " + f.ext());   // extension
+    Println("Name: " + f.name()); // filename
+    Println("Ext: " + f.ext());   // extension
 }
 ```
 
@@ -717,9 +720,9 @@ if f.exists() {
 Flag names are inferred from the variable name:
 
 ```zenth
-let debug = flag(default=false);  // --debug flag (bool)
-let count = flag(default=5);      // --count flag (int)
-let msg = flag(default="hi");     // --msg flag (str)
+let debug = Flag(default=false);  // --debug Flag (bool)
+let count = Flag(default=5);      // --count Flag (int)
+let msg = Flag(default="hi");     // --msg Flag (str)
 ```
 
 Run with: `./program --debug --count=10 --msg="hello"`
@@ -739,9 +742,9 @@ a, b = b, a;
 ### Reading a File Line by Line
 ```zenth
 fn main() {
-    let data = file("input.txt");
+    let data = File("input.txt");
     for i, line in data.lines() {
-        println("{i}: {line}");
+        Println("{i}: {line}");
     }
 }
 ```
@@ -749,13 +752,13 @@ fn main() {
 ### Hashmap Word Counter
 ```zenth
 fn main() {
-    var counts = hashmap(str, int, default=0);
+    var counts = Hashmap(str, int, default=0);
     let words = ["apple", "banana", "apple", "cherry", "banana", "apple"];
     for word in words {
         counts[word] += 1;
     }
     for word, count in counts {
-        println("{word}: {str(count)}");
+        Println("{word}: {Str(count)}");
     }
 }
 ```
@@ -771,7 +774,7 @@ obj Vec2 {
     }
 
     fn magnitude() -> f64 {
-        return sqrt(self.x * self.x + self.y * self.y);
+        return Sqrt(self.x * self.x + self.y * self.y);
     }
 
     fn string() -> str {
@@ -783,8 +786,8 @@ fn main() {
     let a = Vec2(x=3.0, y=4.0);
     let b = Vec2(x=1.0, y=2.0);
     let c = a.add(b);
-    println("Sum: {c}");
-    println("Magnitude: {a.magnitude()}");
+    Println("Sum: {c}");
+    Println("Magnitude: {a.magnitude()}");
 }
 ```
 
@@ -798,11 +801,11 @@ fn main() {
                 0 => "Fizz",
                 _ => match i % 5 {
                     0 => "Buzz",
-                    _ => str(i)
+                    _ => Str(i)
                 }
             }
         };
-        println(result);
+        Println(result);
     }
 }
 ```
@@ -810,11 +813,11 @@ fn main() {
 ### Processing with Map/Filter
 ```zenth
 fn main() {
-    let data = file("numbers.txt");
+    let data = File("numbers.txt");
     let values = data.lines().to_int();
     let big_doubled = values.filter(fn(x) x > 10).map(fn(x) x * 2);
     for v in big_doubled {
-        println(v);
+        Println(v);
     }
 }
 ```
@@ -839,20 +842,20 @@ Test functions start with `test_` and need no `fn main()`:
 // tests/math_test.zn
 
 fn test_addition() {
-    assert_eq(2 + 3, 5);
-    assert(10 > 0);
+    AssertEq(2 + 3, 5);
+    Assert(10 > 0);
 }
 
 fn test_strings() {
-    assert_eq("hello".upper(), "HELLO");
-    assert("hello".contains("ell"));
+    AssertEq("hello".upper(), "HELLO");
+    Assert("hello".contains("ell"));
 }
 ```
 
 ### Assertions
 
-- `assert(cond)` -- panics with `file:line` if `cond` is false
-- `assert_eq(got, expected)` -- panics with `file:line` and both values if `got != expected`
+- `Assert(cond)` -- panics with `file:line` if `cond` is false
+- `AssertEq(got, expected)` -- panics with `file:line` and both values if `got != expected`
 
 Both assertions are available in all Zenth programs, not just test files.
 
@@ -876,8 +879,7 @@ Both assertions are available in all Zenth programs, not just test files.
 - `match` replaces `switch`; use `_` for the default case
 - Objects use `self` (not `this`) for method access
 - Object constructors always use named arguments: `Point(x=1, y=2)`
-- **match statements** use semicolons: `1 => println("one");`
+- **match statements** use semicolons: `1 => Println("one");`
 - **match expressions** (used as values) use commas: `1 => "one",`
 - Trailing commas are allowed in array literals and function call arguments
 - Empty array `[]` can be passed where the type is known from context (field, variable annotation)
-

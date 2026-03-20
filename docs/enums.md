@@ -50,10 +50,10 @@ let c: Color = Color.Green;
 
 fn describe(c: Color) {
     match c {
-        Color.Red => println("red");
-        Color.Green => println("green");
-        Color.Blue => println("blue");
-        _ => println("unknown");
+        Color.Red => Println("red");
+        Color.Green => Println("green");
+        Color.Blue => Println("blue");
+        _ => Println("unknown");
     }
 }
 ```
@@ -68,11 +68,11 @@ Enum values support equality comparison with `==` and `!=`:
 let c = Color.Red;
 
 if c == Color.Red {
-    println("it's red!");
+    Println("it's red!");
 }
 
 if c != Color.Blue {
-    println("not blue");
+    Println("not blue");
 }
 ```
 
@@ -97,8 +97,8 @@ Enum values print as their string value:
 
 ```zenth
 let c = Color.Green;
-println(c);  // prints "Green"
+Println(c);  // prints "Green"
 
 let h = HexColor.Red;
-println(h);  // prints "#FF0000"
+Println(h);  // prints "#FF0000"
 ```

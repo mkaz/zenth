@@ -1,18 +1,18 @@
 fn main() {
-    println("abs_i=" + str(abs(-5)));
-    println("abs_f=" + str(abs(-2.5)));
+    Println("abs_i=" + Str(Abs(-5)));
+    Println("abs_f=" + Str(Abs(-2.5)));
 
-    println("min_i=" + str(min(3, 7)));
-    println("max_i=" + str(max(3, 7)));
-    println("clamp_i=" + str(clamp(12, 0, 10)));
+    Println("min_i=" + Str(Min(3, 7)));
+    Println("max_i=" + Str(Max(3, 7)));
+    Println("clamp_i=" + Str(Clamp(12, 0, 10)));
 
-    println("min_f=" + str(min(1.5, 2.5)));
-    println("max_f=" + str(max(1.5, 2.5)));
-    println("clamp_f=" + str(clamp(12.5, 0.0, 10.0)));
+    Println("min_f=" + Str(Min(1.5, 2.5)));
+    Println("max_f=" + Str(Max(1.5, 2.5)));
+    Println("clamp_f=" + Str(Clamp(12.5, 0.0, 10.0)));
 
-    println("round=" + str(round(3.6)));
-    println("floor=" + str(floor(3.6)));
-    println("ceil=" + str(ceil(3.1)));
-    println("pow=" + str(pow(2, 3)));
-    println("sqrt=" + str(sqrt(9)));
+    Println("round=" + Str(Round(3.6)));
+    Println("floor=" + Str(Floor(3.6)));
+    Println("ceil=" + Str(Ceil(3.1)));
+    Println("pow=" + Str(Pow(2, 3)));
+    Println("sqrt=" + Str(Sqrt(9)));
 }

@@ -46,8 +46,8 @@ let a3 = Account(interest=5.0, balance=1000); // override multiple
 Use dot notation:
 
 ```zenth
-println(corner.x);       // 3
-println(corner.y);       // 4
+Println(corner.x);       // 3
+Println(corner.y);       // 4
 ```
 
 ## Methods
@@ -68,7 +68,7 @@ obj Rectangle {
     }
 
     fn describe() {
-        println("{self.width} x {self.height}, area = {self.area()}");
+        Println("{self.width} x {self.height}, area = {self.area()}");
     }
 }
 ```
@@ -77,8 +77,8 @@ obj Rectangle {
 
 ```zenth
 let r = Rectangle(width=10.0, height=5.0);
-println("Area: {r.area()}");         // Area: 50
-println("Perimeter: {r.perimeter()}"); // Perimeter: 30
+Println("Area: {r.area()}");         // Area: 50
+Println("Perimeter: {r.perimeter()}"); // Perimeter: 30
 r.describe();
 ```
 
@@ -94,7 +94,7 @@ obj Point {
     fn distance(other: Point) -> f64 {
         let dx = self.x - other.x;
         let dy = self.y - other.y;
-        return sqrt(dx * dx + dy * dy);
+        return Sqrt(dx * dx + dy * dy);
     }
 }
 ```
@@ -112,7 +112,7 @@ obj Point {
 
 fn main() {
     let p = Point(x=1, y=2, val="#");
-    println(p);  // Point(x=1, y=2, val="#")
+    Println(p);  // Point(x=1, y=2, val="#")
 }
 ```
 
@@ -130,7 +130,7 @@ obj Point {
 
 fn main() {
     let p = Point(x=1.0, y=2.0);
-    println(p.string());  // (1, 2)
+    Println(p.string());  // (1, 2)
 }
 ```
 
@@ -151,8 +151,8 @@ obj Circle {
 
 fn main() {
     let c = Circle(radius=5.0);
-    println("Circle with radius {c.radius}");
-    println("  Area: {c.area()}");
-    println("  Circumference: {c.circumference()}");
+    Println("Circle with radius {c.radius}");
+    Println("  Area: {c.area()}");
+    Println("  Circumference: {c.circumference()}");
 }
 ```

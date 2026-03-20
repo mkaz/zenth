@@ -1,21 +1,21 @@
 fn main() {
-    // int(str, base) — binary
-    let bin = int("1010", 2);
-    println(str(bin));
+    // Int(str, base) — binary
+    let bin = Int("1010", 2);
+    Println(Str(bin));
 
-    // int(str, base) — hexadecimal
-    let hex = int("ff", 16);
-    println(str(hex));
+    // Int(str, base) — hexadecimal
+    let hex = Int("ff", 16);
+    Println(Str(hex));
 
-    // int(str, base) — octal
-    let oct = int("77", 8);
-    println(str(oct));
+    // Int(str, base) — octal
+    let oct = Int("77", 8);
+    Println(Str(oct));
 
     // Still works: str.to_int(base) equivalent
     let same = "1010".to_int(2);
-    println(str(same));
+    Println(Str(same));
 
-    // Regular int() still works
-    let normal = int("42");
-    println(str(normal));
+    // Regular Int() still works
+    let normal = Int("42");
+    Println(Str(normal));
 }

@@ -2,32 +2,32 @@
 fn main() {
     // str.to_int(base) - parse with base
     let hex = "ff".to_int(16);
-    println("hex=" + str(hex));
+    Println("hex=" + Str(hex));
 
     let bin = "1010".to_int(2);
-    println("bin=" + str(bin));
+    Println("bin=" + Str(bin));
 
     let oct = "77".to_int(8);
-    println("oct=" + str(oct));
+    Println("oct=" + Str(oct));
 
     // str.to_int() - default base 10 still works
     let dec = "42".to_int();
-    println("dec=" + str(dec));
+    Println("dec=" + Str(dec));
 
     // int.to_base(base) - format with base
     let hex_str = 255.to_base(16);
-    println("to_hex=" + hex_str);
+    Println("to_hex=" + hex_str);
 
     let bin_str = 10.to_base(2);
-    println("to_bin=" + bin_str);
+    Println("to_bin=" + bin_str);
 
     let oct_str = 63.to_base(8);
-    println("to_oct=" + oct_str);
+    Println("to_oct=" + oct_str);
 
     let dec_str = 42.to_base(10);
-    println("to_dec=" + dec_str);
+    Println("to_dec=" + dec_str);
 
     // Round-trip
     let rt = "deadbeef".to_int(16).to_base(16);
-    println("rt=" + rt);
+    Println("rt=" + rt);
 }

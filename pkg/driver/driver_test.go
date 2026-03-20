@@ -45,13 +45,13 @@ func TestBuildAndRun(t *testing.T) {
 		{
 			file: "range.zn",
 			contains: []string{
-				"range(0,5): 5",
+				"Range(0,5): 5",
 				"0 1 2 3 4",
-				"rangei(1,5): 5",
+				"Rangei(1,5): 5",
 				"1 2 3 4 5",
-				"range(0,10,2): 5",
+				"Range(0,10,2): 5",
 				"0 2 4 6 8",
-				"rangei(0,10,3): 4",
+				"Rangei(0,10,3): 4",
 				"0 3 6 9",
 				"i=0 v=10",
 				"i=1 v=11",
@@ -521,11 +521,11 @@ func TestCompileErrors(t *testing.T) {
 		},
 		{
 			file:   "errors/print_bad_flag.zn",
-			errMsg: "second argument to println must be bool, got int",
+			errMsg: "second argument to Println must be bool, got int",
 		},
 		{
 			file:   "errors/print_too_many_args.zn",
-			errMsg: "println() expects 1 or 2 arguments, got 3",
+			errMsg: "Println() expects 1 or 2 arguments, got 3",
 		},
 		{
 			file:   "errors/for_range_count_type.zn",
@@ -545,11 +545,11 @@ func TestCompileErrors(t *testing.T) {
 		},
 		{
 			file:   "errors/numeric_min_type_mismatch.zn",
-			errMsg: "min() arguments must all be int or all be f64",
+			errMsg: "Min() arguments must all be int or all be f64",
 		},
 		{
 			file:   "errors/flag_no_default.zn",
-			errMsg: "flag() requires a 'default' argument",
+			errMsg: "Flag() requires a 'default' argument",
 		},
 		{
 			file:   "errors/in_not_operator.zn",
@@ -649,7 +649,7 @@ func TestCompileErrors(t *testing.T) {
 		},
 		{
 			file:   "errors/int_base_not_str.zn",
-			errMsg: "int() with base requires first argument to be str",
+			errMsg: "Int() with base requires first argument to be str",
 		},
 		{
 			file:   "errors/array_destruct_non_array.zn",

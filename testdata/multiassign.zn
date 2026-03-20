@@ -2,7 +2,7 @@ fn main() {
     var x = 1;
     var y = 2;
     x, y = y, x;
-    println("{x} {y}");
+    Println("{x} {y}");
 
     # fibonacci
     var a = 0;
@@ -10,5 +10,5 @@ fn main() {
     for var i = 0; i < 5; i++ {
         a, b = b, a + b;
     }
-    println(a);
+    Println(a);
 }

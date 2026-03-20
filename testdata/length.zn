@@ -2,12 +2,12 @@
 fn main() {
     let c = [0, 1];
     let l = c.length();
-    println("len=" + str(l));
+    Println("len=" + Str(l));
 
     let empty = [].length();
-    println("empty=" + str(empty));
+    Println("empty=" + Str(empty));
 
     var d = [1, 2];
     d.add(3);
-    println("after=" + str(d.length()));
+    Println("after=" + Str(d.length()));
 }

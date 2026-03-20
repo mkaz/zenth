@@ -191,8 +191,8 @@ func (p *Parser) parseTypeExpr() *ast.TypeExpr {
 		return &ast.TypeExpr{TokenPos: pos, Name: "array", IsSlice: true, Params: []*ast.TypeExpr{elem}}
 	}
 
-	// Set type: set(T)
-	if p.peek() == token.Ident && p.cur().Literal == "set" && p.peekAt(1) == token.LParen {
+	// Set type: set(T) or Set(T)
+	if p.peek() == token.Ident && (p.cur().Literal == "set" || p.cur().Literal == "Set") && p.peekAt(1) == token.LParen {
 		p.advance() // set
 		p.expect(token.LParen)
 		elem := p.parseTypeExpr()
@@ -201,7 +201,8 @@ func (p *Parser) parseTypeExpr() *ast.TypeExpr {
 	}
 
 	// Tuple type: tuple(T1, T2, ...) or tuple(name: T1, name: T2, ...)
-	if p.peek() == token.Ident && p.cur().Literal == "tuple" && p.peekAt(1) == token.LParen {
+	// Also accepts capitalized Tuple(...) for consistency with built-in calls.
+	if p.peek() == token.Ident && (p.cur().Literal == "tuple" || p.cur().Literal == "Tuple") && p.peekAt(1) == token.LParen {
 		p.advance() // tuple
 		p.expect(token.LParen)
 		params := []*ast.TypeExpr{}
@@ -235,7 +236,8 @@ func (p *Parser) parseTypeExpr() *ast.TypeExpr {
 	}
 
 	// Hashmap type: hashmap[K]V or hashmap(K, V)
-	if p.peek() == token.Ident && p.cur().Literal == "hashmap" && p.peekAt(1) == token.LBracket {
+	// Also accepts capitalized Hashmap(...) for consistency with built-in calls.
+	if p.peek() == token.Ident && (p.cur().Literal == "hashmap" || p.cur().Literal == "Hashmap") && p.peekAt(1) == token.LBracket {
 		p.advance() // hashmap
 		p.advance() // [
 		key := p.parseTypeExpr()
@@ -243,7 +245,7 @@ func (p *Parser) parseTypeExpr() *ast.TypeExpr {
 		val := p.parseTypeExpr()
 		return &ast.TypeExpr{TokenPos: pos, Name: "hashmap", IsHashmap: true, Params: []*ast.TypeExpr{key, val}}
 	}
-	if p.peek() == token.Ident && p.cur().Literal == "hashmap" && p.peekAt(1) == token.LParen {
+	if p.peek() == token.Ident && (p.cur().Literal == "hashmap" || p.cur().Literal == "Hashmap") && p.peekAt(1) == token.LParen {
 		p.advance() // hashmap
 		p.expect(token.LParen)
 		key := p.parseTypeExpr()
@@ -932,7 +934,7 @@ func (p *Parser) parsePrimary() ast.Node {
 
 	case token.Ident:
 		p.advance()
-		if tok.Literal == "tuple" && p.peek() == token.LParen {
+		if (tok.Literal == "tuple" || tok.Literal == "Tuple") && p.peek() == token.LParen {
 			p.advance() // consume '('
 			tuple := &ast.TupleLitExpr{TokenPos: tok.Pos}
 			// Detect named tuple: first element is Ident followed by Assign

@@ -1,4 +1,4 @@
 fn main() {
-    let t = tuple(name="Alice", age=30);
-    println(t.email);
+    let t = Tuple(name="Alice", age=30);
+    Println(t.email);
 }

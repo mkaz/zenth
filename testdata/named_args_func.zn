@@ -1,5 +1,5 @@
 fn pair(a: int, b: int, c: int = 3) {
-    println("{a},{b},{c}");
+    Println("{a},{b},{c}");
 }
 
 fn main() {

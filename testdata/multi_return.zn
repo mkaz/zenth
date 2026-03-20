@@ -19,15 +19,15 @@ fn swap(a: str, b: str) -> (str, str) {
 fn main() {
     let nums = [3, 1, 4, 1, 5, 9, 2, 6];
     let (lo, hi) = min_max(nums);
-    println(str(lo) + " " + str(hi));
+    Println(Str(lo) + " " + Str(hi));
 
     let (q, r) = divide(17, 5);
-    println(str(q) + " " + str(r));
+    Println(Str(q) + " " + Str(r));
 
     let (x, y) = swap("hello", "world");
-    println(x + " " + y);
+    Println(x + " " + y);
 
     // Tuple type annotation still works
-    let result: tuple(int, int) = min_max(nums);
-    println(str(result.0) + " " + str(result.1));
+    let result: Tuple(int, int) = min_max(nums);
+    Println(Str(result.0) + " " + Str(result.1));
 }

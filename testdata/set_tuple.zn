@@ -1,44 +1,44 @@
-// Test set(tuple(...)) with struct-based key representation
+// Test Set(Tuple(...)) with struct-based key representation
 
 fn main() {
     // Create a set of (int, int) tuples
-    var dots = set(tuple(int, int));
-    dots.add(tuple(6, 10));
-    dots.add(tuple(0, 14));
-    dots.add(tuple(9, 10));
-    dots.add(tuple(0, 3));
-    println("size=" + str(len(dots)));
+    var dots = Set(Tuple(int, int));
+    dots.add(Tuple(6, 10));
+    dots.add(Tuple(0, 14));
+    dots.add(Tuple(9, 10));
+    dots.add(Tuple(0, 3));
+    Println("size=" + Str(Len(dots)));
 
     // Duplicate should not increase size
-    dots.add(tuple(6, 10));
-    println("after_dup=" + str(len(dots)));
+    dots.add(Tuple(6, 10));
+    Println("after_dup=" + Str(Len(dots)));
 
     // exists check
-    if dots.exists(tuple(6, 10)) {
-        println("found 6,10");
+    if dots.exists(Tuple(6, 10)) {
+        Println("found 6,10");
     }
-    if !dots.exists(tuple(1, 1)) {
-        println("1,1 not found");
+    if !dots.exists(Tuple(1, 1)) {
+        Println("1,1 not found");
     }
 
     // remove
-    dots.remove(tuple(0, 3));
-    println("after_remove=" + str(len(dots)));
+    dots.remove(Tuple(0, 3));
+    Println("after_remove=" + Str(Len(dots)));
 
     // length method
-    println("length=" + str(dots.length()));
+    Println("length=" + Str(dots.length()));
 
     // Iteration
     var sum = 0;
     for dot in dots {
         sum += dot.0 + dot.1;
     }
-    println("sum=" + str(sum));
+    Println("sum=" + Str(sum));
 
-    // set(tuple(str, int))
-    var pairs = set(tuple(str, int));
-    pairs.add(tuple("x", 5));
-    pairs.add(tuple("y", 7));
-    pairs.add(tuple("x", 5));
-    println("pairs=" + str(len(pairs)));
+    // Set(Tuple(str, int))
+    var pairs = Set(Tuple(str, int));
+    pairs.add(Tuple("x", 5));
+    pairs.add(Tuple("y", 7));
+    pairs.add(Tuple("x", 5));
+    Println("pairs=" + Str(Len(pairs)));
 }

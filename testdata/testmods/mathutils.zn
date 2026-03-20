@@ -15,4 +15,4 @@ fn max_of(a: int, b: int) -> int {
     return b;
 }
 
-const PI = 3.14159;
+const pi = 3.14159;

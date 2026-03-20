@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/mkaz/zenth/pkg/ast"
 	"github.com/mkaz/zenth/pkg/lexer"
@@ -59,7 +61,7 @@ type Checker struct {
 	typeAliases     map[string]*ast.TypeExpr
 	errors          []string
 	currentFunc     *FuncInfo // for checking return types
-	pendingFlagName string    // set before checking a let/var value for flag()
+	pendingFlagName string    // set before checking a let/var value for Flag()
 }
 
 // New creates a new Checker.
@@ -85,59 +87,59 @@ func New() *Checker {
 	c.modules["io"] = true
 
 	// Register built-in functions
-	c.funcs["print"] = &FuncInfo{
-		Name:   "print",
+	c.funcs["Print"] = &FuncInfo{
+		Name:   "Print",
 		Params: []ZType{TypeStr},
 		Return: TypeVoid,
 	}
-	c.funcs["println"] = &FuncInfo{
-		Name:   "println",
+	c.funcs["Println"] = &FuncInfo{
+		Name:   "Println",
 		Params: []ZType{TypeStr},
 		Return: TypeVoid,
 	}
-	c.funcs["len"] = &FuncInfo{
-		Name:   "len",
+	c.funcs["Len"] = &FuncInfo{
+		Name:   "Len",
 		Params: []ZType{TypeStr}, // overloaded for slices too
 		Return: TypeInt,
 	}
-	c.funcs["str"] = &FuncInfo{
-		Name:   "str",
+	c.funcs["Str"] = &FuncInfo{
+		Name:   "Str",
 		Params: []ZType{TypeInt},
 		Return: TypeStr,
 	}
-	c.funcs["exit"] = &FuncInfo{
-		Name:        "exit",
+	c.funcs["Exit"] = &FuncInfo{
+		Name:        "Exit",
 		Params:      []ZType{TypeInt},
 		Return:      TypeVoid,
 		NumRequired: 0,
 	}
-	c.funcs["range"] = &FuncInfo{
-		Name:   "range",
+	c.funcs["Range"] = &FuncInfo{
+		Name:   "Range",
 		Params: []ZType{TypeInt, TypeInt},
 		Return: TypeRange,
 	}
-	c.funcs["rangei"] = &FuncInfo{
-		Name:   "rangei",
+	c.funcs["Rangei"] = &FuncInfo{
+		Name:   "Rangei",
 		Params: []ZType{TypeInt, TypeInt},
 		Return: TypeRangei,
 	}
-	c.funcs["file"] = &FuncInfo{
-		Name:   "file",
+	c.funcs["File"] = &FuncInfo{
+		Name:   "File",
 		Params: []ZType{TypeStr},
 		Return: TypeFile,
 	}
-	c.funcs["int"] = &FuncInfo{
-		Name:   "int",
+	c.funcs["Int"] = &FuncInfo{
+		Name:   "Int",
 		Params: []ZType{TypeInt},
 		Return: TypeInt,
 	}
-	c.funcs["f64"] = &FuncInfo{
-		Name:   "f64",
+	c.funcs["F64"] = &FuncInfo{
+		Name:   "F64",
 		Params: []ZType{TypeF64},
 		Return: TypeF64,
 	}
-	c.funcs["flag"] = &FuncInfo{
-		Name:        "flag",
+	c.funcs["Flag"] = &FuncInfo{
+		Name:        "Flag",
 		Params:      []ZType{TypeVoid}, // placeholder; actual type inferred from default
 		ParamNames:  []string{"default"},
 		Return:      TypeVoid, // return type set dynamically
@@ -149,6 +151,23 @@ func New() *Checker {
 	global.Define(&Symbol{Name: "INT_MIN", Type: TypeInt, IsConst: true})
 
 	return c
+}
+
+func startsWithUpper(name string) bool {
+	if name == "" || name == "_" {
+		return false
+	}
+	r, _ := utf8.DecodeRuneInString(name)
+	if r == utf8.RuneError {
+		return false
+	}
+	return unicode.IsUpper(r)
+}
+
+func (c *Checker) validateLowercaseIdentifier(pos token.Pos, kind, name string) {
+	if startsWithUpper(name) {
+		c.errorf(pos, "%s name must start with a lowercase letter: %s", kind, name)
+	}
 }
 
 // NewWithDir creates a Checker that resolves local imports relative to sourceDir.
@@ -248,6 +267,9 @@ func (c *Checker) registerEnum(e *ast.EnumDecl) {
 }
 
 func (c *Checker) registerFunc(f *ast.FnDecl) {
+	if f.OwnerObj == "" {
+		c.validateLowercaseIdentifier(f.Pos(), "function", f.Name)
+	}
 	info := &FuncInfo{Name: f.Name}
 	for _, p := range f.Params {
 		pt := c.resolveTypeExpr(p.Type)
@@ -647,6 +669,7 @@ func (c *Checker) checkBlock(b *ast.Block) ZType {
 }
 
 func (c *Checker) checkLetStmt(s *ast.LetStmt) ZType {
+	c.validateLowercaseIdentifier(s.Pos(), "variable", s.Name)
 	c.pendingFlagName = s.Name
 	valType := c.checkNode(s.Value)
 	c.pendingFlagName = ""
@@ -668,6 +691,7 @@ func (c *Checker) checkLetStmt(s *ast.LetStmt) ZType {
 }
 
 func (c *Checker) checkVarStmt(s *ast.VarStmt) ZType {
+	c.validateLowercaseIdentifier(s.Pos(), "variable", s.Name)
 	c.pendingFlagName = s.Name
 	valType := c.checkNode(s.Value)
 	c.pendingFlagName = ""
@@ -689,6 +713,7 @@ func (c *Checker) checkVarStmt(s *ast.VarStmt) ZType {
 }
 
 func (c *Checker) checkConstStmt(s *ast.ConstStmt) ZType {
+	c.validateLowercaseIdentifier(s.Pos(), "variable", s.Name)
 	valType := c.checkNode(s.Value)
 	if s.Type != nil {
 		declared := c.resolveTypeExpr(s.Type)
@@ -712,6 +737,7 @@ func (c *Checker) checkTupleDestructStmt(s *ast.TupleDestructStmt) ZType {
 			if name == "_" {
 				continue
 			}
+			c.validateLowercaseIdentifier(s.Pos(), "variable", name)
 			sym := &Symbol{Name: name, Type: TypeVoid}
 			switch s.Kind {
 			case token.Var:
@@ -733,6 +759,7 @@ func (c *Checker) checkTupleDestructStmt(s *ast.TupleDestructStmt) ZType {
 		if name == "_" {
 			continue
 		}
+		c.validateLowercaseIdentifier(s.Pos(), "variable", name)
 		sym := &Symbol{Name: name, Type: tt.Elems[i]}
 		switch s.Kind {
 		case token.Var:
@@ -754,6 +781,7 @@ func (c *Checker) checkArrayDestructStmt(s *ast.ArrayDestructStmt) ZType {
 			if name == "_" {
 				continue
 			}
+			c.validateLowercaseIdentifier(s.Pos(), "variable", name)
 			sym := &Symbol{Name: name, Type: TypeVoid}
 			switch s.Kind {
 			case token.Var:
@@ -770,6 +798,7 @@ func (c *Checker) checkArrayDestructStmt(s *ast.ArrayDestructStmt) ZType {
 		if name == "_" {
 			continue
 		}
+		c.validateLowercaseIdentifier(s.Pos(), "variable", name)
 		sym := &Symbol{Name: name, Type: st.Elem}
 		switch s.Kind {
 		case token.Var:
@@ -910,6 +939,7 @@ func (c *Checker) checkForInStmt(s *ast.ForInStmt) ZType {
 	// Helper to define a loop variable in scope, skipping "_" discard
 	defineLoopVar := func(name string, typ ZType) {
 		if name != "_" {
+			c.validateLowercaseIdentifier(s.Pos(), "variable", name)
 			c.scope.Define(&Symbol{Name: name, Type: typ})
 		}
 	}
@@ -1800,22 +1830,22 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 		if isNumericBuiltin(ident.Name) {
 			return c.checkNumericBuiltinCall(e, ident.Name)
 		}
-		if ident.Name == "zip" {
+		if ident.Name == "Zip" {
 			return c.checkZipCall(e)
 		}
-		if ident.Name == "hashmap" {
+		if ident.Name == "Hashmap" {
 			return c.checkHashmapConstructor(e)
 		}
-		if ident.Name == "set" {
+		if ident.Name == "Set" {
 			return c.checkSetConstructor(e)
 		}
-		if ident.Name == "flag" {
+		if ident.Name == "Flag" {
 			return c.checkFlagCall(e)
 		}
-		if ident.Name == "assert" {
+		if ident.Name == "Assert" {
 			return c.checkAssertCall(e)
 		}
-		if ident.Name == "assert_eq" {
+		if ident.Name == "AssertEq" {
 			return c.checkAssertEqCall(e)
 		}
 		// Check if this is an obj constructor call
@@ -1825,36 +1855,36 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 		if info, ok := c.funcs[ident.Name]; ok {
 			e.ResolvedFunc = ident.Name
 			c.checkArgs(e, info)
-			// int(str, base) — two-argument form
-			if info.Name == "int" && len(e.Args) == 2 {
+			// Int(str, base) — two-argument form
+			if info.Name == "Int" && len(e.Args) == 2 {
 				argType := c.checkNode(e.Args[0])
 				baseType := c.checkNode(e.Args[1])
 				if !argType.Equals(TypeStr) {
-					c.errorf(e.Args[0].Pos(), "int() with base requires first argument to be str, got %s", argType)
+					c.errorf(e.Args[0].Pos(), "Int() with base requires first argument to be str, got %s", argType)
 				}
 				if !IsInteger(baseType) {
-					c.errorf(e.Args[1].Pos(), "int() base must be int, got %s", baseType)
+					c.errorf(e.Args[1].Pos(), "Int() base must be int, got %s", baseType)
 				}
 				e.IntBaseCall = true
 				return TypeInt
 			}
-			// Conversion builtins on slices: int([]str) -> []int, etc.
-			if (info.Name == "int" || info.Name == "f64" || info.Name == "str") && len(e.Args) == 1 {
+			// Conversion builtins on slices: Int([]str) -> []int, etc.
+			if (info.Name == "Int" || info.Name == "F64" || info.Name == "Str") && len(e.Args) == 1 {
 				argType := c.checkNode(e.Args[0])
 				if st, ok := argType.(*SliceType); ok {
 					switch info.Name {
-					case "int":
+					case "Int":
 						if st.Elem.Equals(TypeStr) {
-							e.SliceConvFunc = "int"
+							e.SliceConvFunc = "Int"
 							return &SliceType{Elem: TypeInt}
 						}
-					case "f64":
+					case "F64":
 						if st.Elem.Equals(TypeStr) {
-							e.SliceConvFunc = "f64"
+							e.SliceConvFunc = "F64"
 							return &SliceType{Elem: TypeF64}
 						}
-					case "str":
-						e.SliceConvFunc = "str"
+					case "Str":
+						e.SliceConvFunc = "Str"
 						return &SliceType{Elem: TypeStr}
 					}
 				}
@@ -1896,7 +1926,7 @@ func (c *Checker) checkLocalModuleCall(e *ast.CallExpr, mi *ModuleInfo, moduleNa
 
 func isNumericBuiltin(name string) bool {
 	switch name {
-	case "abs", "min", "max", "clamp", "round", "floor", "ceil", "pow", "sqrt":
+	case "Abs", "Min", "Max", "Clamp", "Round", "Floor", "Ceil", "Pow", "Sqrt":
 		return true
 	default:
 		return false
@@ -1923,9 +1953,9 @@ func isBasicNumberType(t ZType) bool {
 func (c *Checker) checkNumericBuiltinCall(e *ast.CallExpr, name string) ZType {
 	args := c.getPositionalArgsForBuiltin(e, name)
 	switch name {
-	case "abs":
+	case "Abs":
 		if len(args) != 1 {
-			c.errorf(e.Pos(), "abs() takes exactly 1 argument, got %d", len(args))
+			c.errorf(e.Pos(), "Abs() takes exactly 1 argument, got %d", len(args))
 			for _, arg := range args {
 				c.checkNode(arg)
 			}
@@ -1940,9 +1970,9 @@ func (c *Checker) checkNumericBuiltinCall(e *ast.CallExpr, name string) ZType {
 			e.NumericMethod = "abs_f64"
 			return TypeF64
 		}
-		c.errorf(args[0].Pos(), "abs() argument must be int or f64, got %s", t)
+		c.errorf(args[0].Pos(), "Abs() argument must be int or f64, got %s", t)
 		return TypeVoid
-	case "min", "max":
+	case "Min", "Max":
 		if len(args) < 2 {
 			c.errorf(e.Pos(), "%s() requires at least 2 arguments, got %d", name, len(args))
 			for _, arg := range args {
@@ -1963,25 +1993,25 @@ func (c *Checker) checkNumericBuiltinCall(e *ast.CallExpr, name string) ZType {
 		}
 		if allInt {
 			if len(args) == 2 {
-				e.NumericMethod = name + "_int"
+				e.NumericMethod = strings.ToLower(name) + "_int"
 			} else {
-				e.NumericMethod = name + "_int_variadic"
+				e.NumericMethod = strings.ToLower(name) + "_int_variadic"
 			}
 			return TypeInt
 		}
 		if allF64 {
 			if len(args) == 2 {
-				e.NumericMethod = name + "_f64"
+				e.NumericMethod = strings.ToLower(name) + "_f64"
 			} else {
-				e.NumericMethod = name + "_f64_variadic"
+				e.NumericMethod = strings.ToLower(name) + "_f64_variadic"
 			}
 			return TypeF64
 		}
 		c.errorf(e.Pos(), "%s() arguments must all be int or all be f64", name)
 		return TypeVoid
-	case "clamp":
+	case "Clamp":
 		if len(args) != 3 {
-			c.errorf(e.Pos(), "clamp() takes exactly 3 arguments, got %d", len(args))
+			c.errorf(e.Pos(), "Clamp() takes exactly 3 arguments, got %d", len(args))
 			for _, arg := range args {
 				c.checkNode(arg)
 			}
@@ -1998,9 +2028,9 @@ func (c *Checker) checkNumericBuiltinCall(e *ast.CallExpr, name string) ZType {
 			e.NumericMethod = "clamp_f64"
 			return TypeF64
 		}
-		c.errorf(e.Pos(), "clamp() arguments must all be int or all be f64, got %s, %s, %s", t1, t2, t3)
+		c.errorf(e.Pos(), "Clamp() arguments must all be int or all be f64, got %s, %s, %s", t1, t2, t3)
 		return TypeVoid
-	case "round", "floor", "ceil", "sqrt":
+	case "Round", "Floor", "Ceil", "Sqrt":
 		if len(args) != 1 {
 			c.errorf(e.Pos(), "%s() takes exactly 1 argument, got %d", name, len(args))
 			for _, arg := range args {
@@ -2013,11 +2043,11 @@ func (c *Checker) checkNumericBuiltinCall(e *ast.CallExpr, name string) ZType {
 			c.errorf(args[0].Pos(), "%s() argument must be int or f64, got %s", name, t)
 			return TypeVoid
 		}
-		e.NumericMethod = name
+		e.NumericMethod = strings.ToLower(name)
 		return TypeF64
-	case "pow":
+	case "Pow":
 		if len(args) != 2 {
-			c.errorf(e.Pos(), "pow() takes exactly 2 arguments, got %d", len(args))
+			c.errorf(e.Pos(), "Pow() takes exactly 2 arguments, got %d", len(args))
 			for _, arg := range args {
 				c.checkNode(arg)
 			}
@@ -2026,10 +2056,10 @@ func (c *Checker) checkNumericBuiltinCall(e *ast.CallExpr, name string) ZType {
 		t1 := c.checkNode(args[0])
 		t2 := c.checkNode(args[1])
 		if !isBasicNumberType(t1) {
-			c.errorf(args[0].Pos(), "pow() argument 1 must be int or f64, got %s", t1)
+			c.errorf(args[0].Pos(), "Pow() argument 1 must be int or f64, got %s", t1)
 		}
 		if !isBasicNumberType(t2) {
-			c.errorf(args[1].Pos(), "pow() argument 2 must be int or f64, got %s", t2)
+			c.errorf(args[1].Pos(), "Pow() argument 2 must be int or f64, got %s", t2)
 		}
 		e.NumericMethod = "pow"
 		return TypeF64
@@ -2043,7 +2073,7 @@ func (c *Checker) checkNumericBuiltinCall(e *ast.CallExpr, name string) ZType {
 
 func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 	// Flexible arg count for variadic builtins (print, println, etc.)
-	if info.Name == "print" || info.Name == "println" {
+	if info.Name == "Print" || info.Name == "Println" {
 		if len(e.Args) < 1 || len(e.Args) > 2 {
 			c.errorf(e.Pos(), "%s() expects 1 or 2 arguments, got %d", info.Name, len(e.Args))
 			for _, arg := range e.Args {
@@ -2078,8 +2108,8 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 		}
 		return
 	}
-	// Conversion builtins accept any single arg (int() also accepts 2 for base)
-	if info.Name == "int" || info.Name == "f64" || info.Name == "str" {
+	// Conversion builtins accept any single arg (Int() also accepts 2 for base)
+	if info.Name == "Int" || info.Name == "F64" || info.Name == "Str" {
 		for _, arg := range e.Args {
 			if named, ok := arg.(*ast.NamedArgExpr); ok {
 				c.errorf(named.Pos(), "named arguments are not supported for %s()", info.Name)
@@ -2088,7 +2118,7 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 			}
 			c.checkNode(arg)
 		}
-		if info.Name == "int" && len(e.Args) == 2 {
+		if info.Name == "Int" && len(e.Args) == 2 {
 			// int(str, base) form
 			return
 		}
@@ -2097,16 +2127,16 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 		}
 		return
 	}
-	if info.Name == "len" {
+	if info.Name == "Len" {
 		for _, arg := range e.Args {
 			if named, ok := arg.(*ast.NamedArgExpr); ok {
-				c.errorf(named.Pos(), "named arguments are not supported for len()")
+				c.errorf(named.Pos(), "named arguments are not supported for Len()")
 				c.checkNode(named.Value)
 				continue
 			}
 		}
 		if len(e.Args) != 1 {
-			c.errorf(e.Pos(), "len() expects exactly 1 argument, got %d", len(e.Args))
+			c.errorf(e.Pos(), "Len() expects exactly 1 argument, got %d", len(e.Args))
 			return
 		}
 		argType := c.checkNode(e.Args[0])
@@ -2121,8 +2151,8 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 		}
 		return
 	}
-	// range/rangei accept 2 or 3 int args
-	if info.Name == "range" || info.Name == "rangei" {
+	// Range/Rangei accept 2 or 3 int args
+	if info.Name == "Range" || info.Name == "Rangei" {
 		for i, arg := range e.Args {
 			if named, ok := arg.(*ast.NamedArgExpr); ok {
 				c.errorf(named.Pos(), "named arguments are not supported for %s()", info.Name)
@@ -2414,7 +2444,7 @@ func (c *Checker) checkZipCall(e *ast.CallExpr) ZType {
 	}
 	e.ZipCall = true
 	e.ZipElemGoTypes = goTypes
-	e.ResolvedFunc = "zip"
+	e.ResolvedFunc = "Zip"
 	return &SliceType{Elem: &TupleType{Elems: elemTypes}}
 }
 
@@ -2537,7 +2567,7 @@ func (c *Checker) resolveTypeRefArg(arg ast.Node) ZType {
 					return nil
 				}
 				return &SliceType{Elem: elem}
-			case "hashmap":
+			case "hashmap", "Hashmap":
 				// Filter out named args (like default=)
 				var posArgs []ast.Node
 				for _, a := range call.Args {
@@ -2555,7 +2585,7 @@ func (c *Checker) resolveTypeRefArg(arg ast.Node) ZType {
 					return nil
 				}
 				return &HashmapType{Key: keyType, Value: valType}
-			case "tuple":
+			case "tuple", "Tuple":
 				elems := make([]ZType, 0, len(call.Args))
 				for _, a := range call.Args {
 					et := c.resolveTypeRefArg(a)
@@ -2565,7 +2595,7 @@ func (c *Checker) resolveTypeRefArg(arg ast.Node) ZType {
 					elems = append(elems, et)
 				}
 				return &TupleType{Elems: elems}
-			case "set":
+			case "set", "Set":
 				if len(call.Args) != 1 {
 					c.errorf(arg.Pos(), "set() type expects exactly 1 argument, got %d", len(call.Args))
 					return nil
@@ -2666,7 +2696,7 @@ func (c *Checker) checkObjConstructor(e *ast.CallExpr, name string) ZType {
 
 func (c *Checker) checkFlagCall(e *ast.CallExpr) ZType {
 	if c.pendingFlagName == "" {
-		c.errorf(e.Pos(), "flag() must be assigned to a variable (let x = flag(default=...))")
+		c.errorf(e.Pos(), "Flag() must be assigned to a variable (let x = Flag(default=...))")
 		return TypeVoid
 	}
 
@@ -2677,14 +2707,14 @@ func (c *Checker) checkFlagCall(e *ast.CallExpr) ZType {
 			if named.Name == "default" {
 				defaultNode = named.Value
 			} else {
-				c.errorf(named.Pos(), "flag() has no parameter named '%s'", named.Name)
+				c.errorf(named.Pos(), "Flag() has no parameter named '%s'", named.Name)
 			}
 		} else {
-			c.errorf(arg.Pos(), "flag() requires named argument: default=<value>")
+			c.errorf(arg.Pos(), "Flag() requires named argument: default=<value>")
 		}
 	}
 	if defaultNode == nil {
-		c.errorf(e.Pos(), "flag() requires a 'default' argument")
+		c.errorf(e.Pos(), "Flag() requires a 'default' argument")
 		return TypeVoid
 	}
 
@@ -2698,7 +2728,7 @@ func (c *Checker) checkFlagCall(e *ast.CallExpr) ZType {
 	case valType.Equals(TypeStr):
 		goType = "string"
 	default:
-		c.errorf(e.Pos(), "flag() default must be bool, int, or str, got %s", valType)
+		c.errorf(e.Pos(), "Flag() default must be bool, int, or str, got %s", valType)
 		return TypeVoid
 	}
 
@@ -2798,31 +2828,31 @@ func (c *Checker) checkMatchExpr(e *ast.MatchExpr) ZType {
 }
 
 func (c *Checker) checkAssertCall(e *ast.CallExpr) ZType {
-	args := c.getPositionalArgsForBuiltin(e, "assert")
+	args := c.getPositionalArgsForBuiltin(e, "Assert")
 	if len(args) != 1 {
-		c.errorf(e.Pos(), "assert() takes exactly 1 argument, got %d", len(args))
+		c.errorf(e.Pos(), "Assert() takes exactly 1 argument, got %d", len(args))
 		return TypeVoid
 	}
 	argType := c.checkNode(args[0])
 	if !argType.Equals(TypeBool) {
-		c.errorf(args[0].Pos(), "assert() argument must be bool, got %s", argType)
+		c.errorf(args[0].Pos(), "Assert() argument must be bool, got %s", argType)
 	}
-	e.ResolvedFunc = "assert"
+	e.ResolvedFunc = "Assert"
 	return TypeVoid
 }
 
 func (c *Checker) checkAssertEqCall(e *ast.CallExpr) ZType {
-	args := c.getPositionalArgsForBuiltin(e, "assert_eq")
+	args := c.getPositionalArgsForBuiltin(e, "AssertEq")
 	if len(args) != 2 {
-		c.errorf(e.Pos(), "assert_eq() takes exactly 2 arguments, got %d", len(args))
+		c.errorf(e.Pos(), "AssertEq() takes exactly 2 arguments, got %d", len(args))
 		return TypeVoid
 	}
 	gotType := c.checkNode(args[0])
 	expectedType := c.checkNode(args[1])
 	if !gotType.Equals(expectedType) {
-		c.errorf(args[1].Pos(), "assert_eq() arguments must be the same type, got %s and %s", gotType, expectedType)
+		c.errorf(args[1].Pos(), "AssertEq() arguments must be the same type, got %s and %s", gotType, expectedType)
 	}
-	e.ResolvedFunc = "assert_eq"
+	e.ResolvedFunc = "AssertEq"
 	return TypeVoid
 }
 

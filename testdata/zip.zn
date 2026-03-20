@@ -5,23 +5,23 @@ fn main() {
     let scores = [95, 87, 92];
 
     // Basic zip and iterate
-    for pair in zip(names, scores) {
-        println(pair.0 + "=" + str(pair.1));
+    for pair in Zip(names, scores) {
+        Println(pair.0 + "=" + Str(pair.1));
     }
 
     // Zip with different length arrays (uses shorter length)
     let a = [1, 2, 3, 4];
     let b = [10, 20];
-    for t in zip(a, b) {
-        println(str(t.0) + "+" + str(t.1));
+    for t in Zip(a, b) {
+        Println(Str(t.0) + "+" + Str(t.1));
     }
 
     // Zip three arrays
     let x = [1, 2, 3];
     let y = [4, 5, 6];
     let z = [7, 8, 9];
-    for t in zip(x, y, z) {
-        println(str(t.0) + "," + str(t.1) + "," + str(t.2));
+    for t in Zip(x, y, z) {
+        Println(Str(t.0) + "," + Str(t.1) + "," + Str(t.2));
     }
 }
 

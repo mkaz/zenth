@@ -14,8 +14,8 @@ obj Label {
 
 fn main() {
     let p = Point(x=1, y=2, val="#");
-    println(p);
+    Println(p);
 
     let l = Label(text="demo");
-    println(l);
+    Println(l);
 }

@@ -1,4 +1,4 @@
 // This module illegally defines fn main — should cause a compile error
 fn main() {
-    println("bad");
+    Println("bad");
 }

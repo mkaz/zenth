@@ -1,9 +1,9 @@
 // Test file sections() method
 fn main() {
-    let f = file("../../testdata/sections_data.txt");
+    let f = File("../../testdata/sections_data.txt");
     let parts = f.sections();
-    println("count=" + str(parts.length()));
-    println("first=" + parts[0]);
-    println("second=" + parts[1]);
-    println("third=" + parts[2]);
+    Println("count=" + Str(parts.length()));
+    Println("first=" + parts[0]);
+    Println("second=" + parts[1]);
+    Println("third=" + parts[2]);
 }

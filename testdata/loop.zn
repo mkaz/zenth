@@ -1,7 +1,7 @@
 // Test for-range count loops
 fn main() {
     for range 3 {
-        println("hello");
+        Println("hello");
     }
 
     var count = 0;
@@ -9,5 +9,5 @@ fn main() {
     for range n {
         count = count + 1;
     }
-    println("count=" + str(count));
+    Println("count=" + Str(count));
 }

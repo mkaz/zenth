@@ -1,11 +1,11 @@
 # Files
 
-The `file()` built-in creates a file object for reading files and inspecting file paths. File objects are value types -- there are no open handles and nothing to close.
+The `File()` built-in creates a file object for reading files and inspecting file paths. File objects are value types -- there are no open handles and nothing to close.
 
 ## Creating a File Object
 
 ```zenth
-let f = file("/path/to/data.txt");
+let f = File("/path/to/data.txt");
 ```
 
 ## Methods
@@ -15,9 +15,9 @@ let f = file("/path/to/data.txt");
 Returns `true` if the file exists on disk:
 
 ```zenth
-let f = file("config.txt");
+let f = File("config.txt");
 if f.exists() {
-    println("found it");
+    Println("found it");
 }
 ```
 
@@ -27,7 +27,7 @@ Returns the full file contents as a string. Exits with an error if the file cann
 
 ```zenth
 let content = f.read();
-println(content);
+Println(content);
 ```
 
 ### lines
@@ -37,7 +37,7 @@ Returns the file contents split into lines as `array(str)`. Exits with an error 
 ```zenth
 let lines = f.lines();
 for i, line in lines {
-    println("{i}: {line}");
+    Println("{i}: {line}");
 }
 ```
 
@@ -46,8 +46,8 @@ for i, line in lines {
 Returns the filename (base name) from the path:
 
 ```zenth
-let f = file("/home/user/data.txt");
-println(f.name());  // data.txt
+let f = File("/home/user/data.txt");
+Println(f.name());  // data.txt
 ```
 
 ### sections
@@ -55,9 +55,9 @@ println(f.name());  // data.txt
 Splits the file contents on blank lines, returning `array(str)`. This is useful for input that has sections separated by empty lines (common in Advent of Code problems):
 
 ```zenth
-let parts = file("input.txt").sections();
+let parts = File("input.txt").sections();
 for i, section in parts {
-    println("Section {i}: {section}");
+    Println("Section {i}: {section}");
 }
 ```
 
@@ -77,20 +77,20 @@ third block
 Returns the file extension, including the dot:
 
 ```zenth
-let f = file("report.csv");
-println(f.ext());  // .csv
+let f = File("report.csv");
+Println(f.ext());  // .csv
 ```
 
 ## Example
 
 ```zenth
 fn main() {
-    let f = file("input.txt");
+    let f = File("input.txt");
     if !f.exists() {
-        println("file not found: " + f.name());
-        exit(1);
+        Println("file not found: " + f.name());
+        Exit(1);
     }
     let lines = f.lines();
-    println("Read {lines.length()} lines from {f.name()}");
+    Println("Read {lines.length()} lines from {f.name()}");
 }
 ```

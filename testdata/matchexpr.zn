@@ -16,18 +16,18 @@ fn main() {
         3 => "three",
         _ => "other"
     };
-    println(label);
+    Println(label);
 
     // Inline in function call
-    println(match 99 {
+    Println(match 99 {
         1 => "first",
         _ => "default"
     });
 
     // Match expression in function return
-    println(day_name(1));
-    println(day_name(3));
-    println(day_name(7));
+    Println(day_name(1));
+    Println(day_name(3));
+    Println(day_name(7));
 
     // Integer match expression
     let val = match "hi" {
@@ -35,5 +35,5 @@ fn main() {
         "hi" => 2,
         _ => 0
     };
-    println(val);
+    Println(val);
 }

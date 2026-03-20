@@ -5,12 +5,12 @@ fn main() {
         "left 3"
     ];
 
-    var cmds: array(tuple(str, int)) = [];
+    var cmds: array(Tuple(str, int)) = [];
     for row in data {
         let (cmd, raw) = row.split_once(" ");
-        cmds.add(tuple(cmd, int(raw)));
+        cmds.add(Tuple(cmd, Int(raw)));
     }
 
-    println("Found: " + str(cmds.length()));
-    println(cmds[0].0 + "=" + str(cmds[0].1));
+    Println("Found: " + Str(cmds.length()));
+    Println(cmds[0].0 + "=" + Str(cmds[0].1));
 }

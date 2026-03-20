@@ -29,7 +29,7 @@ Create a file called `hello.zn`:
 
 ```zenth
 fn main() {
-    println("Hello, World!");
+    Println("Hello, World!");
 }
 ```
 
@@ -81,7 +81,7 @@ fn fibonacci(n: int) -> int {
 
 fn main() {
     for var i = 0; i < 15; i++ {
-        println(fibonacci(i));
+        Println(fibonacci(i));
     }
 }
 ```

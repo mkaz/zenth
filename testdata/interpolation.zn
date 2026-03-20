@@ -2,34 +2,34 @@
 fn main() {
     // Basic interpolation
     let name = "World";
-    println("Hello {name}!");
+    Println("Hello {name}!");
 
     // Multiple interpolations
     let a = 3;
     let b = 4;
-    println("{a} + {b} = {a + b}");
+    Println("{a} + {b} = {a + b}");
 
     // Plain string (no interpolation)
-    println("No interpolation here");
+    Println("No interpolation here");
 
     // Raw string with single quotes (no interpolation)
-    println('Raw {name} string');
+    Println('Raw {name} string');
 
     // Escaped braces
-    println("Use \{braces\} literally");
+    Println("Use \{braces\} literally");
 
     // Expression in braces
     let x = 10;
     let y = 20;
-    println("Result: {x + y}");
+    Println("Result: {x + y}");
 
     // Nested field access
     let r = Rectangle(width=5.0, height=10.0);
-    println("Area: {r.area()}");
+    Println("Area: {r.area()}");
 
     // Interpolation with str type
     let greeting = "hi";
-    println("Say: {greeting}");
+    Println("Say: {greeting}");
 }
 
 obj Rectangle {

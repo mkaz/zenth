@@ -4,5 +4,5 @@ fn get_pair() -> (int, int) {
 
 fn main() {
     let (a, b) = get_pair();
-    println(a);
+    Println(a);
 }

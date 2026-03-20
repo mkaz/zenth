@@ -1,6 +1,6 @@
 // Should fail: for-range count must be int
 fn main() {
     for range "3" {
-        println("bad");
+        Println("bad");
     }
 }

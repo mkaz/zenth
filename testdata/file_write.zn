@@ -1,0 +1,19 @@
+// Test file write and append methods
+fn main() {
+    let f = File("../../testdata/_write_test.txt");
+
+    // write creates/overwrites a file
+    f.write("hello\n");
+    let content = f.read();
+    Println("write=" + content);
+
+    // append adds to the file
+    f.append("world\n");
+    let content2 = f.read();
+    Println("append=" + content2);
+
+    // overwrite with write
+    f.write("replaced\n");
+    let content3 = f.read();
+    Println("overwrite=" + content3);
+}

@@ -8,9 +8,9 @@ fn main() {
     let pt = Point(x=1, y=2);
     grid.add(pt);
 
-    println("len=" + str(len(grid)));
-    println("x=" + str(grid[0].x) + " y=" + str(grid[0].y));
+    Println("len=" + Str(Len(grid)));
+    Println("x=" + Str(grid[0].x) + " y=" + Str(grid[0].y));
 
     grid = [];
-    println("cleared=" + str(len(grid)));
+    Println("cleared=" + Str(Len(grid)));
 }

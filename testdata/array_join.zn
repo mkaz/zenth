@@ -2,22 +2,22 @@
 
 fn main() {
     let words = ["hello", "world"];
-    println(words.join(" "));
+    Println(words.join(" "));
 
     let csv = ["a", "b", "c"];
-    println(csv.join(","));
+    Println(csv.join(","));
 
     // Join with empty separator
     let letters = ["x", "y", "z"];
-    println(letters.join(""));
+    Println(letters.join(""));
 
     // Join single element
     let one = ["solo"];
-    println(one.join("-"));
+    Println(one.join("-"));
 
     // Join with multi-char separator
     let parts = ["2026", "03", "15"];
-    println(parts.join("-"));
+    Println(parts.join("-"));
 }
 
 // Expected output:

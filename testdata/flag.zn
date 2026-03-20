@@ -1,11 +1,11 @@
-// Test flag() built-in with default values
+// Test Flag() built-in with default values
 
 fn main() {
-    let debug = flag(default=false);
-    let times = flag(default=5);
-    let msg = flag(default="Hello");
+    let debug = Flag(default=false);
+    let times = Flag(default=5);
+    let msg = Flag(default="Hello");
 
-    println("debug=" + str(debug));
-    println("times=" + str(times));
-    println("msg=" + msg);
+    Println("debug=" + Str(debug));
+    Println("times=" + Str(times));
+    Println("msg=" + msg);
 }

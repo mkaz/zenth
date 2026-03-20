@@ -1,4 +1,4 @@
 fn main() {
-    let pair: tuple(str, str) = tuple("a", 1);
-    println(pair.0);
+    let pair: Tuple(str, str) = Tuple("a", 1);
+    Println(pair.0);
 }

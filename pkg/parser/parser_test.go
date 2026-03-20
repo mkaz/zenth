@@ -95,7 +95,7 @@ func TestConstDecl(t *testing.T) {
 // ---------- Function Declarations ----------
 
 func TestFnDeclNoReturn(t *testing.T) {
-	prog := parse(t, `fn greet(name: str) { println(name); }`)
+	prog := parse(t, `fn greet(name: str) { Println(name); }`)
 	fn, ok := prog.Stmts[0].(*ast.FnDecl)
 	if !ok {
 		t.Fatalf("expected FnDecl, got %T", prog.Stmts[0])
@@ -132,7 +132,7 @@ func TestFnDeclWithReturn(t *testing.T) {
 }
 
 func TestFnDeclNoParams(t *testing.T) {
-	prog := parse(t, `fn main() { println("hello"); }`)
+	prog := parse(t, `fn main() { Println("hello"); }`)
 	fn := prog.Stmts[0].(*ast.FnDecl)
 	if fn.Name != "main" {
 		t.Errorf("expected name 'main', got %q", fn.Name)
@@ -143,7 +143,7 @@ func TestFnDeclNoParams(t *testing.T) {
 }
 
 func TestFnDeclDefaultParam(t *testing.T) {
-	prog := parse(t, `fn greet(name: str = "world") { println(name); }`)
+	prog := parse(t, `fn greet(name: str = "world") { Println(name); }`)
 	fn := prog.Stmts[0].(*ast.FnDecl)
 	if len(fn.Params) != 1 {
 		t.Fatalf("expected 1 param, got %d", len(fn.Params))
@@ -252,7 +252,7 @@ func TestImportDeclWithAlias(t *testing.T) {
 // ---------- Control Flow ----------
 
 func TestIfStmt(t *testing.T) {
-	src := `fn main() { if x > 0 { println("pos"); } else { println("neg"); } }`
+	src := `fn main() { if x > 0 { Println("pos"); } else { Println("neg"); } }`
 	prog := parse(t, src)
 	fn := prog.Stmts[0].(*ast.FnDecl)
 	ifStmt, ok := fn.Body.Stmts[0].(*ast.IfStmt)
@@ -271,7 +271,7 @@ func TestIfStmt(t *testing.T) {
 }
 
 func TestIfElseIfStmt(t *testing.T) {
-	src := `fn main() { if x > 10 { println("big"); } else if x > 5 { println("med"); } else { println("sm"); } }`
+	src := `fn main() { if x > 10 { Println("big"); } else if x > 5 { Println("med"); } else { Println("sm"); } }`
 	prog := parse(t, src)
 	fn := prog.Stmts[0].(*ast.FnDecl)
 	ifStmt := fn.Body.Stmts[0].(*ast.IfStmt)
@@ -286,7 +286,7 @@ func TestIfElseIfStmt(t *testing.T) {
 }
 
 func TestForCStyle(t *testing.T) {
-	src := `fn main() { for var i = 0; i < 10; i++ { println(str(i)); } }`
+	src := `fn main() { for var i = 0; i < 10; i++ { Println(Str(i)); } }`
 	prog := parse(t, src)
 	fn := prog.Stmts[0].(*ast.FnDecl)
 	forStmt, ok := fn.Body.Stmts[0].(*ast.ForStmt)
@@ -305,7 +305,7 @@ func TestForCStyle(t *testing.T) {
 }
 
 func TestForInStmt(t *testing.T) {
-	src := `fn main() { for item in items { println(item); } }`
+	src := `fn main() { for item in items { Println(item); } }`
 	prog := parse(t, src)
 	fn := prog.Stmts[0].(*ast.FnDecl)
 	forIn, ok := fn.Body.Stmts[0].(*ast.ForInStmt)
@@ -321,7 +321,7 @@ func TestForInStmt(t *testing.T) {
 }
 
 func TestForInWithIndex(t *testing.T) {
-	src := `fn main() { for i, item in items { println(str(i)); } }`
+	src := `fn main() { for i, item in items { Println(Str(i)); } }`
 	prog := parse(t, src)
 	fn := prog.Stmts[0].(*ast.FnDecl)
 	forIn := fn.Body.Stmts[0].(*ast.ForInStmt)
@@ -363,7 +363,7 @@ func TestForInfinite(t *testing.T) {
 }
 
 func TestMatchStmt(t *testing.T) {
-	src := `fn main() { match day { 1 => println("Mon"); 2 => println("Tue"); _ => println("Other"); } }`
+	src := `fn main() { match day { 1 => Println("Mon"); 2 => Println("Tue"); _ => Println("Other"); } }`
 	prog := parse(t, src)
 	fn := prog.Stmts[0].(*ast.FnDecl)
 	matchStmt, ok := fn.Body.Stmts[0].(*ast.MatchStmt)
@@ -426,7 +426,7 @@ func TestBooleanNot(t *testing.T) {
 }
 
 func TestCallExpr(t *testing.T) {
-	prog := parse(t, `fn main() { println("hello", "world"); }`)
+	prog := parse(t, `fn main() { Println("hello", "world"); }`)
 	fn := prog.Stmts[0].(*ast.FnDecl)
 	exprStmt, ok := fn.Body.Stmts[0].(*ast.ExprStmt)
 	if !ok {
@@ -763,7 +763,7 @@ func TestMultipleTopLevel(t *testing.T) {
 	src := `
 		let x = 1;
 		let y = 2;
-		fn main() { println(str(x + y)); }
+		fn main() { Println(Str(x + y)); }
 	`
 	prog := parse(t, src)
 	if len(prog.Stmts) != 3 {
@@ -780,7 +780,7 @@ func TestMultipleTopLevel(t *testing.T) {
 // ---------- Loop Statement ----------
 
 func TestLoopStmt(t *testing.T) {
-	prog := parse(t, `fn main() { loop 5 { println("hi"); } }`)
+	prog := parse(t, `fn main() { loop 5 { Println("hi"); } }`)
 	fn := prog.Stmts[0].(*ast.FnDecl)
 	loop, ok := fn.Body.Stmts[0].(*ast.LoopStmt)
 	if !ok {
@@ -830,7 +830,7 @@ func TestMissingSemicolon(t *testing.T) {
 }
 
 func TestMissingCloseBrace(t *testing.T) {
-	parseExpectError(t, `fn main() { println("hello");`)
+	parseExpectError(t, `fn main() { Println("hello");`)
 }
 
 func TestMissingCloseParen(t *testing.T) {

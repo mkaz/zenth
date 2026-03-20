@@ -3,22 +3,22 @@ fn main() {
 
     // Sum using reduce
     let total = nums.reduce(fn(a, b) a + b);
-    println(str(total));
+    Println(Str(total));
 
     // Product using reduce with initial value
     let product = nums.reduce(fn(a, b) a * b, 1);
-    println(str(product));
+    Println(Str(product));
 
     // Max using reduce
     let biggest = nums.reduce(fn(a, b) if a > b { a } else { b });
-    println(str(biggest));
+    Println(Str(biggest));
 
     // Reduce with initial value different from first element
     let sum_from_100 = nums.reduce(fn(a, b) a + b, 100);
-    println(str(sum_from_100));
+    Println(Str(sum_from_100));
 
     // Float reduce
     let floats = [1.5, 2.5, 3.0];
     let fsum = floats.reduce(fn(a, b) a + b);
-    println(str(fsum));
+    Println(Str(fsum));
 }

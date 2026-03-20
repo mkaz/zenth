@@ -1,35 +1,35 @@
 // Test file built-in type
 fn main() {
-    let f = file("../../testdata/file.zn");
+    let f = File("../../testdata/file.zn");
 
     // exists
     if f.exists() {
-        println("exists=true");
+        Println("exists=true");
     } else {
-        println("exists=false");
+        Println("exists=false");
     }
 
     // name and ext
-    println("name=" + f.name());
-    println("ext=" + f.ext());
+    Println("name=" + f.name());
+    Println("ext=" + f.ext());
 
     // read returns a string
     let content = f.read();
-    if len(content) > 0 {
-        println("read=ok");
+    if Len(content) > 0 {
+        Println("read=ok");
     }
 
     // lines returns array(str)
     let lines = f.lines();
     if lines.length() > 0 {
-        println("lines=ok");
+        Println("lines=ok");
     }
 
     // non-existent file
-    let nope = file("does_not_exist.zn");
+    let nope = File("does_not_exist.zn");
     if nope.exists() {
-        println("nope=true");
+        Println("nope=true");
     } else {
-        println("nope=false");
+        Println("nope=false");
     }
 }

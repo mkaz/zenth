@@ -473,7 +473,7 @@ func TestCheckerSuccess(t *testing.T) {
 		},
 		{
 			"const declaration",
-			`const PI = 3;`,
+			`const pi = 3;`,
 		},
 		{
 			"var reassignment",
@@ -485,23 +485,23 @@ func TestCheckerSuccess(t *testing.T) {
 		},
 		{
 			"function void return",
-			`fn greet(name: str) { println(name); }`,
+			`fn greet(name: str) { Println(name); }`,
 		},
 		{
 			"if/else with bool condition",
-			`fn main() { let x = true; if x { println("yes"); } else { println("no"); } }`,
+			`fn main() { let x = true; if x { Println("yes"); } else { Println("no"); } }`,
 		},
 		{
 			"C-style for loop",
-			`fn main() { for var i = 0; i < 10; i++ { println(str(i)); } }`,
+			`fn main() { for var i = 0; i < 10; i++ { Println(Str(i)); } }`,
 		},
 		{
 			"for-in over array",
-			`fn main() { let items = [1, 2, 3]; for item in items { println(str(item)); } }`,
+			`fn main() { let items = [1, 2, 3]; for item in items { Println(Str(item)); } }`,
 		},
 		{
 			"for-in with index",
-			`fn main() { let items = [1, 2, 3]; for i, item in items { println(str(i)); } }`,
+			`fn main() { let items = [1, 2, 3]; for i, item in items { Println(Str(i)); } }`,
 		},
 		{
 			"infinite for loop with break",
@@ -509,11 +509,15 @@ func TestCheckerSuccess(t *testing.T) {
 		},
 		{
 			"match statement",
-			`fn main() { let x = 1; match x { 1 => println("one"); 2 => println("two"); _ => println("other"); } }`,
+			`fn main() { let x = 1; match x { 1 => Println("one"); 2 => Println("two"); _ => Println("other"); } }`,
 		},
 		{
 			"obj with fields and method",
-			"obj Rect {\n  width: f64;\n  height: f64;\n  fn area() -> f64 {\n    return self.width * self.height;\n  }\n}\nfn main() {\n  let r = Rect(width=3.0, height=4.0);\n  println(str(r.area()));\n}\n",
+			"obj Rect {\n  width: f64;\n  height: f64;\n  fn area() -> f64 {\n    return self.width * self.height;\n  }\n}\nfn main() {\n  let r = Rect(width=3.0, height=4.0);\n  Println(Str(r.area()));\n}\n",
+		},
+		{
+			"uppercase method name allowed",
+			"obj Rect {\n  width: f64;\n  height: f64;\n  fn Area() -> f64 {\n    return self.width * self.height;\n  }\n}\nfn main() {\n  let r = Rect(width=3.0, height=4.0);\n  Println(Str(r.Area()));\n}\n",
 		},
 		{
 			"enum declaration and variant access",
@@ -561,15 +565,15 @@ func TestCheckerSuccess(t *testing.T) {
 		},
 		{
 			"built-in len",
-			`fn main() { let s = "hello"; let n = len(s); }`,
+			`fn main() { let s = "hello"; let n = Len(s); }`,
 		},
 		{
 			"built-in str conversion",
-			`fn main() { let n = 42; let s = str(n); }`,
+			`fn main() { let n = 42; let s = Str(n); }`,
 		},
 		{
 			"string for-in",
-			`fn main() { for ch in "hello" { println(ch); } }`,
+			`fn main() { for ch in "hello" { Println(ch); } }`,
 		},
 		{
 			"import statement",
@@ -622,13 +626,23 @@ func TestCheckerErrors(t *testing.T) {
 			"undefined identifier: y",
 		},
 		{
+			"uppercase top-level function name",
+			`fn Main() {}`,
+			"function name must start with a lowercase letter",
+		},
+		{
+			"uppercase variable name",
+			`let Value = 1;`,
+			"variable name must start with a lowercase letter",
+		},
+		{
 			"assign to immutable let",
 			`fn main() { let x = 1; x = 2; }`,
 			"cannot assign to immutable variable",
 		},
 		{
 			"assign to constant",
-			`fn main() { const X = 1; X = 2; }`,
+			`fn main() { const x = 1; x = 2; }`,
 			"cannot assign to immutable variable",
 		},
 		{
@@ -658,7 +672,7 @@ func TestCheckerErrors(t *testing.T) {
 		},
 		{
 			"if condition not bool",
-			`fn main() { if 42 { println("oops"); } }`,
+			`fn main() { if 42 { Println("oops"); } }`,
 			"if condition must be bool",
 		},
 		{
@@ -723,7 +737,7 @@ func TestCheckerErrors(t *testing.T) {
 		},
 		{
 			"cannot iterate non-iterable",
-			`fn main() { let x = 5; for item in x { println(str(item)); } }`,
+			`fn main() { let x = 5; for item in x { Println(Str(item)); } }`,
 			"cannot iterate over",
 		},
 		{
@@ -786,17 +800,17 @@ func TestNewCheckerBuiltinFunctions(t *testing.T) {
 		name       string
 		wantReturn ZType
 	}{
-		{"print", TypeVoid},
-		{"println", TypeVoid},
-		{"len", TypeInt},
-		{"str", TypeStr},
-		{"exit", TypeVoid},
-		{"range", TypeRange},
-		{"rangei", TypeRangei},
-		{"file", TypeFile},
-		{"int", TypeInt},
-		{"f64", TypeF64},
-		{"flag", TypeVoid},
+		{"Print", TypeVoid},
+		{"Println", TypeVoid},
+		{"Len", TypeInt},
+		{"Str", TypeStr},
+		{"Exit", TypeVoid},
+		{"Range", TypeRange},
+		{"Rangei", TypeRangei},
+		{"File", TypeFile},
+		{"Int", TypeInt},
+		{"F64", TypeF64},
+		{"Flag", TypeVoid},
 	}
 	for _, tt := range builtins {
 		t.Run(tt.name, func(t *testing.T) {

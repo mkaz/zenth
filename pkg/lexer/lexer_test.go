@@ -7,7 +7,7 @@ import (
 )
 
 func TestHelloWorld(t *testing.T) {
-	src := `fn main() { println("Hello"); }`
+	src := `fn main() { Println("Hello"); }`
 	l := New("test.zn", src)
 	tokens, err := l.Tokenize()
 	if err != nil {
@@ -187,7 +187,7 @@ func TestEscapedBrace(t *testing.T) {
 }
 
 func TestPositionTracking(t *testing.T) {
-	src := "fn main() {\n    println(\"hi\");\n}"
+	src := "fn main() {\n    Println(\"hi\");\n}"
 	l := New("test.zn", src)
 	tokens, err := l.Tokenize()
 	if err != nil {

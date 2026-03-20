@@ -3,5 +3,5 @@ type Bad = array(Nope);
 
 fn main() {
     let x: Bad = [];
-    println(len(x));
+    Println(Len(x));
 }

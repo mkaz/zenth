@@ -1,5 +1,5 @@
 fn main() {
-    var m = hashmap(str, int);
+    var m = Hashmap(str, int);
     m["a"] = 1;
     m["b"] = 2;
     m["c"] = 3;
@@ -8,21 +8,21 @@ fn main() {
     var sum = 0;
     for k, v in m {
         sum += v;
-        println("kv=" + k);
+        Println("kv=" + k);
     }
-    println("sum=" + str(sum));
+    Println("sum=" + Str(sum));
 
     // for k in m (keys only)
     var count = 0;
     for k in m {
         count += 1;
-        println("k=" + k);
+        Println("k=" + k);
     }
-    println("count=" + str(count));
+    Println("count=" + Str(count));
 
     // m.keys()
     let keys = m.keys();
-    println("nkeys=" + str(len(keys)));
+    Println("nkeys=" + Str(Len(keys)));
 
     // m.values()
     let vals = m.values();
@@ -30,5 +30,5 @@ fn main() {
     for v in vals {
         vsum += v;
     }
-    println("vsum=" + str(vsum));
+    Println("vsum=" + Str(vsum));
 }

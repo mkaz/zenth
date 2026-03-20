@@ -1,28 +1,28 @@
 fn main() {
     // Named tuple creation and access by name
-    let person = tuple(name="Alice", age=30);
-    println(person.name);
-    println(person.age);
+    let person = Tuple(name="Alice", age=30);
+    Println(person.name);
+    Println(person.age);
 
     // Access by numeric index still works
-    println(person.0);
-    println(person.1);
+    Println(person.0);
+    Println(person.1);
 
     // Named tuple with type annotation
-    let t: tuple(key: str, value: int) = tuple(key="x", value=42);
-    println(t.key);
-    println(t.value);
+    let t: Tuple(key: str, value: int) = Tuple(key="x", value=42);
+    Println(t.key);
+    Println(t.value);
 
     // Destructuring named tuples
     let (k, v) = t;
-    println(k);
-    println(v);
+    Println(k);
+    Println(v);
 
     // Array of named tuples
-    let pairs: array(tuple(name: str, score: int)) = [];
-    pairs.add(tuple(name="Bob", score=95));
-    pairs.add(tuple(name="Carol", score=88));
+    let pairs: array(Tuple(name: str, score: int)) = [];
+    pairs.add(Tuple(name="Bob", score=95));
+    pairs.add(Tuple(name="Carol", score=88));
     for p in pairs {
-        println(p.name + ":" + str(p.score));
+        Println(p.name + ":" + Str(p.score));
     }
 }

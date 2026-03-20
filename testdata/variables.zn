@@ -6,26 +6,26 @@ fn main() {
     let pi = 3.14159;
     let active = true;
 
-    println("Language: {name}");
-    println("Year: {year}");
+    Println("Language: {name}");
+    Println("Year: {year}");
 
     // Mutable variables
     var counter = 0;
     counter = counter + 1;
     counter += 1;
-    println("Counter: {counter}");
+    Println("Counter: {counter}");
 
     // If/else
     if counter > 1 {
-        println("Counter is greater than 1");
+        Println("Counter is greater than 1");
     } else {
-        println("Counter is 1 or less");
+        Println("Counter is 1 or less");
     }
 
     // For loop
     var sum = 0;
-    for i in range(1,10) {
+    for i in Range(1,10) {
         sum += i;
     }
-    println("Sum 1..10: {sum}");
+    Println("Sum 1..10: {sum}");
 }

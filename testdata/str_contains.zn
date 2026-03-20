@@ -1,11 +1,11 @@
 fn main() {
     let s = "hello world";
     if s.contains("world") {
-        println("found world");
+        Println("found world");
     }
     if s.contains("xyz") {
-        println("found xyz");
+        Println("found xyz");
     } else {
-        println("no xyz");
+        Println("no xyz");
     }
 }

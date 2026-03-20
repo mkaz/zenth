@@ -49,12 +49,12 @@ func assertNotContains(t *testing.T, got, notWant string) {
 // ---------- Package and Imports ----------
 
 func TestPackageMain(t *testing.T) {
-	out := generate(t, `fn main() { println("hello"); }`)
+	out := generate(t, `fn main() { Println("hello"); }`)
 	assertContains(t, out, "package main")
 }
 
 func TestImportFmt(t *testing.T) {
-	out := generate(t, `fn main() { println("hello"); }`)
+	out := generate(t, `fn main() { Println("hello"); }`)
 	assertContains(t, out, `"fmt"`)
 }
 
@@ -71,49 +71,49 @@ func TestImportAlias(t *testing.T) {
 // ---------- Function Declarations ----------
 
 func TestFnMain(t *testing.T) {
-	out := generate(t, `fn main() { println("hello"); }`)
+	out := generate(t, `fn main() { Println("hello"); }`)
 	assertContains(t, out, "func main()")
 	assertContains(t, out, `fmt.Println("hello")`)
 }
 
 func TestFnWithReturn(t *testing.T) {
-	out := generate(t, `fn add(a: int, b: int) -> int { return a + b; } fn main() { println(str(add(1, 2))); }`)
+	out := generate(t, `fn add(a: int, b: int) -> int { return a + b; } fn main() { Println(Str(add(1, 2))); }`)
 	assertContains(t, out, "func add(a int, b int) int")
 	assertContains(t, out, "return a + b")
 }
 
 func TestFnNoParams(t *testing.T) {
-	out := generate(t, `fn greet() { println("hi"); } fn main() { greet(); }`)
+	out := generate(t, `fn greet() { Println("hi"); } fn main() { greet(); }`)
 	assertContains(t, out, "func greet()")
 }
 
 func TestFnMultipleParams(t *testing.T) {
-	out := generate(t, `fn calc(a: int, b: int, c: int) -> int { return a + b + c; } fn main() { println(str(calc(1, 2, 3))); }`)
+	out := generate(t, `fn calc(a: int, b: int, c: int) -> int { return a + b + c; } fn main() { Println(Str(calc(1, 2, 3))); }`)
 	assertContains(t, out, "func calc(a int, b int, c int) int")
 }
 
 // ---------- Variable Declarations ----------
 
 func TestLetDecl(t *testing.T) {
-	out := generate(t, `fn main() { let x = 5; println(str(x)); }`)
+	out := generate(t, `fn main() { let x = 5; Println(Str(x)); }`)
 	assertContains(t, out, "x := 5")
 }
 
 func TestLetDeclWithType(t *testing.T) {
-	out := generate(t, `fn main() { let x: int = 5; println(str(x)); }`)
+	out := generate(t, `fn main() { let x: int = 5; Println(Str(x)); }`)
 	assertContains(t, out, "x")
 	assertContains(t, out, "5")
 }
 
 func TestVarDecl(t *testing.T) {
-	out := generate(t, `fn main() { var x = 5; x = 10; println(str(x)); }`)
+	out := generate(t, `fn main() { var x = 5; x = 10; Println(Str(x)); }`)
 	assertContains(t, out, "x := 5")
 	assertContains(t, out, "x = 10")
 }
 
 func TestConstDecl(t *testing.T) {
-	out := generate(t, `fn main() { const PI = 3.14; println(str(PI)); }`)
-	assertContains(t, out, "PI := 3.14")
+	out := generate(t, `fn main() { const pi = 3.14; Println(Str(pi)); }`)
+	assertContains(t, out, "pi := 3.14")
 }
 
 // ---------- Object Declarations ----------
@@ -126,7 +126,7 @@ func TestObjDecl(t *testing.T) {
 		}
 		fn main() {
 			let p = Point(x=1.0, y=2.0);
-			println(str(p.x));
+			Println(Str(p.x));
 		}
 	`
 	out := generate(t, src)
@@ -147,7 +147,7 @@ func TestObjMethod(t *testing.T) {
 		}
 		fn main() {
 			let r = Rect(w=3.0, h=4.0);
-			println(str(r.area()));
+			Println(Str(r.area()));
 		}
 	`
 	out := generate(t, src)
@@ -166,7 +166,7 @@ func TestEnumDecl(t *testing.T) {
 		}
 		fn main() {
 			let c = Color.Red;
-			println(str(c));
+			Println(Str(c));
 		}
 	`
 	out := generate(t, src)
@@ -179,14 +179,14 @@ func TestEnumDecl(t *testing.T) {
 // ---------- Control Flow ----------
 
 func TestIfStmt(t *testing.T) {
-	src := `fn main() { let x = 5; if x > 0 { println("pos"); } else { println("neg"); } }`
+	src := `fn main() { let x = 5; if x > 0 { Println("pos"); } else { Println("neg"); } }`
 	out := generate(t, src)
 	assertContains(t, out, "if x > 0")
 	assertContains(t, out, "} else {")
 }
 
 func TestIfElseIfStmt(t *testing.T) {
-	src := `fn main() { let x = 5; if x > 10 { println("big"); } else if x > 3 { println("med"); } else { println("sm"); } }`
+	src := `fn main() { let x = 5; if x > 10 { Println("big"); } else if x > 3 { Println("med"); } else { Println("sm"); } }`
 	out := generate(t, src)
 	assertContains(t, out, "if x > 10")
 	assertContains(t, out, "} else if x > 3")
@@ -194,7 +194,7 @@ func TestIfElseIfStmt(t *testing.T) {
 }
 
 func TestForCStyle(t *testing.T) {
-	src := `fn main() { for var i = 0; i < 5; i++ { println(str(i)); } }`
+	src := `fn main() { for var i = 0; i < 5; i++ { Println(Str(i)); } }`
 	out := generate(t, src)
 	assertContains(t, out, "for i := 0; i < 5; i++")
 }
@@ -213,19 +213,19 @@ func TestForInfinite(t *testing.T) {
 }
 
 func TestForIn(t *testing.T) {
-	src := `fn main() { let items = [1, 2, 3]; for item in items { println(str(item)); } }`
+	src := `fn main() { let items = [1, 2, 3]; for item in items { Println(Str(item)); } }`
 	out := generate(t, src)
 	assertContains(t, out, "for _, item := range items")
 }
 
 func TestForInWithIndex(t *testing.T) {
-	src := `fn main() { let items = [1, 2, 3]; for i, item in items { println(str(i)); } }`
+	src := `fn main() { let items = [1, 2, 3]; for i, item in items { Println(Str(i)); } }`
 	out := generate(t, src)
 	assertContains(t, out, "for i, item := range items")
 }
 
 func TestMatchStmt(t *testing.T) {
-	src := `fn main() { let x = 1; match x { 1 => println("one"); 2 => println("two"); _ => println("other"); } }`
+	src := `fn main() { let x = 1; match x { 1 => Println("one"); 2 => Println("two"); _ => Println("other"); } }`
 	out := generate(t, src)
 	assertContains(t, out, "switch x")
 	assertContains(t, out, "case 1:")
@@ -234,7 +234,7 @@ func TestMatchStmt(t *testing.T) {
 }
 
 func TestLoopStmt(t *testing.T) {
-	src := `fn main() { loop 3 { println("hi"); } }`
+	src := `fn main() { loop 3 { Println("hi"); } }`
 	out := generate(t, src)
 	assertContains(t, out, "< 3")
 }
@@ -242,38 +242,38 @@ func TestLoopStmt(t *testing.T) {
 // ---------- Expressions ----------
 
 func TestBinaryExpr(t *testing.T) {
-	src := `fn main() { let x = 2 + 3; println(str(x)); }`
+	src := `fn main() { let x = 2 + 3; Println(Str(x)); }`
 	out := generate(t, src)
 	assertContains(t, out, "2 + 3")
 }
 
 func TestBinaryMul(t *testing.T) {
-	src := `fn main() { let x = 4 * 5; println(str(x)); }`
+	src := `fn main() { let x = 4 * 5; Println(Str(x)); }`
 	out := generate(t, src)
 	assertContains(t, out, "4 * 5")
 }
 
 func TestUnaryNeg(t *testing.T) {
-	src := `fn main() { let x = -5; println(str(x)); }`
+	src := `fn main() { let x = -5; Println(Str(x)); }`
 	out := generate(t, src)
 	assertContains(t, out, "-5")
 }
 
 func TestBooleanLogic(t *testing.T) {
-	src := `fn main() { let a = true; let b = false; let c = a && b; let d = a || b; println(str(c)); println(str(d)); }`
+	src := `fn main() { let a = true; let b = false; let c = a && b; let d = a || b; Println(Str(c)); Println(Str(d)); }`
 	out := generate(t, src)
 	assertContains(t, out, "a && b")
 	assertContains(t, out, "a || b")
 }
 
 func TestStringConcat(t *testing.T) {
-	src := `fn main() { let x = "hello" + " " + "world"; println(x); }`
+	src := `fn main() { let x = "hello" + " " + "world"; Println(x); }`
 	out := generate(t, src)
 	assertContains(t, out, `"hello" + " " + "world"`)
 }
 
 func TestComparisonOps(t *testing.T) {
-	src := `fn main() { let a = 1 < 2; let b = 3 >= 2; let c = 1 == 1; let d = 1 != 2; println(str(a)); println(str(b)); println(str(c)); println(str(d)); }`
+	src := `fn main() { let a = 1 < 2; let b = 3 >= 2; let c = 1 == 1; let d = 1 != 2; Println(Str(a)); Println(Str(b)); Println(Str(c)); Println(Str(d)); }`
 	out := generate(t, src)
 	assertContains(t, out, "1 < 2")
 	assertContains(t, out, "3 >= 2")
@@ -284,23 +284,23 @@ func TestComparisonOps(t *testing.T) {
 // ---------- Built-in Functions ----------
 
 func TestPrintln(t *testing.T) {
-	out := generate(t, `fn main() { println("hello"); }`)
+	out := generate(t, `fn main() { Println("hello"); }`)
 	assertContains(t, out, `fmt.Println("hello")`)
 }
 
 func TestPrint(t *testing.T) {
-	out := generate(t, `fn main() { print("hello"); }`)
+	out := generate(t, `fn main() { Print("hello"); }`)
 	assertContains(t, out, `fmt.Print("hello")`)
 }
 
 func TestLen(t *testing.T) {
-	src := `fn main() { let xs = [1, 2, 3]; let n = len(xs); println(str(n)); }`
+	src := `fn main() { let xs = [1, 2, 3]; let n = Len(xs); Println(Str(n)); }`
 	out := generate(t, src)
 	assertContains(t, out, "len(xs)")
 }
 
 func TestStrConversion(t *testing.T) {
-	src := `fn main() { let x = 42; println(str(x)); }`
+	src := `fn main() { let x = 42; Println(Str(x)); }`
 	out := generate(t, src)
 	assertContains(t, out, "fmt.Sprint(x)")
 }
@@ -308,13 +308,13 @@ func TestStrConversion(t *testing.T) {
 // ---------- Array Literal ----------
 
 func TestArrayLiteral(t *testing.T) {
-	src := `fn main() { let xs = [1, 2, 3]; println(str(len(xs))); }`
+	src := `fn main() { let xs = [1, 2, 3]; Println(Str(Len(xs))); }`
 	out := generate(t, src)
 	assertContains(t, out, "[]int{1, 2, 3}")
 }
 
 func TestEmptyArrayWithType(t *testing.T) {
-	src := `fn main() { let xs: array(int) = []; println(str(len(xs))); }`
+	src := `fn main() { let xs: array(int) = []; Println(Str(Len(xs))); }`
 	out := generate(t, src)
 	assertContains(t, out, "[]int{}")
 }
@@ -322,7 +322,7 @@ func TestEmptyArrayWithType(t *testing.T) {
 // ---------- String Interpolation ----------
 
 func TestInterpString(t *testing.T) {
-	src := `fn main() { let name = "world"; println("hello {name}"); }`
+	src := `fn main() { let name = "world"; Println("hello {name}"); }`
 	out := generate(t, src)
 	assertContains(t, out, "fmt.Sprintf")
 	assertContains(t, out, "name")
@@ -331,7 +331,7 @@ func TestInterpString(t *testing.T) {
 // ---------- Return Statement ----------
 
 func TestReturnValue(t *testing.T) {
-	src := `fn double(x: int) -> int { return x * 2; } fn main() { println(str(double(5))); }`
+	src := `fn double(x: int) -> int { return x * 2; } fn main() { Println(Str(double(5))); }`
 	out := generate(t, src)
 	assertContains(t, out, "return x * 2")
 }
@@ -345,13 +345,13 @@ func TestReturnBare(t *testing.T) {
 // ---------- Assignment ----------
 
 func TestAssignment(t *testing.T) {
-	src := `fn main() { var x = 0; x = 42; println(str(x)); }`
+	src := `fn main() { var x = 0; x = 42; Println(Str(x)); }`
 	out := generate(t, src)
 	assertContains(t, out, "x = 42")
 }
 
 func TestCompoundAssign(t *testing.T) {
-	src := `fn main() { var x = 10; x += 5; x -= 2; x *= 3; x /= 2; println(str(x)); }`
+	src := `fn main() { var x = 10; x += 5; x -= 2; x *= 3; x /= 2; Println(Str(x)); }`
 	out := generate(t, src)
 	assertContains(t, out, "x += 5")
 	assertContains(t, out, "x -= 2")
@@ -360,7 +360,7 @@ func TestCompoundAssign(t *testing.T) {
 }
 
 func TestIncDec(t *testing.T) {
-	src := `fn main() { var x = 0; x++; x--; println(str(x)); }`
+	src := `fn main() { var x = 0; x++; x--; Println(Str(x)); }`
 	out := generate(t, src)
 	assertContains(t, out, "x++")
 	assertContains(t, out, "x--")
@@ -369,7 +369,7 @@ func TestIncDec(t *testing.T) {
 // ---------- Break and Continue ----------
 
 func TestBreakContinue(t *testing.T) {
-	src := `fn main() { for var i = 0; i < 10; i++ { if i == 5 { break; } if i == 3 { continue; } println(str(i)); } }`
+	src := `fn main() { for var i = 0; i < 10; i++ { if i == 5 { break; } if i == 3 { continue; } Println(Str(i)); } }`
 	out := generate(t, src)
 	assertContains(t, out, "break")
 	assertContains(t, out, "continue")
@@ -385,7 +385,7 @@ func TestObjConstructor(t *testing.T) {
 		}
 		fn main() {
 			let p = Point(x=1.0, y=2.0);
-			println(str(p.x));
+			Println(Str(p.x));
 		}
 	`
 	out := generate(t, src)
@@ -404,7 +404,7 @@ func TestFieldAccess(t *testing.T) {
 		}
 		fn main() {
 			let p = Point(x=1.0, y=2.0);
-			println(str(p.x));
+			Println(Str(p.x));
 		}
 	`
 	out := generate(t, src)
@@ -414,7 +414,7 @@ func TestFieldAccess(t *testing.T) {
 // ---------- Index Access ----------
 
 func TestIndexAccess(t *testing.T) {
-	src := `fn main() { let xs = [10, 20, 30]; let v = xs[1]; println(str(v)); }`
+	src := `fn main() { let xs = [10, 20, 30]; let v = xs[1]; Println(Str(v)); }`
 	out := generate(t, src)
 	assertContains(t, out, "xs[1]")
 }
@@ -422,7 +422,7 @@ func TestIndexAccess(t *testing.T) {
 // ---------- Slice Expression ----------
 
 func TestSliceExpr(t *testing.T) {
-	src := `fn main() { let xs = [1, 2, 3, 4, 5]; let ys = xs[1:3]; println(str(len(ys))); }`
+	src := `fn main() { let xs = [1, 2, 3, 4, 5]; let ys = xs[1:3]; Println(Str(Len(ys))); }`
 	out := generate(t, src)
 	assertContains(t, out, "xs[1:3]")
 }
@@ -430,7 +430,7 @@ func TestSliceExpr(t *testing.T) {
 // ---------- Bool Literals ----------
 
 func TestBoolLiterals(t *testing.T) {
-	src := `fn main() { let a = true; let b = false; println(str(a)); println(str(b)); }`
+	src := `fn main() { let a = true; let b = false; Println(Str(a)); Println(Str(b)); }`
 	out := generate(t, src)
 	assertContains(t, out, "true")
 	assertContains(t, out, "false")
@@ -446,7 +446,7 @@ func TestObjAutoString(t *testing.T) {
 		}
 		fn main() {
 			let p = Point(x=1.0, y=2.0);
-			println(str(p));
+			Println(Str(p));
 		}
 	`
 	out := generate(t, src)
@@ -461,7 +461,7 @@ func TestInterfaceDecl(t *testing.T) {
 		interface Greeter {
 			fn greet() -> str;
 		}
-		fn main() { println("hi"); }
+		fn main() { Println("hi"); }
 	`
 	out := generate(t, src)
 	assertContains(t, out, "type Greeter interface")
@@ -475,7 +475,7 @@ func TestTypeAlias(t *testing.T) {
 		type ID = int;
 		fn main() {
 			let x: ID = 42;
-			println(str(x));
+			Println(Str(x));
 		}
 	`
 	out := generate(t, src)
@@ -488,7 +488,7 @@ func TestTypeAlias(t *testing.T) {
 func TestMultipleFunctions(t *testing.T) {
 	src := `
 		fn square(x: int) -> int { return x * x; }
-		fn main() { println(str(square(4))); }
+		fn main() { Println(Str(square(4))); }
 	`
 	out := generate(t, src)
 	assertContains(t, out, "func square(x int) int")
@@ -502,9 +502,9 @@ func TestNestedIfInFor(t *testing.T) {
 		fn main() {
 			for var i = 0; i < 10; i++ {
 				if i > 5 {
-					println("big");
+					Println("big");
 				} else {
-					println("small");
+					Println("small");
 				}
 			}
 		}
@@ -522,7 +522,7 @@ func TestDefaultParams(t *testing.T) {
 			return "hello " + name;
 		}
 		fn main() {
-			println(greet());
+			Println(greet());
 		}
 	`
 	out := generate(t, src)
@@ -540,7 +540,7 @@ func TestEmptyMain(t *testing.T) {
 // ---------- Modulo Operator ----------
 
 func TestModuloOp(t *testing.T) {
-	src := `fn main() { let x = 10 % 3; println(str(x)); }`
+	src := `fn main() { let x = 10 % 3; Println(Str(x)); }`
 	out := generate(t, src)
 	assertContains(t, out, "10 % 3")
 }
@@ -555,7 +555,7 @@ func TestEnumExplicitValues(t *testing.T) {
 		}
 		fn main() {
 			let s = Status.Active;
-			println(str(s));
+			Println(Str(s));
 		}
 	`
 	out := generate(t, src)
@@ -573,7 +573,7 @@ func TestObjDefaultField(t *testing.T) {
 		}
 		fn main() {
 			let c = Config();
-			println(str(c.debug));
+			Println(Str(c.debug));
 		}
 	`
 	out := generate(t, src)
@@ -584,7 +584,7 @@ func TestObjDefaultField(t *testing.T) {
 
 func TestLetUnusedSuppression(t *testing.T) {
 	// let bindings generate _ = name to suppress Go unused-variable errors
-	src := `fn main() { let x = 5; println(str(x)); }`
+	src := `fn main() { let x = 5; Println(Str(x)); }`
 	out := generate(t, src)
 	assertContains(t, out, "_ = x")
 }
@@ -596,7 +596,7 @@ func TestEnumStringMethod(t *testing.T) {
 		enum Dir { Up; Down; }
 		fn main() {
 			let d = Dir.Up;
-			println(str(d));
+			Println(Str(d));
 		}
 	`
 	out := generate(t, src)

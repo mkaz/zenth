@@ -1,4 +1,4 @@
 fn main() {
-    let t = tuple("a", 1);
-    println(t.x);
+    let t = Tuple("a", 1);
+    Println(t.x);
 }

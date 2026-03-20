@@ -1,40 +1,40 @@
-// Test range() and rangei() built-in functions
+// Test Range() and Rangei() built-in functions
 
 fn main() {
-    // Basic range (exclusive end)
-    let nums = range(0, 5);
-    println("range(0,5): " + str(len(nums)));
+    // Basic Range (exclusive end)
+    let nums = Range(0, 5);
+    Println("Range(0,5): " + Str(Len(nums)));
     for n in nums {
-        print(str(n) + " ");
+        Print(Str(n) + " ");
     }
-    println("");
+    Println("");
 
-    // rangei (inclusive end)
-    let inc = rangei(1, 5);
-    println("rangei(1,5): " + str(len(inc)));
+    // Rangei (inclusive end)
+    let inc = Rangei(1, 5);
+    Println("Rangei(1,5): " + Str(Len(inc)));
     for n in inc {
-        print(str(n) + " ");
+        Print(Str(n) + " ");
     }
-    println("");
+    Println("");
 
     // range with step
-    let evens = range(0, 10, 2);
-    println("range(0,10,2): " + str(len(evens)));
+    let evens = Range(0, 10, 2);
+    Println("Range(0,10,2): " + Str(Len(evens)));
     for n in evens {
-        print(str(n) + " ");
+        Print(Str(n) + " ");
     }
-    println("");
+    Println("");
 
     // rangei with step
-    let by3 = rangei(0, 10, 3);
-    println("rangei(0,10,3): " + str(len(by3)));
+    let by3 = Rangei(0, 10, 3);
+    Println("Rangei(0,10,3): " + Str(Len(by3)));
     for n in by3 {
-        print(str(n) + " ");
+        Print(Str(n) + " ");
     }
-    println("");
+    Println("");
 
     // for-in with index
-    for i, v in range(10, 13) {
-        println("i=" + str(i) + " v=" + str(v));
+    for i, v in Range(10, 13) {
+        Println("i=" + Str(i) + " v=" + Str(v));
     }
 }

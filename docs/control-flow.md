@@ -4,11 +4,11 @@
 
 ```zenth
 if x > 10 {
-    println("big");
+    Println("big");
 } else if x > 5 {
-    println("medium");
+    Println("medium");
 } else {
-    println("small");
+    Println("small");
 }
 ```
 
@@ -24,7 +24,7 @@ The classic three-part loop with init, condition, and post:
 
 ```zenth
 for var i = 0; i < 10; i++ {
-    println(i);
+    Println(i);
 }
 ```
 
@@ -32,7 +32,7 @@ The init clause can declare a variable with `var` or `let`:
 
 ```zenth
 for let start = 0; start < 5; start++ {
-    println(start);
+    Println(start);
 }
 ```
 
@@ -42,12 +42,12 @@ Run a loop body a fixed number of times:
 
 ```zenth
 for range 3 {
-    println("tick");
+    Println("tick");
 }
 
 let n = 5;
 for range n {
-    println("count");
+    Println("count");
 }
 ```
 
@@ -86,7 +86,7 @@ Iterate over arrays and strings:
 ```zenth
 let items = ["apple", "banana", "cherry"];
 for item in items {
-    println(item);
+    Println(item);
 }
 ```
 
@@ -94,37 +94,37 @@ With an index variable:
 
 ```zenth
 for i, item in items {
-    println("{i}: {item}");
+    Println("{i}: {item}");
 }
 ```
 
-Using `range()` and `rangei()` for numeric iteration:
+Using `Range()` and `Rangei()` for numeric iteration:
 
 ```zenth
-// range(start, end) — exclusive end
-for i in range(0, 5) {
-    println(i);       // 0 1 2 3 4
+// Range(start, end) — exclusive end
+for i in Range(0, 5) {
+    Println(i);       // 0 1 2 3 4
 }
 
-// rangei(start, end) — inclusive end
-for i in rangei(1, 5) {
-    println(i);       // 1 2 3 4 5
+// Rangei(start, end) — inclusive end
+for i in Rangei(1, 5) {
+    Println(i);       // 1 2 3 4 5
 }
 
 // Optional step parameter
-for i in range(0, 10, 2) {
-    println(i);       // 0 2 4 6 8
+for i in Range(0, 10, 2) {
+    Println(i);       // 0 2 4 6 8
 }
 ```
 
-`range()` and `rangei()` return a **range object**, not an array. Range objects are lightweight and iterable. They also support an O(1) `.contains()` method for bounds checking:
+`Range()` and `Rangei()` return a **range object**, not an array. Range objects are lightweight and iterable. They also support an O(1) `.contains()` method for bounds checking:
 
 ```zenth
-let xrange = rangei(0, 100);
-let yrange = rangei(0, 50);
+let xrange = Rangei(0, 100);
+let yrange = Rangei(0, 50);
 
 if xrange.contains(x) && yrange.contains(y) {
-    println("point in bounds");
+    Println("point in bounds");
 }
 ```
 
@@ -138,21 +138,21 @@ if x >= 0 && x <= 100 && y >= 0 && y <= 50 {
 if xrange.contains(x) && yrange.contains(y) {
 ```
 
-Ranges can also be stored in variables and reused across multiple checks. `len()` on a range object returns the number of elements without materializing the sequence:
+Ranges can also be stored in variables and reused across multiple checks. `Len()` on a range object returns the number of elements without materializing the sequence:
 
 ```zenth
-let r = range(0, 100, 3);
-println(len(r));           // 34
-println(r.contains(99));   // false (99 is not a multiple of 3 from 0... but bounds check: 99 < 100 → true)
+let r = Range(0, 100, 3);
+Println(Len(r));           // 34
+Println(r.contains(99));   // false (99 is not a multiple of 3 from 0... but bounds check: 99 < 100 → true)
 ```
 
-Note: `.contains()` performs a bounds check only. For `range(0, 10, 3)`, `.contains(5)` returns `true` because 5 is within the bounds `[0, 10)`, not because 5 is in the sequence `[0, 3, 6, 9]`.
+Note: `.contains()` performs a bounds check only. For `Range(0, 10, 3)`, `.contains(5)` returns `true` because 5 is within the bounds `[0, 10)`, not because 5 is in the sequence `[0, 3, 6, 9]`.
 
 Use `_` to discard the loop variable when you only need the repetition:
 
 ```zenth
-for _ in range(0, 10) {
-    println("tick");
+for _ in Range(0, 10) {
+    Println("tick");
 }
 ```
 
@@ -160,10 +160,10 @@ The `_` discard also works as the index or value in two-variable loops:
 
 ```zenth
 for _, item in items {   // discard index
-    println(item);
+    Println(item);
 }
 for i, _ in items {      // discard value
-    println(i);
+    Println(i);
 }
 ```
 
@@ -171,7 +171,7 @@ Iterating over a string yields individual characters as strings:
 
 ```zenth
 for ch in "hello" {
-    println(ch);
+    Println(ch);
 }
 ```
 
@@ -187,7 +187,7 @@ for var i = 0; i < 100; i++ {
     if i > 10 {
         break;     // stop after 10
     }
-    println(i);
+    Println(i);
 }
 ```
 
@@ -208,7 +208,7 @@ let grade = if x > 9 { "A" } else if x > 7 { "B" } else { "C" };
 If expressions can be used inline:
 
 ```zenth
-println(if done { "yes" } else { "no" });
+Println(if done { "yes" } else { "no" });
 ```
 
 ## Match
@@ -218,12 +218,12 @@ println(if done { "yes" } else { "no" });
 ```zenth
 let day = 3;
 match day {
-    1 => println("Monday");
-    2 => println("Tuesday");
-    3 => println("Wednesday");
-    4 => println("Thursday");
-    5 => println("Friday");
-    _ => println("Weekend");
+    1 => Println("Monday");
+    2 => Println("Tuesday");
+    3 => Println("Wednesday");
+    4 => Println("Thursday");
+    5 => Println("Friday");
+    _ => Println("Weekend");
 }
 ```
 
@@ -236,11 +236,11 @@ Match arms can use blocks for multiple statements:
 ```zenth
 match status {
     200 => {
-        println("OK");
+        Println("OK");
         handle_success();
     }
-    404 => println("Not Found");
-    _ => println("Other");
+    404 => Println("Not Found");
+    _ => Println("Other");
 }
 ```
 
@@ -259,7 +259,7 @@ let label = match x {
 Match expressions can be used anywhere an expression is expected:
 
 ```zenth
-println(match status {
+Println(match status {
     200 => "OK",
     404 => "Not Found",
     _ => "Unknown"
@@ -279,13 +279,13 @@ fn fizzbuzz(n: int) -> str {
     } else if n % 5 == 0 {
         return "Buzz";
     } else {
-        return str(n);
+        return Str(n);
     }
 }
 
 fn main() {
     for var i = 1; i <= 20; i++ {
-        println(fizzbuzz(i));
+        Println(fizzbuzz(i));
     }
 }
 ```

@@ -2,11 +2,11 @@ import "./testmods/mathutils";
 
 fn main() {
     let result = mathutils.add(3, 4);
-    println(str(result));
+    Println(Str(result));
 
     let product = mathutils.multiply(6, 7);
-    println(str(product));
+    Println(Str(product));
 
     let biggest = mathutils.max_of(10, 20);
-    println(str(biggest));
+    Println(Str(biggest));
 }

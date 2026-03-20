@@ -17,5 +17,5 @@ obj Ship {
 fn main() {
     let s = Ship(x=0, y=0, facing="N");
     s.rotateLeft();
-    println(s.facing);
+    Println(s.facing);
 }

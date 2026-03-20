@@ -3,21 +3,21 @@
 fn main() {
     // _ as value in for-in (discard each element)
     var count = 0;
-    for _ in range(0, 5) {
+    for _ in Range(0, 5) {
         count++;
     }
-    println("count=" + str(count));
+    Println("count=" + Str(count));
 
     // _ as index in for-in
     let items = ["a", "b", "c"];
     for _, item in items {
-        print(item);
+        Print(item);
     }
-    println("");
+    Println("");
 
     // _ as value with index
     for i, _ in items {
-        print(str(i));
+        Print(Str(i));
     }
-    println("");
+    Println("");
 }

@@ -1,6 +1,6 @@
-// Test exit() built-in
+// Test Exit() built-in
 fn main() {
-    println("before exit");
-    exit();
-    println("after exit");
+    Println("before exit");
+    Exit();
+    Println("after exit");
 }

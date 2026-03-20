@@ -2,49 +2,49 @@
 
 fn main() {
     // Create a set and add elements
-    var visited = set(str);
+    var visited = Set(str);
     visited.add("start");
     visited.add("middle");
     visited.add("end");
-    println(len(visited));
+    Println(Len(visited));
 
     // exists() check
     if visited.exists("start") {
-        println("found start");
+        Println("found start");
     }
     if !visited.exists("unknown") {
-        println("unknown not found");
+        Println("unknown not found");
     }
 
     // remove()
     visited.remove("middle");
-    println(len(visited));
+    Println(Len(visited));
 
     // Duplicate add (should not increase size)
     visited.add("start");
-    println(len(visited));
+    Println(Len(visited));
 
     // length() method
-    println(visited.length());
+    Println(visited.length());
 
     // Integer set
-    var nums = set(int);
+    var nums = Set(int);
     nums.add(1);
     nums.add(2);
     nums.add(3);
     nums.add(2);
-    println(len(nums));
+    Println(Len(nums));
 
     // for-in iteration
     var total = 0;
     for n in nums {
         total += n;
     }
-    println(total);
+    Println(total);
 
     // Set with explicit type annotation
-    var flags: set(str) = set(str);
+    var flags: Set(str) = Set(str);
     flags.add("verbose");
     flags.add("debug");
-    println(len(flags));
+    Println(Len(flags));
 }

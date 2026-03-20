@@ -1,6 +1,6 @@
 # Modules
 
-Zenth supports splitting programs across multiple files using local modules. A module is simply a `.zn` file (or a directory of `.zn` files) that you import into your program.
+Zenth supports splitting programs across multiple files using local modules. A module is simply a `.zn` File (or a directory of `.zn` files) that you import into your program.
 
 ## Importing a Local Module
 
@@ -28,7 +28,7 @@ import "./mathutils";
 
 fn main() {
     let result = mathutils.add(3, 4);
-    println(str(result));
+    Println(Str(result));
 }
 ```
 
@@ -39,7 +39,7 @@ import "./mathutils" as math;
 
 fn main() {
     let result = math.add(3, 4);
-    println(str(result));
+    Println(Str(result));
 }
 ```
 
@@ -49,7 +49,7 @@ A module file is a regular `.zn` file that **does not define `fn main`**. It can
 
 ```zenth
 // mathutils.zn
-const PI = 3.14159;
+const pi = 3.14159;
 
 fn add(a: int, b: int) -> int {
     return a + b;
@@ -88,7 +88,7 @@ import "./shapes";
 
 fn main() {
     let r = shapes.Rectangle(width=10.0, height=5.0);
-    println(str(r.area()));  // "50"
+    Println(Str(r.area()));  // "50"
 }
 ```
 
@@ -110,10 +110,10 @@ import "./geometry";
 
 fn main() {
     let r = geometry.Rectangle(width=3.0, height=4.0);
-    println(str(r.area()));
+    Println(Str(r.area()));
 
     let a = geometry.circle_area(5.0);
-    println(str(a));
+    Println(Str(a));
 }
 ```
 
@@ -155,12 +155,12 @@ import "./testmods/mathutils" as math;
 import "./testmods/shapes";
 
 fn main() {
-    println(str(math.add(3, 4)));         // "7"
-    println(str(math.multiply(6, 7)));    // "42"
+    Println(Str(math.add(3, 4)));         // "7"
+    Println(Str(math.multiply(6, 7)));    // "42"
 
     let r = shapes.Rectangle(width=3.0, height=4.0);
-    println(str(r.area()));               // "12"
-    println(str(shapes.circle_area(1.0))); // "3.14159"
+    Println(Str(r.area()));               // "12"
+    Println(Str(shapes.circle_area(1.0))); // "3.14159"
 }
 ```
 

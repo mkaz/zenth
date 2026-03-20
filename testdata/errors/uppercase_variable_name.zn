@@ -1,0 +1,4 @@
+fn main() {
+    let Value = 10;
+    Println(Str(Value));
+}

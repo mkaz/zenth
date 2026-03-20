@@ -2,88 +2,88 @@
 
 fn test_array_basics() {
     let nums = [1, 2, 3, 4, 5];
-    assert_eq(len(nums), 5);
-    assert_eq(nums[0], 1);
-    assert_eq(nums[4], 5);
+    AssertEq(Len(nums), 5);
+    AssertEq(nums[0], 1);
+    AssertEq(nums[4], 5);
 }
 
 fn test_array_add_push() {
     var items: array(int) = [];
     items.add(10);
     items.add(20);
-    assert_eq(len(items), 2);
-    assert_eq(items[0], 10);
-    assert_eq(items[1], 20);
+    AssertEq(Len(items), 2);
+    AssertEq(items[0], 10);
+    AssertEq(items[1], 20);
 
     // push prepends to the front
     items.push(5);
-    assert_eq(items[0], 5);
-    assert_eq(len(items), 3);
+    AssertEq(items[0], 5);
+    AssertEq(Len(items), 3);
 }
 
 fn test_array_concat() {
     let a = [1, 2];
     let b = [3, 4];
     let c = a + b;
-    assert_eq(len(c), 4);
-    assert_eq(c[0], 1);
-    assert_eq(c[3], 4);
+    AssertEq(Len(c), 4);
+    AssertEq(c[0], 1);
+    AssertEq(c[3], 4);
 }
 
 fn test_array_max_min_sum() {
     let nums = [3, 1, 4, 1, 5];
-    assert_eq(nums.max(), 5);
-    assert_eq(nums.min(), 1);
-    assert_eq(nums.sum(), 14);
+    AssertEq(nums.max(), 5);
+    AssertEq(nums.min(), 1);
+    AssertEq(nums.sum(), 14);
 }
 
 fn test_array_sorted() {
     let nums = [3, 1, 4, 1, 5];
     let s = nums.sorted();
-    assert_eq(s[0], 1);
-    assert_eq(s[1], 1);
-    assert_eq(s[2], 3);
-    assert_eq(s[3], 4);
-    assert_eq(s[4], 5);
+    AssertEq(s[0], 1);
+    AssertEq(s[1], 1);
+    AssertEq(s[2], 3);
+    AssertEq(s[3], 4);
+    AssertEq(s[4], 5);
 
     // descending
     let d = nums.sorted("desc");
-    assert_eq(d[0], 5);
-    assert_eq(d[1], 4);
-    assert_eq(d[2], 3);
-    assert_eq(d[3], 1);
-    assert_eq(d[4], 1);
+    AssertEq(d[0], 5);
+    AssertEq(d[1], 4);
+    AssertEq(d[2], 3);
+    AssertEq(d[3], 1);
+    AssertEq(d[4], 1);
 
     // explicit ascending
     let a = nums.sorted("asc");
-    assert_eq(a[0], 1);
-    assert_eq(a[4], 5);
+    AssertEq(a[0], 1);
+    AssertEq(a[4], 5);
 }
 
 fn test_array_map_filter() {
     let nums = [1, 2, 3, 4, 5];
     let doubled = nums.map(fn(x) x * 2);
-    assert_eq(doubled[0], 2);
-    assert_eq(doubled[4], 10);
+    AssertEq(doubled[0], 2);
+    AssertEq(doubled[4], 10);
 
     let evens = nums.filter(fn(x) x % 2 == 0);
-    assert_eq(len(evens), 2);
-    assert_eq(evens[0], 2);
-    assert_eq(evens[1], 4);
+    AssertEq(Len(evens), 2);
+    AssertEq(evens[0], 2);
+    AssertEq(evens[1], 4);
 }
 
 fn test_hashmap() {
-    var m = hashmap(str, int);
+    var m = Hashmap(str, int);
     m["alice"] = 95;
     m["bob"] = 80;
-    assert_eq(len(m), 2);
-    assert_eq(m["alice"], 95);
-    assert(m.exists("bob"));
-    assert(!m.exists("charlie"));
+    AssertEq(Len(m), 2);
+    AssertEq(m["alice"], 95);
+    Assert(m.exists("bob"));
+    Assert(!m.exists("charlie"));
 }
 
 fn test_tuple() {
-    let t = tuple("hello", 42);
-    assert_eq(t.0, "hello");
-    assert_eq(t.1, 42);
+    let t = Tuple("hello", 42);
+    AssertEq(t.0, "hello");
+    AssertEq(t.1, 42);
 }

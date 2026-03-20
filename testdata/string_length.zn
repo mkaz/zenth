@@ -1,5 +1,5 @@
 fn main() {
     let s = "hello";
-    println("m=" + str(s.length()));
-    println("f=" + str(len(s)));
+    Println("m=" + Str(s.length()));
+    Println("f=" + Str(Len(s)));
 }

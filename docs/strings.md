@@ -8,7 +8,7 @@ Double-quoted strings (`"..."`) support interpolation with `{expression}`:
 
 ```zenth
 let name = "World";
-println("Hello, {name}!");  // Hello, World!
+Println("Hello, {name}!");  // Hello, World!
 ```
 
 Any expression can go inside the braces -- variables, arithmetic, method calls:
@@ -16,14 +16,14 @@ Any expression can go inside the braces -- variables, arithmetic, method calls:
 ```zenth
 let a = 3;
 let b = 4;
-println("{a} + {b} = {a + b}");  // 3 + 4 = 7
+Println("{a} + {b} = {a + b}");  // 3 + 4 = 7
 ```
 
-Values are automatically converted to strings, so you don't need to call `str()` inside interpolation:
+Values are automatically converted to strings, so you don't need to call `Str()` inside interpolation:
 
 ```zenth
 let count = 42;
-println("There are {count} items");  // There are 42 items
+Println("There are {count} items");  // There are 42 items
 ```
 
 ### Method Calls in Interpolation
@@ -32,7 +32,7 @@ You can call methods and access fields inside `{}`:
 
 ```zenth
 let r = Rectangle{ width: 5.0, height: 10.0 };
-println("Area: {r.area()}");  // Area: 50
+Println("Area: {r.area()}");  // Area: 50
 ```
 
 ### Plain Strings
@@ -40,7 +40,7 @@ println("Area: {r.area()}");  // Area: 50
 If a double-quoted string has no `{`, it behaves as a plain string with no special processing:
 
 ```zenth
-println("No interpolation here");
+Println("No interpolation here");
 ```
 
 ### Escape Sequences
@@ -58,7 +58,7 @@ println("No interpolation here");
 To include a literal brace in a double-quoted string, escape it:
 
 ```zenth
-println("Use \{braces\} literally");  // Use {braces} literally
+Println("Use \{braces\} literally");  // Use {braces} literally
 ```
 
 ## Single-Quoted Strings (Raw Strings)
@@ -66,7 +66,7 @@ println("Use \{braces\} literally");  // Use {braces} literally
 Single-quoted strings (`'...'`) never interpolate. Braces are treated as plain characters:
 
 ```zenth
-println('Hello {name}');  // Hello {name}
+Println('Hello {name}');  // Hello {name}
 ```
 
 This is useful for strings that contain braces as literal text, such as templates, format strings, or code snippets.
@@ -99,15 +99,15 @@ let full = "{first}, {last}";
 
 ## String Conversion
 
-Use `str()` to convert other types to strings:
+Use `Str()` to convert other types to strings:
 
 ```zenth
 let n = 42;
-let s = str(n);    // "42"
-let f = str(3.14); // "3.14"
+let s = Str(n);    // "42"
+let f = Str(3.14); // "3.14"
 ```
 
-Inside interpolated strings, conversion is automatic -- `str()` is only needed when you need a string value outside of interpolation.
+Inside interpolated strings, conversion is automatic -- `Str()` is only needed when you need a string value outside of interpolation.
 
 ### Parsing with Base
 
@@ -123,12 +123,12 @@ Without an argument, `.to_int()` parses as base 10.
 
 ## String Length
 
-Use `len()` or `.length()` to get the length of a string:
+Use `Len()` or `.length()` to get the length of a string:
 
 ```zenth
 let s = "hello";
-println(len(s));           // 5
-println(s.length());       // 5
+Println(Len(s));           // 5
+Println(s.length());       // 5
 ```
 
 ## Containment
@@ -138,7 +138,7 @@ Use `.contains()` to check if a string contains a substring:
 ```zenth
 let s = "hello world";
 if s.contains("world") {
-    println("found it");
+    Println("found it");
 }
 ```
 
@@ -147,8 +147,8 @@ if s.contains("world") {
 Use `.upper()` and `.lower()` for case conversion:
 
 ```zenth
-println("hello".upper()); // HELLO
-println("HeLLo".lower()); // hello
+Println("hello".upper()); // HELLO
+Println("HeLLo".lower()); // hello
 ```
 
 ## Prefix and Suffix
@@ -157,8 +157,8 @@ Use `.starts_with()` and `.ends_with()` to check for prefixes and suffixes:
 
 ```zenth
 let name = "zenth";
-println(name.starts_with("zen"));      // true
-println(name.ends_with("th"));         // true
+Println(name.starts_with("zen"));      // true
+Println(name.ends_with("th"));         // true
 ```
 
 Use `.strip_prefix()` and `.strip_suffix()` to remove a prefix or suffix from a string. If the string does not have the given prefix/suffix, it is returned unchanged:
@@ -179,8 +179,8 @@ let same = "hello".strip_prefix("xyz"); // "hello"
 Use `.strip()` to trim whitespace, or pass characters to trim from both ends:
 
 ```zenth
-println("--" + "  hi  ".strip() + "--");   // --hi--
-println("--" + "..hi..".strip(".") + "--"); // --hi--
+Println("--" + "  hi  ".strip() + "--");   // --hi--
+Println("--" + "..hi..".strip(".") + "--"); // --hi--
 ```
 
 ## Find, Count, Replace
@@ -188,15 +188,15 @@ println("--" + "..hi..".strip(".") + "--"); // --hi--
 Use `.find()` and `.count()` for substring search and counting:
 
 ```zenth
-println("banana".find("na"));       // 2
-println("banana".count("na"));      // 2
+Println("banana".find("na"));       // 2
+Println("banana".count("na"));      // 2
 ```
 
 Use `.replace(old, new)` to replace all matches, or `.replace(old, new, n)` to limit replacements:
 
 ```zenth
-println("a-b-a".replace("a", "x"));    // x-b-x
-println("a-b-a".replace("a", "x", 1)); // x-b-a
+Println("a-b-a".replace("a", "x"));    // x-b-x
+Println("a-b-a".replace("a", "x", 1)); // x-b-a
 ```
 
 ## Splitting Strings
@@ -206,18 +206,18 @@ By default, `.split()` splits on whitespace. You can also pass a delimiter strin
 
 ```zenth
 let words = "this is zenth".split();
-println(words[0]); // "this"
+Println(words[0]); // "this"
 
 let parts = "a-b-c".split("-");
-println(parts[1]); // "b"
+Println(parts[1]); // "b"
 ```
 
 Use `.split_once(sep)` when you only need two pieces. It returns a tuple `(left, right)`:
 
 ```zenth
 let (cmd, value) = "forward 10".split_once(" ");
-println(cmd);   // "forward"
-println(value); // "10"
+Println(cmd);   // "forward"
+Println(value); // "10"
 ```
 
 ## Character Classification
@@ -225,10 +225,10 @@ println(value); // "10"
 Use `.is_digit()` to check if a single-character string is a decimal digit (`0`–`9`):
 
 ```zenth
-println("5".is_digit());   // true
-println("0".is_digit());   // true
-println("a".is_digit());   // false
-println("[".is_digit());   // false
+Println("5".is_digit());   // true
+Println("0".is_digit());   // true
+Println("a".is_digit());   // false
+Println("[".is_digit());   // false
 ```
 
 This is useful when iterating over a string character by character:
@@ -240,7 +240,7 @@ for ch in "abc123" {
         digits += 1;
     }
 }
-println(digits);  // 3
+Println(digits);  // 3
 ```
 
 ## Repeating

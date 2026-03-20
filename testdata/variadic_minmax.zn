@@ -1,17 +1,17 @@
 fn main() {
-    // 2-arg min/max (existing)
-    println(min(3, 7));
-    println(max(3, 7));
+    // 2-arg min/Max (existing)
+    Println(Min(3, 7));
+    Println(Max(3, 7));
 
     // 3-arg
-    println(min(5, 2, 8));
-    println(max(5, 2, 8));
+    Println(Min(5, 2, 8));
+    Println(Max(5, 2, 8));
 
     // 4-arg
-    println(min(9, 3, 6, 1));
-    println(max(9, 3, 6, 1));
+    Println(Min(9, 3, 6, 1));
+    Println(Max(9, 3, 6, 1));
 
     // f64 variadic
-    println(min(1.5, 0.5, 2.5));
-    println(max(1.5, 0.5, 2.5));
+    Println(Min(1.5, 0.5, 2.5));
+    Println(Max(1.5, 0.5, 2.5));
 }

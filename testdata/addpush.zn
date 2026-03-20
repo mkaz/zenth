@@ -3,11 +3,11 @@ fn main() {
     var a = [2, 3, 4];
 
     a.add(5);
-    println("after add: " + str(len(a)));
-    println("last=" + str(a[3]));
+    Println("after add: " + Str(Len(a)));
+    Println("last=" + Str(a[3]));
 
     a.push(1);
-    println("after push: " + str(len(a)));
-    println("first=" + str(a[0]));
-    println("second=" + str(a[1]));
+    Println("after push: " + Str(Len(a)));
+    Println("first=" + Str(a[0]));
+    Println("second=" + Str(a[1]));
 }

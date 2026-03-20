@@ -7,24 +7,24 @@ fn fizzbuzz(n: int) -> str {
     } else if n % 5 == 0 {
         return "Buzz";
     } else {
-        return str(n);
+        return Str(n);
     }
 }
 
 fn main() {
     // FizzBuzz
     for var i = 1; i <= 20; i++ {
-        println(fizzbuzz(i));
+        Println(fizzbuzz(i));
     }
 
     // Match statement
     let day = 3;
     match day {
-        1 => println("Monday");
-        2 => println("Tuesday");
-        3 => println("Wednesday");
-        4 => println("Thursday");
-        5 => println("Friday");
-        _ => println("Weekend");
+        1 => Println("Monday");
+        2 => Println("Tuesday");
+        3 => Println("Wednesday");
+        4 => Println("Thursday");
+        5 => Println("Friday");
+        _ => Println("Weekend");
     }
 }

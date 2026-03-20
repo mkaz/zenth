@@ -10,12 +10,12 @@ Create a file ending with `_test.zn` in a `tests/` directory. Define test functi
 // tests/math_test.zn
 
 fn test_addition() {
-    assert_eq(2 + 3, 5);
+    AssertEq(2 + 3, 5);
 }
 
 fn test_negative_numbers() {
-    assert_eq(-3 + 3, 0);
-    assert(-1 < 0);
+    AssertEq(-3 + 3, 0);
+    Assert(-1 < 0);
 }
 ```
 
@@ -25,14 +25,14 @@ Test files do not need a `fn main()` -- the test runner generates one automatica
 
 Two assertion functions are available in all Zenth programs, not just test files:
 
-### assert(condition)
+### Assert(condition)
 
 Panics if `condition` is `false`, reporting the file and line number:
 
 ```zenth
-assert(len("hello") == 5);
-assert(x > 0);
-assert(items.exists("key"));
+Assert(Len("hello") == 5);
+Assert(x > 0);
+Assert(items.exists("key"));
 ```
 
 On failure:
@@ -40,14 +40,14 @@ On failure:
 assert failed at tests/math_test.zn:4
 ```
 
-### assert_eq(got, expected)
+### AssertEq(got, expected)
 
 Panics if `got != expected`, reporting the file, line, and both values:
 
 ```zenth
-assert_eq(add(2, 3), 5);
-assert_eq(name.upper(), "ALICE");
-assert_eq(len(items), 3);
+AssertEq(add(2, 3), 5);
+AssertEq(name.upper(), "ALICE");
+AssertEq(Len(items), 3);
 ```
 
 On failure:
@@ -123,12 +123,12 @@ obj Rectangle {
 
 fn test_area() {
     let r = Rectangle{ width: 3.0, height: 4.0 };
-    assert_eq(r.area(), 12.0);
+    AssertEq(r.area(), 12.0);
 }
 
 fn test_zero_area() {
     let r = Rectangle{ width: 0.0, height: 100.0 };
-    assert_eq(r.area(), 0.0);
+    AssertEq(r.area(), 0.0);
 }
 ```
 
@@ -139,22 +139,22 @@ fn test_zero_area() {
 
 fn test_array_operations() {
     let nums = [3, 1, 4, 1, 5];
-    assert_eq(nums.max(), 5);
-    assert_eq(nums.min(), 1);
-    assert_eq(nums.sum(), 14);
+    AssertEq(nums.max(), 5);
+    AssertEq(nums.min(), 1);
+    AssertEq(nums.sum(), 14);
 
     let sorted = nums.sorted();
-    assert_eq(sorted[0], 1);
-    assert_eq(sorted[4], 5);
+    AssertEq(sorted[0], 1);
+    AssertEq(sorted[4], 5);
 }
 
 fn test_hashmap_lookup() {
-    var scores = hashmap(str, int);
+    var scores = Hashmap(str, int);
     scores["alice"] = 95;
     scores["bob"] = 80;
 
-    assert(scores.exists("alice"));
-    assert_eq(scores["alice"], 95);
-    assert_eq(len(scores), 2);
+    Assert(scores.exists("alice"));
+    AssertEq(scores["alice"], 95);
+    AssertEq(Len(scores), 2);
 }
 ```

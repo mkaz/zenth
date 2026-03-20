@@ -3,26 +3,26 @@
 fn main() {
     // Basic repeat - fill with zeros
     let zeros = [0].repeat(5);
-    println(len(zeros));
+    Println(Len(zeros));
     for z in zeros {
-        print(str(z) + " ");
+        Print(Str(z) + " ");
     }
-    println("");
+    Println("");
 
     // Repeat strings
     let dashes = ["-"].repeat(3);
-    println(dashes.join(""));
+    Println(dashes.join(""));
 
     // Repeat pattern
     let pattern = [1, 2].repeat(6);
     for p in pattern {
-        print(str(p) + " ");
+        Print(Str(p) + " ");
     }
-    println("");
+    Println("");
 
     // Repeat with single element
     let trues = [true].repeat(3);
-    println(len(trues));
+    Println(Len(trues));
 }
 
 // Expected output:

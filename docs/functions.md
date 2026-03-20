@@ -6,7 +6,7 @@ Functions are declared with the `fn` keyword. Every program needs a `main` funct
 
 ```zenth
 fn greet(name: str) {
-    println("Hello, {name}!");
+    Println("Hello, {name}!");
 }
 ```
 
@@ -30,7 +30,7 @@ Functions without a `->` return type return nothing (void).
 fn main() {
     greet("World");
     let result = add(3, 4);
-    println(result);       // 7
+    Println(result);       // 7
 }
 ```
 
@@ -65,11 +65,11 @@ fn min_max(nums: array(int)) -> (int, int) {
 
 fn main() {
     let (lo, hi) = min_max([3, 1, 4, 1, 5, 9]);
-    println("{lo} {hi}");  // "1 9"
+    Println("{lo} {hi}");  // "1 9"
 }
 ```
 
-The `return a, b;` syntax is shorthand for `return tuple(a, b);`. The return type `(T1, T2)` is shorthand for `tuple(T1, T2)`. Both forms are equivalent:
+The `return a, b;` syntax is shorthand for `return Tuple(a, b);`. The return type `(T1, T2)` is shorthand for `Tuple(T1, T2)`. Both forms are equivalent:
 
 ```zenth
 fn divide(a: int, b: int) -> (int, int) {
@@ -81,11 +81,11 @@ fn swap(x: str, y: str) -> (str, str) {
 }
 ```
 
-You can also use the full `tuple(...)` syntax when you want to be explicit:
+You can also use the full `Tuple(...)` syntax when you want to be explicit:
 
 ```zenth
-fn get_pair() -> tuple(int, int) {
-    return tuple(10, 20);
+fn get_pair() -> Tuple(int, int) {
+    return Tuple(10, 20);
 }
 ```
 
@@ -95,7 +95,7 @@ Function parameters can specify default values using `=`. If a caller omits a de
 
 ```zenth
 fn greet(name: str = "World") {
-    println("Hello, {name}!");
+    Println("Hello, {name}!");
 }
 
 fn main() {
@@ -137,40 +137,50 @@ Zenth provides several built-in functions that are always available:
 
 | Function | Description |
 |----------|-------------|
-| `print(x, [enabled])` | Print `x` without a newline; print only when `enabled` is `true` (default) |
-| `println(x, [enabled])` | Print `x` with a newline; print only when `enabled` is `true` (default) |
-| `len(x)` | Return the length of a string or array |
-| `str(x)` | Convert any value to its string representation |
-| `abs(x)` | Absolute value for `int` or `f64` |
-| `min(a, b, ...)` / `max(a, b, ...)` | Minimum / maximum for two or more `int` or `f64` values (all args must be the same type) |
-| `clamp(x, lo, hi)` | Clamp `x` between `lo` and `hi` (`int` or `f64`) |
-| `round(x)` / `floor(x)` / `ceil(x)` | Floating-point rounding helpers (return `f64`) |
-| `pow(x, y)` / `sqrt(x)` | Power and square root (return `f64`) |
-| `zip(a, b, ...)` | Combine two or more arrays into an array of tuples |
-| `flag(default=val)` | Declare a command-line flag with a default value |
+| `Print(x, [enabled])` | Print `x` without a newline; print only when `enabled` is `true` (default) |
+| `Println(x, [enabled])` | Print `x` with a newline; print only when `enabled` is `true` (default) |
+| `Len(x)` | Return the length of a string or array |
+| `Str(x)` | Convert any value to its string representation |
+| `Int(x)` / `Int(str, base)` | Convert to `int` (optional base for string input) |
+| `F64(x)` | Convert to `f64` |
+| `Abs(x)` | Absolute value for `int` or `f64` |
+| `Min(a, b, ...)` / `Max(a, b, ...)` | Minimum / maximum for two or more `int` or `f64` values (all args must be the same type) |
+| `Clamp(x, lo, hi)` | Clamp `x` between `lo` and `hi` (`int` or `f64`) |
+| `Round(x)` / `Floor(x)` / `Ceil(x)` | Floating-point rounding helpers (return `f64`) |
+| `Pow(x, y)` / `Sqrt(x)` | Power and square root (return `f64`) |
+| `Range(start, end[, step])` | Build an exclusive range object |
+| `Rangei(start, end[, step])` | Build an inclusive range object |
+| `Hashmap(K, V[, default=val])` | Build an empty hashmap (optional default value) |
+| `Set(T)` | Build an empty set |
+| `Tuple(a, b, ...)` | Build a tuple value |
+| `Zip(a, b, ...)` | Combine two or more arrays into an array of tuples |
+| `Flag(default=val)` | Declare a command-line flag with a default value |
+| `File(path)` | Build a file value for file methods |
+| `Exit([code])` | Exit the program (`0` when omitted) |
+| `Assert(cond)` / `AssertEq(got, expected)` | Built-in test/assertion helpers |
 
 ```zenth
 fn main() {
-    println("hello");      // prints "hello\n"
-    print("no newline");   // prints without newline
+    Println("hello");      // prints "hello\n"
+    Print("no newline");   // prints without newline
     let debug = false;
-    println("debug line", debug); // prints only when debug is true
-    println(len("abc"));       // prints "3"
-    println(str(42));      // prints "42"
-    println(str(abs(-5)));  // prints "5"
+    Println("debug line", debug); // prints only when debug is true
+    Println(Len("abc"));       // prints "3"
+    Println(Str(42));      // prints "42"
+    Println(Str(Abs(-5)));  // prints "5"
 }
 ```
 
 ## Zip
 
-The `zip()` function combines two or more arrays into an array of tuples, pairing elements at corresponding positions:
+The `Zip()` function combines two or more arrays into an array of tuples, pairing elements at corresponding positions:
 
 ```zenth
 let names = ["Alice", "Bob", "Charlie"];
 let scores = [95, 87, 92];
 
-for pair in zip(names, scores) {
-    println(pair.0 + ": " + str(pair.1));
+for pair in Zip(names, scores) {
+    Println(pair.0 + ": " + Str(pair.1));
 }
 // Alice: 95
 // Bob: 87
@@ -183,31 +193,31 @@ With three or more arrays:
 let x = [1, 2, 3];
 let y = [4, 5, 6];
 let z = [7, 8, 9];
-for t in zip(x, y, z) {
-    println(str(t.0) + "," + str(t.1) + "," + str(t.2));
+for t in Zip(x, y, z) {
+    Println(Str(t.0) + "," + Str(t.1) + "," + Str(t.2));
 }
 ```
 
-When arrays have different lengths, `zip()` stops at the shortest:
+When arrays have different lengths, `Zip()` stops at the shortest:
 
 ```zenth
 let a = [1, 2, 3, 4];
 let b = [10, 20];
-let zipped = zip(a, b);  // [tuple(1, 10), tuple(2, 20)]
+let zipped = Zip(a, b);  // [Tuple(1, 10), Tuple(2, 20)]
 ```
 
 ## Command-Line Flags
 
-The `flag()` built-in declares command-line flags. The flag name is inferred from the variable name, and the type is inferred from the default value (`bool`, `int`, or `str`).
+The `Flag()` built-in declares command-line flags. The flag name is inferred from the variable name, and the type is inferred from the default value (`bool`, `int`, or `str`).
 
 ```zenth
 fn main() {
-    let debug = flag(default=false);   // --debug
-    let times = flag(default=5);       // --times 10
-    let msg = flag(default="Hello");   // --msg "world"
+    let debug = Flag(default=false);   // --debug
+    let times = Flag(default=5);       // --times 10
+    let msg = Flag(default="Hello");   // --msg "world"
 
     for var i = 0; i < times; i++ {
-        println(msg, !debug);
+        Println(msg, !debug);
     }
 }
 ```
@@ -226,6 +236,27 @@ zenth run greet.zn --times 3 --msg "Hi"
 ```
 
 When no flags are provided, the default values are used. Boolean flags are set to `true` by passing `--name` with no value.
+
+## Naming Rules
+
+Zenth reserves leading uppercase for system names:
+
+- Built-in functions are capitalized (`Println`, `Len`, `Flag`, `Range`, etc.).
+- User-defined **top-level** functions must start with a lowercase letter.
+- User-defined variables (`let`, `var`, `const`, including destructuring and loop bindings) must start with a lowercase letter.
+
+Examples:
+
+```zenth
+fn build_report() {    // ok
+    let debug = Flag(default=false);   // ok
+    let value = 10;                    // ok
+}
+
+fn BuildReport() { }   // error
+let Debug = true;      // error
+const MaxSize = 1024;  // error
+```
 
 ## Closures
 

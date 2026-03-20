@@ -4,10 +4,10 @@ Hashmaps are unordered collections of key-value pairs.
 
 ## Creating Hashmaps
 
-You can create a hashmap using the `hashmap(KeyType, ValueType)` built-in:
+You can create a hashmap using the `Hashmap(KeyType, ValueType)` built-in:
 
 ```zenth
-var scores = hashmap(str, int);
+var scores = Hashmap(str, int);
 ```
 
 ## Assigning and Accessing
@@ -19,15 +19,15 @@ scores["Alice"] = 100;
 scores["Bob"] = 95;
 
 let aliceScore = scores["Alice"];
-println(aliceScore);
+Println(aliceScore);
 ```
 
 ## Hashmap Length
 
-Use `len()` to get the number of key-value pairs in the hashmap:
+Use `Len()` to get the number of key-value pairs in the hashmap:
 
 ```zenth
-println(len(scores));
+Println(Len(scores));
 ```
 
 ## Default Values
@@ -35,11 +35,11 @@ println(len(scores));
 You can provide a default value for missing keys using the `default` named argument:
 
 ```zenth
-var counts = hashmap(str, int, default=0);
+var counts = Hashmap(str, int, default=0);
 counts["apples"] += 1;
 counts["apples"] += 2;
-println(counts["apples"]);       // prints "3"
-println(counts["missing"]);      // prints "0"
+Println(counts["apples"]);       // prints "3"
+Println(counts["missing"]);      // prints "0"
 ```
 
 When you access a missing key, the default is returned instead of Go's zero value. Compound assignments (`+=`, `-=`, `++`, etc.) on missing keys initialize from the default first.
@@ -49,18 +49,18 @@ When you access a missing key, the default is returned instead of Go's zero valu
 Use `for` to iterate over a hashmap:
 
 ```zenth
-var m = hashmap(str, int);
+var m = Hashmap(str, int);
 m["a"] = 1;
 m["b"] = 2;
 
 // iterate over key-value pairs
 for k, v in m {
-    println(k + "=" + str(v));
+    Println(k + "=" + Str(v));
 }
 
 // iterate over keys only
 for k in m {
-    println(k);
+    Println(k);
 }
 ```
 
@@ -69,14 +69,14 @@ for k in m {
 Use `.exists(key)` to check whether a key is present in the hashmap:
 
 ```zenth
-var scores = hashmap(str, int);
+var scores = Hashmap(str, int);
 scores["Alice"] = 95;
 
 if scores.exists("Alice") {
-    println("found Alice");
+    Println("found Alice");
 }
 if !scores.exists("Bob") {
-    println("Bob not found");
+    Println("Bob not found");
 }
 ```
 
@@ -89,7 +89,7 @@ let keys = m.keys();
 let vals = m.values();
 
 for v in vals {
-    println(v);
+    Println(v);
 }
 ```
 
@@ -103,12 +103,12 @@ obj Point {
     y: int;
 }
 
-var grid = hashmap(Point, str);
+var grid = Hashmap(Point, str);
 let pt1 = Point(x=1, y=2);
 let pt2 = Point(x=1, y=2);
 
 grid[pt1] = "#";
-println(grid[pt2]); // Prints "#"
+Println(grid[pt2]); // Prints "#"
 ```
 
 ## Tuple Keys
@@ -116,21 +116,21 @@ println(grid[pt2]); // Prints "#"
 Tuples can also be used as hashmap keys, which is useful for multi-dimensional lookups or composite keys:
 
 ```zenth
-var grid = hashmap(tuple(int, int), str);
-grid[tuple(0, 0)] = "origin";
-grid[tuple(1, 2)] = "point";
+var grid = Hashmap(Tuple(int, int), str);
+grid[Tuple(0, 0)] = "origin";
+grid[Tuple(1, 2)] = "point";
 
-println(grid[tuple(0, 0)]);  // "origin"
-println(grid[tuple(1, 2)]);  // "point"
+Println(grid[Tuple(0, 0)]);  // "origin"
+Println(grid[Tuple(1, 2)]);  // "point"
 
 // Check existence
-if grid.exists(tuple(0, 0)) {
-    println("found origin");
+if grid.exists(Tuple(0, 0)) {
+    Println("found origin");
 }
 
 // Iterate
 for key in grid {
-    println(str(key.0) + "," + str(key.1));
+    Println(Str(key.0) + "," + Str(key.1));
 }
 ```
 
