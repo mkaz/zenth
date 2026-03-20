@@ -86,6 +86,18 @@ if nums.exists(20) {
 
 Zenth provides methods to append, prepend, and remove elements from an array. The array must be assigned to a mutable `var` to use these methods.
 
+### Index Assignment
+
+Assign directly to an index using bracket notation. The array must be a mutable `var`:
+
+```zenth
+var nums = [10, 20, 30];
+nums[1] = 99;            // [10, 99, 30]
+nums[0] = nums[0] + 5;   // [15, 99, 30]
+```
+
+Index assignment on an immutable `let` binding is a compile-time error.
+
 ### Adding Elements
 
 - `.add(value)` appends an element to the end of the array.

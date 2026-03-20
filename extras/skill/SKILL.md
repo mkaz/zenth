@@ -302,6 +302,8 @@ println(numbers.length());
 
 // Mutating (requires var)
 var items: array(int) = [];
+items[0] = 99;         // direct index assignment
+items[0] += 1;         // compound assignment by index
 items.add(10);         // append
 items.push(20);        // same as add
 let last = items.pop();     // remove and return last
