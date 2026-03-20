@@ -2,7 +2,7 @@
 
 fn main() {
     // Create hashmap with tuple keys
-    var grid = Hashmap(Tuple(int, int), str);
+    var grid = Hashmap(Tuple(Int,Int),Str);
     grid[Tuple(0, 0)] = "origin";
     grid[Tuple(1, 2)] = "point";
     grid[Tuple(3, 4)] = "far";
@@ -23,7 +23,7 @@ fn main() {
     Println(count);
 
     // Iterate with key access
-    var small = Hashmap(Tuple(int, int), str);
+    var small = Hashmap(Tuple(Int,Int),Str);
     small[Tuple(1, 2)] = "yes";
     for k in small {
         Println(k.0);
@@ -36,7 +36,7 @@ fn main() {
     }
 
     // String tuple keys
-    var lookup = Hashmap(Tuple(str, str), int);
+    var lookup = Hashmap(Tuple(Str,Str),Int);
     lookup[Tuple("a", "b")] = 1;
     lookup[Tuple("c", "d")] = 2;
     Println(lookup[Tuple("a", "b")]);

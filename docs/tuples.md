@@ -15,7 +15,7 @@ Println(t.1);       // "42"
 With a type annotation:
 
 ```zenth
-let pair: Tuple(str, int) = Tuple("age", 30);
+let pair: Tuple(Str,Int) = Tuple("age", 30);
 ```
 
 ## Named Tuples
@@ -38,7 +38,7 @@ Println(person.1);          // "30"
 With a type annotation:
 
 ```zenth
-let t: Tuple(key: str, value: int) = Tuple(key="x", value=42);
+let t: Tuple(key: Str, value: Int) = Tuple(key="x", value=42);
 ```
 
 A tuple must be all-named or all-positional. Mixing is a compile error:
@@ -50,7 +50,7 @@ let bad = Tuple(name="foo", 42);  // error: cannot mix named and positional
 Named and positional tuples are distinct types — you cannot assign one to the other:
 
 ```zenth
-let t: Tuple(name: str, age: int) = Tuple("Alice", 30);  // error: type mismatch
+let t: Tuple(name: Str, age: Int) = Tuple("Alice", 30);  // error: type mismatch
 ```
 
 ## Function Parameters and Return Types
@@ -58,7 +58,7 @@ let t: Tuple(name: str, age: int) = Tuple("Alice", 30);  // error: type mismatch
 Tuples work in function signatures like any other type. For multi-return functions, use the `(T1, T2)` shorthand return type:
 
 ```zenth
-fn min_max(nums: array(int)) -> (int, int) {
+fn min_max(nums: Array(Int)) -> (Int,Int) {
     var lo = nums[0];
     var hi = nums[0];
     for n in nums {
@@ -79,11 +79,11 @@ The `(T1, T2)` return type is shorthand for `Tuple(T1, T2)`. The `return a, b;` 
 Named tuples also work in signatures:
 
 ```zenth
-fn make_person(name: str, age: int) -> Tuple(name: str, age: int) {
+fn make_person(name: Str, age: Int) -> Tuple(name: Str, age: Int) {
     return Tuple(name=name, age=age);
 }
 
-fn greet(person: Tuple(name: str, age: int)) {
+fn greet(person: Tuple(name: Str, age: Int)) {
     Println(person.name + " is " + Str(person.age));
 }
 
@@ -114,15 +114,15 @@ Println(n);              // "Alice"
 
 ## Tuples as Hashmap and Set Keys
 
-Tuples with comparable element types (built-in types like `int`, `str`, `f64`, `bool`) can be used as hashmap keys and set elements:
+Tuples with comparable element types (built-in types like `Int`, `Str`, `Float`, `Bool`) can be used as hashmap keys and set elements:
 
 ```zenth
-var grid = Hashmap(Tuple(int, int), str);
+var grid = Hashmap(Tuple(Int,Int),Str);
 grid[Tuple(0, 0)] = "origin";
 grid[Tuple(1, 2)] = "point";
 Println(grid[Tuple(0, 0)]);  // "origin"
 
-var visited = Set(Tuple(int, int));
+var visited = Set(Tuple(Int,Int));
 visited.add(Tuple(3, 4));
 Println(visited.exists(Tuple(3, 4)));  // true
 ```
@@ -134,7 +134,7 @@ See the [Hashmaps](hashmaps.md) and [Sets](sets.md) docs for more details.
 Tuples nest naturally inside arrays:
 
 ```zenth
-let pairs: array(Tuple(str, str)) = [];
+let pairs: Array(Tuple(Str,Str)) = [];
 pairs.add(Tuple("left", "right"));
 Println(pairs[0].0 + ":" + pairs[0].1);
 ```
@@ -142,7 +142,7 @@ Println(pairs[0].0 + ":" + pairs[0].1);
 With named tuples:
 
 ```zenth
-let people: array(Tuple(name: str, score: int)) = [];
+let people: Array(Tuple(name: Str, score: Int)) = [];
 people.add(Tuple(name="Bob", score=95));
 people.add(Tuple(name="Carol", score=88));
 

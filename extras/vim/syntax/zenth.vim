@@ -15,12 +15,11 @@ syn keyword zenthConstant     true false nil INT_MAX INT_MIN
 syn keyword zenthIdentifier   self
 
 " Built-in types
-syn keyword zenthType         int i8 i16 i32 i64 u8 u16 u32 u64
-syn keyword zenthType         f32 f64 bool str byte
-syn keyword zenthType         array tuple hashmap set
+syn keyword zenthType         Int Float Bool Str Byte
+syn keyword zenthType         Array Tuple Hashmap Set
 
 " Built-in functions
-syn keyword zenthBuiltin      Print Println Len Str Hashmap File Flag Exit Range Rangei Int F64 Abs Min Max Clamp Round Floor Ceil Pow Sqrt Assert AssertEq Zip Tuple
+syn keyword zenthBuiltin      Print Println Len Str Hashmap File Flag Exit Range Rangei Int Float Abs Min Max Clamp Round Floor Ceil Pow Sqrt Assert AssertEq Zip Tuple
 
 " Operators
 syn match zenthOperator       /[+\-*/%=<>!&|^~]/

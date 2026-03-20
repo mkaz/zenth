@@ -113,10 +113,10 @@ The exit code is `0` if all tests pass, `1` if any test fails.
 // tests/rectangle_test.zn
 
 obj Rectangle {
-    width: f64;
-    height: f64;
+    width: Float;
+    height: Float;
 
-    fn area() -> f64 {
+    fn area() -> Float {
         return self.width * self.height;
     }
 }
@@ -149,7 +149,7 @@ fn test_array_operations() {
 }
 
 fn test_hashmap_lookup() {
-    var scores = Hashmap(str, int);
+    var scores = Hashmap(Str,Int);
     scores["alice"] = 95;
     scores["bob"] = 80;
 

@@ -1,4 +1,4 @@
-fn pair(a: int, b: int, c: int = 3) {
+fn pair(a: Int, b: Int, c: Int = 3) {
     Println("{a},{b},{c}");
 }
 

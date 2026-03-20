@@ -1,3 +1,3 @@
 fn main() {
-    var m = Hashmap(str, int, default="hello");
+    var m = Hashmap(Str,Int, default="hello");
 }

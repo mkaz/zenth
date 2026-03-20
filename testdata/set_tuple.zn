@@ -1,8 +1,8 @@
 // Test Set(Tuple(...)) with struct-based key representation
 
 fn main() {
-    // Create a set of (int, int) tuples
-    var dots = Set(Tuple(int, int));
+    // Create a set of (Int,Int) tuples
+    var dots = Set(Tuple(Int,Int));
     dots.add(Tuple(6, 10));
     dots.add(Tuple(0, 14));
     dots.add(Tuple(9, 10));
@@ -35,8 +35,8 @@ fn main() {
     }
     Println("sum=" + Str(sum));
 
-    // Set(Tuple(str, int))
-    var pairs = Set(Tuple(str, int));
+    // Set(Tuple(Str,Int))
+    var pairs = Set(Tuple(Str,Int));
     pairs.add(Tuple("x", 5));
     pairs.add(Tuple("y", 7));
     pairs.add(Tuple("x", 5));

@@ -60,13 +60,13 @@ func TestLetDecl(t *testing.T) {
 }
 
 func TestLetDeclWithType(t *testing.T) {
-	prog := parse(t, `let x: int = 5;`)
+	prog := parse(t, `let x: Int = 5;`)
 	stmt := prog.Stmts[0].(*ast.LetStmt)
 	if stmt.Name != "x" {
 		t.Errorf("expected name 'x', got %q", stmt.Name)
 	}
-	if stmt.Type == nil || stmt.Type.Name != "int" {
-		t.Errorf("expected type 'int', got %v", stmt.Type)
+	if stmt.Type == nil || stmt.Type.Name != "Int" {
+		t.Errorf("expected type 'Int', got %v", stmt.Type)
 	}
 }
 
@@ -95,7 +95,7 @@ func TestConstDecl(t *testing.T) {
 // ---------- Function Declarations ----------
 
 func TestFnDeclNoReturn(t *testing.T) {
-	prog := parse(t, `fn greet(name: str) { Println(name); }`)
+	prog := parse(t, `fn greet(name: Str) { Println(name); }`)
 	fn, ok := prog.Stmts[0].(*ast.FnDecl)
 	if !ok {
 		t.Fatalf("expected FnDecl, got %T", prog.Stmts[0])
@@ -109,8 +109,8 @@ func TestFnDeclNoReturn(t *testing.T) {
 	if fn.Params[0].Name != "name" {
 		t.Errorf("expected param name 'name', got %q", fn.Params[0].Name)
 	}
-	if fn.Params[0].Type.Name != "str" {
-		t.Errorf("expected param type 'str', got %q", fn.Params[0].Type.Name)
+	if fn.Params[0].Type.Name != "Str" {
+		t.Errorf("expected param type 'Str', got %q", fn.Params[0].Type.Name)
 	}
 	if fn.ReturnType != nil {
 		t.Errorf("expected no return type, got %v", fn.ReturnType)
@@ -118,7 +118,7 @@ func TestFnDeclNoReturn(t *testing.T) {
 }
 
 func TestFnDeclWithReturn(t *testing.T) {
-	prog := parse(t, `fn add(a: int, b: int) -> int { return a + b; }`)
+	prog := parse(t, `fn add(a: Int, b: Int) -> Int { return a + b; }`)
 	fn := prog.Stmts[0].(*ast.FnDecl)
 	if fn.Name != "add" {
 		t.Errorf("expected name 'add', got %q", fn.Name)
@@ -126,8 +126,8 @@ func TestFnDeclWithReturn(t *testing.T) {
 	if len(fn.Params) != 2 {
 		t.Fatalf("expected 2 params, got %d", len(fn.Params))
 	}
-	if fn.ReturnType == nil || fn.ReturnType.Name != "int" {
-		t.Errorf("expected return type 'int', got %v", fn.ReturnType)
+	if fn.ReturnType == nil || fn.ReturnType.Name != "Int" {
+		t.Errorf("expected return type 'Int', got %v", fn.ReturnType)
 	}
 }
 
@@ -143,7 +143,7 @@ func TestFnDeclNoParams(t *testing.T) {
 }
 
 func TestFnDeclDefaultParam(t *testing.T) {
-	prog := parse(t, `fn greet(name: str = "world") { Println(name); }`)
+	prog := parse(t, `fn greet(name: Str = "world") { Println(name); }`)
 	fn := prog.Stmts[0].(*ast.FnDecl)
 	if len(fn.Params) != 1 {
 		t.Fatalf("expected 1 param, got %d", len(fn.Params))
@@ -157,8 +157,8 @@ func TestFnDeclDefaultParam(t *testing.T) {
 
 func TestObjDecl(t *testing.T) {
 	src := `obj Point {
-		x: f64;
-		y: f64;
+		x: Float;
+		y: Float;
 	}`
 	prog := parse(t, src)
 	obj, ok := prog.Stmts[0].(*ast.ObjDecl)
@@ -171,17 +171,17 @@ func TestObjDecl(t *testing.T) {
 	if len(obj.Fields) != 2 {
 		t.Fatalf("expected 2 fields, got %d", len(obj.Fields))
 	}
-	if obj.Fields[0].Name != "x" || obj.Fields[0].Type.Name != "f64" {
-		t.Errorf("expected field 'x: f64', got '%s: %s'", obj.Fields[0].Name, obj.Fields[0].Type.Name)
+	if obj.Fields[0].Name != "x" || obj.Fields[0].Type.Name != "Float" {
+		t.Errorf("expected field 'x: Float', got '%s: %s'", obj.Fields[0].Name, obj.Fields[0].Type.Name)
 	}
 }
 
 func TestObjDeclWithMethod(t *testing.T) {
 	src := `obj Rect {
-		w: f64;
-		h: f64;
+		w: Float;
+		h: Float;
 
-		fn area() -> f64 {
+		fn area() -> Float {
 			return self.w * self.h;
 		}
 	}`
@@ -193,8 +193,8 @@ func TestObjDeclWithMethod(t *testing.T) {
 	if obj.Methods[0].Name != "area" {
 		t.Errorf("expected method 'area', got %q", obj.Methods[0].Name)
 	}
-	if obj.Methods[0].ReturnType == nil || obj.Methods[0].ReturnType.Name != "f64" {
-		t.Errorf("expected return type 'f64'")
+	if obj.Methods[0].ReturnType == nil || obj.Methods[0].ReturnType.Name != "Float" {
+		t.Errorf("expected return type 'Float'")
 	}
 }
 
@@ -554,7 +554,7 @@ func TestStringLiteral(t *testing.T) {
 // ---------- Statements ----------
 
 func TestReturnStmt(t *testing.T) {
-	prog := parse(t, `fn foo() -> int { return 42; }`)
+	prog := parse(t, `fn foo() -> Int { return 42; }`)
 	fn := prog.Stmts[0].(*ast.FnDecl)
 	ret, ok := fn.Body.Stmts[0].(*ast.ReturnStmt)
 	if !ok {
@@ -642,7 +642,7 @@ func TestBreakContinue(t *testing.T) {
 // ---------- Type Expressions ----------
 
 func TestArrayType(t *testing.T) {
-	prog := parse(t, `let xs: array(int) = [1, 2];`)
+	prog := parse(t, `let xs: Array(Int) = [1, 2];`)
 	stmt := prog.Stmts[0].(*ast.LetStmt)
 	if stmt.Type == nil {
 		t.Fatal("expected type annotation")
@@ -670,8 +670,8 @@ func TestTupleDestruct(t *testing.T) {
 
 func TestInterfaceDecl(t *testing.T) {
 	src := `interface Shape {
-		fn area() -> f64;
-		fn perimeter() -> f64;
+		fn area() -> Float;
+		fn perimeter() -> Float;
 	}`
 	prog := parse(t, src)
 	iface, ok := prog.Stmts[0].(*ast.InterfaceDecl)

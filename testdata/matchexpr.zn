@@ -1,5 +1,5 @@
 // Match expressions (match as a value)
-fn day_name(d: int) -> str {
+fn day_name(d: Int) -> Str {
     return match d {
         1 => "Monday",
         2 => "Tuesday",

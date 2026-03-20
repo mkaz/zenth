@@ -1,7 +1,7 @@
 // Test hashmap.exists(key) method
 
 fn main() {
-    var scores = Hashmap(str, int);
+    var scores = Hashmap(Str,Int);
     scores["Alice"] = 95;
     scores["Bob"] = 80;
 
@@ -22,7 +22,7 @@ fn main() {
     }
 
     // Integer key hashmap
-    var grid = Hashmap(int, str);
+    var grid = Hashmap(Int,Str);
     grid[0] = "origin";
     Println("has0=" + Str(grid.exists(0)));
     Println("has1=" + Str(grid.exists(1)));

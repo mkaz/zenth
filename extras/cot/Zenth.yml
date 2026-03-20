@@ -95,24 +95,15 @@ strings:
 - beginString: ''''
   endString: ''''
 types:
-- beginString: array
-- beginString: bool
-- beginString: byte
-- beginString: f32
-- beginString: f64
-- beginString: hashmap
-- beginString: i16
-- beginString: i32
-- beginString: i64
-- beginString: i8
-- beginString: int
-- beginString: set
-- beginString: str
-- beginString: tuple
-- beginString: u16
-- beginString: u32
-- beginString: u64
-- beginString: u8
+- beginString: Array
+- beginString: Bool
+- beginString: Byte
+- beginString: Float
+- beginString: Hashmap
+- beginString: Int
+- beginString: Set
+- beginString: Str
+- beginString: Tuple
 values:
 - beginString: 'false'
 - beginString: INT_MAX

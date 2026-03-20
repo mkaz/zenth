@@ -1,10 +1,10 @@
 obj Point {
-    x: int;
-    y: int;
+    x: Int;
+    y: Int;
 }
 
 fn main() {
-    var grid: array(Point) = [];
+    var grid: Array(Point) = [];
     let pt = Point(x=1, y=2);
     grid.add(pt);
 

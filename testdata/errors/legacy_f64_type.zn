@@ -1,0 +1,5 @@
+// Should fail: f64 was removed; use Float
+fn main() {
+    let x: f64 = 1.25;
+    Println(Str(x));
+}

@@ -1,9 +1,9 @@
 // Test nested generic types in type annotations
 
 // Type alias with nested generics
-type AdjList = Hashmap(str, array(str));
+type AdjList = Hashmap(Str, Array(Str));
 
-fn print_neighbors(graph: Hashmap(str, array(str)), node: str) {
+fn print_neighbors(graph: Hashmap(Str, Array(Str)), node: Str) {
     let neighbors = graph[node];
     for n in neighbors {
         Println(n);
@@ -12,7 +12,7 @@ fn print_neighbors(graph: Hashmap(str, array(str)), node: str) {
 
 fn main() {
     // Nested generic in var declaration
-    var graph: Hashmap(str, array(str)) = Hashmap(str, array(str));
+    var graph: Hashmap(Str, Array(Str)) = Hashmap(Str, Array(Str));
     graph["a"] = ["b", "c"];
     graph["b"] = ["a"];
 
@@ -20,13 +20,13 @@ fn main() {
     print_neighbors(graph, "a");
 
     // Using the type alias
-    var g2: AdjList = Hashmap(str, array(str));
+    var g2: AdjList = Hashmap(Str, Array(Str));
     g2["x"] = ["y", "z"];
     Println(Len(g2["x"]));
 
     // Hashmap with hashmap value
-    var nested: Hashmap(str, Hashmap(str, int)) = Hashmap(str, Hashmap(str, int));
-    var inner = Hashmap(str, int);
+    var nested: Hashmap(Str, Hashmap(Str,Int)) = Hashmap(Str, Hashmap(Str,Int));
+    var inner = Hashmap(Str,Int);
     inner["score"] = 100;
     nested["player1"] = inner;
     Println(nested["player1"]["score"]);

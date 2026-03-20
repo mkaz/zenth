@@ -1,16 +1,16 @@
 // Test type aliases with various type expressions
 
 obj Point {
-    x: int;
-    y: int;
+    x: Int;
+    y: Int;
 }
 
-type Points = array(Point);
-type StringMap = hashmap[str]str;
-type Pair = Tuple(str, int);
-type Ints = array(int);
+type Points = Array(Point);
+type StringMap = Hashmap[Str]Str;
+type Pair = Tuple(Str,Int);
+type Ints = Array(Int);
 
-fn sum(nums: Ints) -> int {
+fn sum(nums: Ints) -> Int {
     var total = 0;
     for n in nums {
         total += n;
@@ -24,7 +24,7 @@ fn main() {
     Println(Len(pts));
 
     // Hashmap alias
-    var m: StringMap = Hashmap(str, str);
+    var m: StringMap = Hashmap(Str,Str);
     m["hello"] = "world";
     Println(m["hello"]);
 

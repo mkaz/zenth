@@ -1,13 +1,13 @@
 // Objects and methods in Zenth
 obj Point {
-    x: f64;
-    y: f64;
+    x: Float;
+    y: Float;
 
-    fn string() -> str {
+    fn string() -> Str {
         return "({self.x}, {self.y})";
     }
 
-    fn distance(pt: Point) -> f64 {
+    fn distance(pt: Point) -> Float {
         let x_dist = self.x - pt.x;
         let y_dist = self.y - pt.y;
         // Need to absolute value
@@ -16,17 +16,17 @@ obj Point {
 }
 
 obj Rectangle {
-    width: f64;
-    height: f64;
+    width: Float;
+    height: Float;
 
-    fn area() -> f64 {
+    fn area() -> Float {
         return self.width * self.height;
     }
 }
 
 obj Account {
-    balance: int = 0;
-    interest: f64 = 2.5;
+    balance: Int = 0;
+    interest: Float = 2.5;
 }
 
 fn main() {

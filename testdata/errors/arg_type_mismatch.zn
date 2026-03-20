@@ -1,4 +1,4 @@
-fn takes_int(x: int) {
+fn takes_int(x: Int) {
     Println(x);
 }
 

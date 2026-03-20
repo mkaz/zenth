@@ -19,7 +19,7 @@ fn main() {
         Println("read=ok");
     }
 
-    // lines returns array(str)
+    // lines returns Array(Str)
     let lines = f.lines();
     if lines.length() > 0 {
         Println("lines=ok");

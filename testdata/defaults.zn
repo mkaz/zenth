@@ -1,8 +1,8 @@
-fn greet(name: str, greeting: str = "Hello") {
+fn greet(name: Str, greeting: Str = "Hello") {
     Println(greeting + ", " + name + "!");
 }
 
-fn add(a: int, b: int, c: int = 0) -> int {
+fn add(a: Int, b: Int, c: Int = 0) -> Int {
     return a + b + c;
 }
 

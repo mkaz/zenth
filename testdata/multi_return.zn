@@ -1,4 +1,4 @@
-fn min_max(nums: array(int)) -> (int, int) {
+fn min_max(nums: Array(Int)) -> (Int,Int) {
     var lo = nums[0];
     var hi = nums[0];
     for n in nums {
@@ -8,11 +8,11 @@ fn min_max(nums: array(int)) -> (int, int) {
     return lo, hi;
 }
 
-fn divide(a: int, b: int) -> (int, int) {
+fn divide(a: Int, b: Int) -> (Int,Int) {
     return a / b, a % b;
 }
 
-fn swap(a: str, b: str) -> (str, str) {
+fn swap(a: Str, b: Str) -> (Str,Str) {
     return b, a;
 }
 
@@ -28,6 +28,6 @@ fn main() {
     Println(x + " " + y);
 
     // Tuple type annotation still works
-    let result: Tuple(int, int) = min_max(nums);
+    let result: Tuple(Int,Int) = min_max(nums);
     Println(Str(result.0) + " " + Str(result.1));
 }

@@ -5,7 +5,7 @@ Functions are declared with the `fn` keyword. Every program needs a `main` funct
 ## Declaring Functions
 
 ```zenth
-fn greet(name: str) {
+fn greet(name: Str) {
     Println("Hello, {name}!");
 }
 ```
@@ -17,7 +17,7 @@ Parameters require explicit type annotations using the `name: Type` syntax.
 Specify a return type with `->`:
 
 ```zenth
-fn add(a: int, b: int) -> int {
+fn add(a: Int, b: Int) -> Int {
     return a + b;
 }
 ```
@@ -37,7 +37,7 @@ fn main() {
 ## Multiple Parameters
 
 ```zenth
-fn clamp(value: int, low: int, high: int) -> int {
+fn clamp(value: Int, low: Int, high: Int) -> Int {
     if value < low {
         return low;
     }
@@ -53,7 +53,7 @@ fn clamp(value: int, low: int, high: int) -> int {
 Functions can return multiple values using a parenthesized return type. The caller unpacks the result with tuple destructuring:
 
 ```zenth
-fn min_max(nums: array(int)) -> (int, int) {
+fn min_max(nums: Array(Int)) -> (Int,Int) {
     var lo = nums[0];
     var hi = nums[0];
     for n in nums {
@@ -72,11 +72,11 @@ fn main() {
 The `return a, b;` syntax is shorthand for `return Tuple(a, b);`. The return type `(T1, T2)` is shorthand for `Tuple(T1, T2)`. Both forms are equivalent:
 
 ```zenth
-fn divide(a: int, b: int) -> (int, int) {
+fn divide(a: Int, b: Int) -> (Int,Int) {
     return a / b, a % b;  // quotient and remainder
 }
 
-fn swap(x: str, y: str) -> (str, str) {
+fn swap(x: Str, y: Str) -> (Str,Str) {
     return y, x;
 }
 ```
@@ -84,7 +84,7 @@ fn swap(x: str, y: str) -> (str, str) {
 You can also use the full `Tuple(...)` syntax when you want to be explicit:
 
 ```zenth
-fn get_pair() -> Tuple(int, int) {
+fn get_pair() -> Tuple(Int,Int) {
     return Tuple(10, 20);
 }
 ```
@@ -94,7 +94,7 @@ fn get_pair() -> Tuple(int, int) {
 Function parameters can specify default values using `=`. If a caller omits a default parameter, the default value is used:
 
 ```zenth
-fn greet(name: str = "World") {
+fn greet(name: Str = "World") {
     Println("Hello, {name}!");
 }
 
@@ -109,7 +109,7 @@ fn main() {
 When calling a function, you can provide arguments by name, which allows you to pass them in any order. This is especially useful for functions with many parameters or default values:
 
 ```zenth
-fn draw_rect(x: int, y: int, width: int, height: int = 10) {
+fn draw_rect(x: Int, y: Int, width: Int, height: Int = 10) {
     // ...
 }
 
@@ -123,7 +123,7 @@ fn main() {
 Functions can call themselves:
 
 ```zenth
-fn factorial(n: int) -> int {
+fn factorial(n: Int) -> Int {
     if n <= 1 {
         return 1;
     }
@@ -141,13 +141,13 @@ Zenth provides several built-in functions that are always available:
 | `Println(x, [enabled])` | Print `x` with a newline; print only when `enabled` is `true` (default) |
 | `Len(x)` | Return the length of a string or array |
 | `Str(x)` | Convert any value to its string representation |
-| `Int(x)` / `Int(str, base)` | Convert to `int` (optional base for string input) |
-| `F64(x)` | Convert to `f64` |
-| `Abs(x)` | Absolute value for `int` or `f64` |
-| `Min(a, b, ...)` / `Max(a, b, ...)` | Minimum / maximum for two or more `int` or `f64` values (all args must be the same type) |
-| `Clamp(x, lo, hi)` | Clamp `x` between `lo` and `hi` (`int` or `f64`) |
-| `Round(x)` / `Floor(x)` / `Ceil(x)` | Floating-point rounding helpers (return `f64`) |
-| `Pow(x, y)` / `Sqrt(x)` | Power and square root (return `f64`) |
+| `Int(x)` / `Int(Str, base)` | Convert to `Int` (optional base for string input) |
+| `Float(x)` | Convert to `Float` |
+| `Abs(x)` | Absolute value for `Int` or `Float` |
+| `Min(a, b, ...)` / `Max(a, b, ...)` | Minimum / maximum for two or more `Int` or `Float` values (all args must be the same type) |
+| `Clamp(x, lo, hi)` | Clamp `x` between `lo` and `hi` (`Int` or `Float`) |
+| `Round(x)` / `Floor(x)` / `Ceil(x)` | Floating-point rounding helpers (return `Float`) |
+| `Pow(x, y)` / `Sqrt(x)` | Power and square root (return `Float`) |
 | `Range(start, end[, step])` | Build an exclusive range object |
 | `Rangei(start, end[, step])` | Build an inclusive range object |
 | `Hashmap(K, V[, default=val])` | Build an empty hashmap (optional default value) |
@@ -158,6 +158,22 @@ Zenth provides several built-in functions that are always available:
 | `File(path)` | Build a file value for file methods |
 | `Exit([code])` | Exit the program (`0` when omitted) |
 | `Assert(cond)` / `AssertEq(got, expected)` | Built-in test/assertion helpers |
+
+### Conversion Examples
+
+```zenth
+fn main() {
+    let whole = Int("42");
+    let hex = Int("ff", 16);
+    let pi = Float("3.14159");
+    let ratio = Float(7) / Float(2);
+
+    Println("whole=" + Str(whole));
+    Println("hex=" + Str(hex));
+    Println("pi=" + Str(pi));
+    Println("ratio=" + Str(ratio));
+}
+```
 
 ```zenth
 fn main() {
@@ -208,7 +224,7 @@ let zipped = Zip(a, b);  // [Tuple(1, 10), Tuple(2, 20)]
 
 ## Command-Line Flags
 
-The `Flag()` built-in declares command-line flags. The flag name is inferred from the variable name, and the type is inferred from the default value (`bool`, `int`, or `str`).
+The `Flag()` built-in declares command-line flags. The flag name is inferred from the variable name, and the type is inferred from the default value (`Bool`, `Int`, or `Str`).
 
 ```zenth
 fn main() {
@@ -270,13 +286,13 @@ let evens = [1, 2, 3, 4].filter(fn(x) x % 2 == 0);
 Parameter types are inferred from context when used with `.map()` or `.filter()`. You can also provide explicit types:
 
 ```zenth
-fn(x: int) -> int x * 2
+fn(x: Int) -> Int x * 2
 ```
 
 Block body closures use explicit `return`:
 
 ```zenth
-let processed = nums.map(fn(x: int) -> int {
+let processed = nums.map(fn(x: Int) -> Int {
     let y = x + 10;
     return y;
 });

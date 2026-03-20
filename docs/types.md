@@ -4,21 +4,11 @@ Zenth is strongly typed with type inference for local variables. Function signat
 
 ## Integer Types
 
-| Type  | Size    | Range |
-|-------|---------|-------|
-| `int` | platform-sized | Default integer type |
-| `i8`  | 8-bit signed  | -128 to 127 |
-| `i16` | 16-bit signed | -32,768 to 32,767 |
-| `i32` | 32-bit signed | -2^31 to 2^31-1 |
-| `i64` | 64-bit signed | -2^63 to 2^63-1 |
-| `u8`  | 8-bit unsigned  | 0 to 255 |
-| `u16` | 16-bit unsigned | 0 to 65,535 |
-| `u32` | 32-bit unsigned | 0 to 2^32-1 |
-| `u64` | 64-bit unsigned | 0 to 2^64-1 |
+Zenth has a single integer type: `Int` (64-bit signed).
 
 ```zenth
 let x = 42;          // Int (inferred)
-let big: i64 = 999;
+let big: Int = 999;
 ```
 
 Integer literals can use underscores for readability:
@@ -33,8 +23,8 @@ Zenth provides built-in constants for the integer range limits:
 
 | Constant  | Value                | Description |
 |-----------|----------------------|-------------|
-| `INT_MAX` | 9223372036854775807  | Maximum `int` value (2^63-1) |
-| `INT_MIN` | -9223372036854775808 | Minimum `int` value (-2^63) |
+| `INT_MAX` | 9223372036854775807  | Maximum `Int` value (2^63-1) |
+| `INT_MIN` | -9223372036854775808 | Minimum `Int` value (-2^63) |
 
 These are true constants and cannot be reassigned:
 
@@ -62,12 +52,20 @@ let oct = 63.to_base(8);     // "77"
 
 | Type  | Size | Description |
 |-------|------|-------------|
-| `f32` | 32-bit | Single precision |
-| `f64` | 64-bit | Double precision (default for float literals) |
+| `Float` | 64-bit | Floating-point type (default for float literals) |
 
 ```zenth
-let pi = 3.14159;         // F64 (inferred)
-let ratio: f32 = 0.75;
+let pi = 3.14159;         // Float (inferred)
+let ratio: Float = 0.75;
+```
+
+Zenth has a single floating-point type: `Float`. Legacy names like `f32` and `f64` are not valid.
+
+```zenth
+let a: Float = 1.5;
+let b = Float("2.25");
+let parts = ["3.5", "4.5"];
+let nums = parts.to_float();
 ```
 
 ## Boolean
@@ -81,7 +79,7 @@ Booleans are used in `if` conditions and logical expressions.
 
 ## String
 
-The `str` type holds text:
+The `Str` type holds text:
 
 ```zenth
 let greeting = "Hello, World!";
@@ -91,24 +89,24 @@ See [Strings](strings.md) for interpolation and raw string details.
 
 ## Byte
 
-The `byte` type represents a single byte (alias for `u8`):
+The `Byte` type represents a single byte:
 
 ```zenth
-let b: byte = 65;
+let b: Byte = 65;
 ```
 
-Indexing into a string returns a one-character `str`.
+Indexing into a string returns a one-character `Str`.
 
 ## Nil
 
 `nil` represents the absence of a value for reference types (hashmaps, arrays, objects). It must be used with an explicit type annotation:
 
 ```zenth
-var m: Hashmap(str, int) = nil;
-var items: array(int) = nil;
+var m: Hashmap(Str, Int) = nil;
+var items: Array(Int) = nil;
 ```
 
-Primitive types (`int`, `str`, `bool`, `f64`) cannot be nil.
+Primitive types (`Int`, `Str`, `Bool`, `Float`) cannot be nil.
 
 ## Composite Types
 
@@ -126,7 +124,7 @@ let rs = Range(0, 20, 3); // with step: [0, 3, 6, 9, 12, 15, 18]
 
 | Method | Returns | Description |
 |--------|---------|-------------|
-| `.contains(x)` | `bool` | O(1) bounds check: is `x` within the range? |
+| `.contains(x)` | `Bool` | O(1) bounds check: is `x` within the range? |
 
 **Built-ins that work on range objects:**
 
@@ -167,10 +165,10 @@ Println(ri.contains(10)); // true (inclusive end)
 
 ### Arrays
 
-Dynamic arrays use `array(Type)` syntax:
+Dynamic arrays use `Array(Type)` syntax:
 
 ```zenth
-let numbers: array(int) = [1, 2, 3, 4, 5];
+let numbers: Array(Int) = [1, 2, 3, 4, 5];
 ```
 
 See [Arrays](arrays.md) for more details.
@@ -181,11 +179,11 @@ Hashmaps are key/value collections. Create an empty hashmap with `Hashmap(KeyTyp
 
 ```zenth
 obj Point {
-    x: int;
-    y: int;
+    x: Int;
+    y: Int;
 }
 
-var grid = Hashmap(Point, str);
+var grid = Hashmap(Point, Str);
 let pt = Point(x=1, y=2);
 grid[pt] = "#";
 ```
@@ -197,7 +195,7 @@ For object keys, hashmap lookup is value-based: another `Point(x=1, y=2)` resolv
 Sets are unordered collections of unique values. Create an empty set with `Set(Type)`:
 
 ```zenth
-var visited = Set(str);
+var visited = Set(Str);
 visited.add("start");
 visited.add("middle");
 visited.exists("start");  // true
@@ -205,14 +203,14 @@ visited.remove("middle");
 Println(Len(visited));       // 1
 ```
 
-Sets support `int`, `str`, `bool`, and other comparable types as elements.
+Sets support `Int`, `Str`, `Bool`, and other comparable types as elements.
 
 #### Sets of Tuples
 
 Sets can hold tuples, enabling composite keys without string round-tripping:
 
 ```zenth
-var dots = Set(Tuple(int, int));
+var dots = Set(Tuple(Int, Int));
 dots.add(Tuple(6, 10));
 dots.add(Tuple(0, 14));
 dots.add(Tuple(6, 10));  // duplicate, ignored
@@ -249,8 +247,8 @@ User-defined types with named fields:
 
 ```zenth
 obj Point {
-    x: f64;
-    y: f64;
+    x: Float;
+    y: Float;
 }
 
 let p = Point(x=1.0, y=2.0);
@@ -328,4 +326,4 @@ This is equivalent to `"ff".to_int(16)` but reads more naturally as a conversion
 | `\|\|` | Logical OR |
 | `!`  | Logical NOT |
 
-Arithmetic operators require matching numeric types on both sides. The `+` operator also works for string concatenation when both sides are `str`.
+Arithmetic operators require matching numeric types on both sides. The `+` operator also works for string concatenation when both sides are `Str`.

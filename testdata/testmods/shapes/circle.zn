@@ -1,5 +1,5 @@
 // circle.zn - circle area function in shapes module
 
-fn circle_area(radius: f64) -> f64 {
+fn circle_area(radius: Float) -> Float {
     return 3.14159 * radius * radius;
 }

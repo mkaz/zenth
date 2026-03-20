@@ -32,7 +32,7 @@ Println(content);
 
 ### lines
 
-Returns the file contents split into lines as `array(str)`. Exits with an error if the file cannot be read:
+Returns the file contents split into lines as `Array(Str)`. Exits with an error if the file cannot be read:
 
 ```zenth
 let lines = f.lines();
@@ -52,7 +52,7 @@ Println(f.name());  // data.txt
 
 ### sections
 
-Splits the file contents on blank lines, returning `array(str)`. This is useful for input that has sections separated by empty lines (common in Advent of Code problems):
+Splits the file contents on blank lines, returning `Array(Str)`. This is useful for input that has sections separated by empty lines (common in Advent of Code problems):
 
 ```zenth
 let parts = File("input.txt").sections();

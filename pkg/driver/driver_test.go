@@ -153,8 +153,8 @@ func TestBuildAndRun(t *testing.T) {
 				"to_int_len=3",
 				"to_int_first=1",
 				"to_int_last=3",
-				"to_f64_len=3",
-				"to_f64_first=1.5",
+				"to_float_len=3",
+				"to_float_first=1.5",
 				"to_str=10,20,30",
 			},
 		},
@@ -505,7 +505,7 @@ func TestCompileErrors(t *testing.T) {
 		},
 		{
 			file:   "errors/arg_type_mismatch.zn",
-			errMsg: "argument 1 to takes_int has type str, expected int",
+			errMsg: "argument 1 to takes_int has type Str, expected Int",
 		},
 		{
 			file:   "errors/undefined_identifier.zn",
@@ -513,15 +513,15 @@ func TestCompileErrors(t *testing.T) {
 		},
 		{
 			file:   "errors/unknown_method.zn",
-			errMsg: "type int has no method 'foo'",
+			errMsg: "type Int has no method 'foo'",
 		},
 		{
 			file:   "errors/split_bad_arg.zn",
-			errMsg: "split() separator must be str, got int",
+			errMsg: "split() separator must be Str, got Int",
 		},
 		{
 			file:   "errors/print_bad_flag.zn",
-			errMsg: "second argument to Println must be bool, got int",
+			errMsg: "second argument to Println must be Bool, got Int",
 		},
 		{
 			file:   "errors/print_too_many_args.zn",
@@ -529,7 +529,7 @@ func TestCompileErrors(t *testing.T) {
 		},
 		{
 			file:   "errors/for_range_count_type.zn",
-			errMsg: "for-range count must be int",
+			errMsg: "for-range count must be Int",
 		},
 		{
 			file:   "errors/hashmap_type_arg.zn",
@@ -541,11 +541,11 @@ func TestCompileErrors(t *testing.T) {
 		},
 		{
 			file:   "errors/string_replace_bad_count.zn",
-			errMsg: "replace() argument 3 must be int",
+			errMsg: "replace() argument 3 must be Int",
 		},
 		{
 			file:   "errors/numeric_min_type_mismatch.zn",
-			errMsg: "Min() arguments must all be int or all be f64",
+			errMsg: "Min() arguments must all be Int or all be Float",
 		},
 		{
 			file:   "errors/flag_no_default.zn",
@@ -557,7 +557,7 @@ func TestCompileErrors(t *testing.T) {
 		},
 		{
 			file:   "errors/closure_filter_bool.zn",
-			errMsg: "filter() closure must return bool",
+			errMsg: "filter() closure must return Bool",
 		},
 		{
 			file:   "errors/tuple_field_name.zn",
@@ -593,15 +593,15 @@ func TestCompileErrors(t *testing.T) {
 		},
 		{
 			file:   "errors/split_once_bad_arg.zn",
-			errMsg: "split_once() separator must be str",
+			errMsg: "split_once() separator must be Str",
 		},
 		{
 			file:   "errors/to_int_bad_base.zn",
-			errMsg: "to_int() base must be int, got str",
+			errMsg: "to_int() base must be Int, got Str",
 		},
 		{
 			file:   "errors/to_base_bad_arg.zn",
-			errMsg: "to_base() argument must be int, got str",
+			errMsg: "to_base() argument must be Int, got Str",
 		},
 		{
 			file:   "errors/hashmap_default_type.zn",
@@ -613,7 +613,7 @@ func TestCompileErrors(t *testing.T) {
 		},
 		{
 			file:   "errors/repeat_bad_arg.zn",
-			errMsg: "repeat() argument must be int",
+			errMsg: "repeat() argument must be Int",
 		},
 		{
 			file:   "errors/sum_non_numeric.zn",
@@ -649,7 +649,7 @@ func TestCompileErrors(t *testing.T) {
 		},
 		{
 			file:   "errors/int_base_not_str.zn",
-			errMsg: "Int() with base requires first argument to be str",
+			errMsg: "Int() with base requires first argument to be Str",
 		},
 		{
 			file:   "errors/array_destruct_non_array.zn",
@@ -657,7 +657,7 @@ func TestCompileErrors(t *testing.T) {
 		},
 		{
 			file:   "errors/array_join_non_string.zn",
-			errMsg: "join() requires array(str)",
+			errMsg: "join() requires Array(Str)",
 		},
 		{
 			file:   "errors/modules_no_main.zn",

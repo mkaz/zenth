@@ -69,9 +69,9 @@ For `.zn` fixture files, use descriptive lowercase names (for example `multiassi
 
 ```zenth
 let x = 5;              // immutable, type inferred
-let x: int = 5;         // immutable, explicit type
+let x: Int = 5;         // immutable, explicit type
 var counter = 0;         // mutable, type inferred
-var counter: int = 0;    // mutable, explicit type
+var counter: Int = 0;    // mutable, explicit type
 const PI = 3.14159;      // constant
 ```
 
@@ -80,12 +80,12 @@ No `:=` operator. The `let`/`var`/`const` keyword signals a declaration, `=` is 
 ### Functions
 
 ```zenth
-fn add(a: int, b: int) -> int {
+fn add(a: Int, b: Int) -> Int {
     return a + b;
 }
 
-fn greet(name: str) {
-    println("Hello, " + name);
+fn greet(name: Str) {
+    Println("Hello, " + name);
 }
 ```
 
@@ -95,16 +95,16 @@ Methods are defined inside the obj body. Use `self` to access fields and call ot
 
 ```zenth
 obj Rectangle {
-    width: f64;
-    height: f64;
+    width: Float;
+    height: Float;
 
-    fn area() -> f64 {
+    fn area() -> Float {
         return self.width * self.height;
     }
 }
 
-let r = Rectangle{ width: 3.0, height: 4.0 };
-println(str(r.area()));
+let r = Rectangle(width=3.0, height=4.0);
+Println(Str(r.area()));
 ```
 
 ### Control Flow
@@ -112,24 +112,24 @@ println(str(r.area()));
 ```zenth
 // if/else
 if x > 10 {
-    println("big");
+    Println("big");
 } else if x > 5 {
-    println("medium");
+    Println("medium");
 } else {
-    println("small");
+    Println("small");
 }
 
 // C-style for loop
 for var i = 0; i < 10; i++ {
-    println(str(i));
+    Println(Str(i));
 }
 
 // for-in
 for item in items {
-    println(item);
+    Println(Str(item));
 }
 for i, item in items {
-    println(str(i));
+    Println(Str(i));
 }
 
 // while-style
@@ -152,13 +152,13 @@ match day {
 
 ### Types
 
-Built-in: `int`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`, `f32`, `f64`, `bool`, `str`, `byte`
+Built-in: `Int`, `Float`, `Bool`, `Str`, `Byte`
 
-Composite: `array(int)` (slice), obj literals `Point{ x: 1.0, y: 2.0 }`, `tuple(str, int)`
+Composite: `Array(Int)` (slice), obj literals `Point(x=1.0, y=2.0)`, `Tuple(Str, Int)`
 
 ### Built-in Functions
 
-`print(...)`, `println(...)`, `len(x)`, `str(x)`, `flag(default=val)`
+`Print(...)`, `Println(...)`, `Len(x)`, `Str(x)`, `Flag(default=val)`
 
 ### Imports
 

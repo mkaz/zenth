@@ -7,7 +7,7 @@ Hashmaps are unordered collections of key-value pairs.
 You can create a hashmap using the `Hashmap(KeyType, ValueType)` built-in:
 
 ```zenth
-var scores = Hashmap(str, int);
+var scores = Hashmap(Str,Int);
 ```
 
 ## Assigning and Accessing
@@ -35,7 +35,7 @@ Println(Len(scores));
 You can provide a default value for missing keys using the `default` named argument:
 
 ```zenth
-var counts = Hashmap(str, int, default=0);
+var counts = Hashmap(Str,Int, default=0);
 counts["apples"] += 1;
 counts["apples"] += 2;
 Println(counts["apples"]);       // prints "3"
@@ -49,7 +49,7 @@ When you access a missing key, the default is returned instead of Go's zero valu
 Use `for` to iterate over a hashmap:
 
 ```zenth
-var m = Hashmap(str, int);
+var m = Hashmap(Str,Int);
 m["a"] = 1;
 m["b"] = 2;
 
@@ -69,7 +69,7 @@ for k in m {
 Use `.exists(key)` to check whether a key is present in the hashmap:
 
 ```zenth
-var scores = Hashmap(str, int);
+var scores = Hashmap(Str,Int);
 scores["Alice"] = 95;
 
 if scores.exists("Alice") {
@@ -99,11 +99,11 @@ You can use user-defined objects as hashmap keys. Hashmap lookup is value-based,
 
 ```zenth
 obj Point {
-    x: int;
-    y: int;
+    x: Int;
+    y: Int;
 }
 
-var grid = Hashmap(Point, str);
+var grid = Hashmap(Point,Str);
 let pt1 = Point(x=1, y=2);
 let pt2 = Point(x=1, y=2);
 
@@ -116,7 +116,7 @@ Println(grid[pt2]); // Prints "#"
 Tuples can also be used as hashmap keys, which is useful for multi-dimensional lookups or composite keys:
 
 ```zenth
-var grid = Hashmap(Tuple(int, int), str);
+var grid = Hashmap(Tuple(Int,Int),Str);
 grid[Tuple(0, 0)] = "origin";
 grid[Tuple(1, 2)] = "point";
 
@@ -134,4 +134,4 @@ for key in grid {
 }
 ```
 
-All tuple element types must be comparable (built-in types like `int`, `str`, `f64`, `bool`). Tuples containing arrays or other non-comparable types cannot be used as keys.
+All tuple element types must be comparable (built-in types like `Int`, `Str`, `Float`, `Bool`). Tuples containing arrays or other non-comparable types cannot be used as keys.

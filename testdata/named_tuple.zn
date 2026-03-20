@@ -9,7 +9,7 @@ fn main() {
     Println(person.1);
 
     // Named tuple with type annotation
-    let t: Tuple(key: str, value: int) = Tuple(key="x", value=42);
+    let t: Tuple(key: Str, value: Int) = Tuple(key="x", value=42);
     Println(t.key);
     Println(t.value);
 
@@ -19,7 +19,7 @@ fn main() {
     Println(v);
 
     // Array of named tuples
-    let pairs: array(Tuple(name: str, score: int)) = [];
+    let pairs: Array(Tuple(name: Str, score: Int)) = [];
     pairs.add(Tuple(name="Bob", score=95));
     pairs.add(Tuple(name="Carol", score=88));
     for p in pairs {

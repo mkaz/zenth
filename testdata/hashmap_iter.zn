@@ -1,5 +1,5 @@
 fn main() {
-    var m = Hashmap(str, int);
+    var m = Hashmap(Str,Int);
     m["a"] = 1;
     m["b"] = 2;
     m["c"] = 3;

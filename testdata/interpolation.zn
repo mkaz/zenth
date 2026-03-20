@@ -33,10 +33,10 @@ fn main() {
 }
 
 obj Rectangle {
-    width: f64;
-    height: f64;
+    width: Float;
+    height: Float;
 
-    fn area() -> f64 {
+    fn area() -> Float {
         return self.width * self.height;
     }
 }

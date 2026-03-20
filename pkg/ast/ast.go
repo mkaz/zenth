@@ -73,8 +73,8 @@ func (e *EnumDecl) nodeMarker()    {}
 
 // EnumVariant represents one variant in an enum.
 type EnumVariant struct {
-	Name      string
-	StrValue  *StringLitExpr // explicit string value; nil means use variant name
+	Name     string
+	StrValue *StringLitExpr // explicit string value; nil means use variant name
 }
 
 // InterfaceDecl represents an interface declaration.
@@ -275,18 +275,18 @@ func (f *ForStmt) nodeMarker()    {}
 
 // ForInStmt represents: for [index,] value in iterable { ... }
 type ForInStmt struct {
-	TokenPos               token.Pos
-	Index                  string // empty if no index variable
-	Value                  string
-	Iterable               Node
-	Body                   *Block
-	IterStr                bool     // set by checker when iterating over a string
-	IterHashmap            bool     // set by checker when iterating over a hashmap
-	IterSet                bool     // set by checker when iterating over a set
-	IterRange              bool     // set by checker when iterating over a range object
-	IterRangeInclusive     bool     // set by checker: true for rangei, false for range
-	IterSetTupleStruct     string   // set by checker: struct name for set(tuple) iteration
-	IterSetTupleFieldTypes []string // set by checker: Go types for set(tuple) conversion
+	TokenPos                   token.Pos
+	Index                      string // empty if no index variable
+	Value                      string
+	Iterable                   Node
+	Body                       *Block
+	IterStr                    bool     // set by checker when iterating over a string
+	IterHashmap                bool     // set by checker when iterating over a hashmap
+	IterSet                    bool     // set by checker when iterating over a set
+	IterRange                  bool     // set by checker when iterating over a range object
+	IterRangeInclusive         bool     // set by checker: true for rangei, false for range
+	IterSetTupleStruct         string   // set by checker: struct name for set(tuple) iteration
+	IterSetTupleFieldTypes     []string // set by checker: Go types for set(tuple) conversion
 	IterHashmapObjKey          bool     // set by checker when hashmap key is an obj type
 	IterHashmapObjType         string   // Go type name of the obj key (e.g. "Point")
 	IterHashmapTupleStruct     string   // set by checker: struct name for hashmap(tuple, V) iteration
@@ -411,36 +411,36 @@ func (g *GroupedExpr) nodeMarker()    {}
 
 // CallExpr represents: callee(args)
 type CallExpr struct {
-	TokenPos           token.Pos
-	Callee             Node
-	Args               []Node
-	SliceMethod        bool     // set by checker for built-in slice methods
-	SliceConvTarget    string   // set by checker for to_int/to_f64/to_str ("int", "float64", "string")
-	SliceConvFunc      string   // set by checker when int()/f64()/str() is called on a slice
-	IntBaseCall        bool     // set by checker when int(str, base) is called with 2 args
-	StringMethod       string   // set by checker for built-in string methods (e.g. "split")
-	NumericMethod      string   // set by checker for built-in numeric functions (e.g. "abs_int")
-	HashmapCtor        bool     // set by checker for hashmap(K, V) constructor
-	HashmapObjKey      bool     // set by checker when hashmap key type is an obj (value-based keying)
-	HashmapKeyGoType   string   // concrete Go key type for hashmap constructor
-	HashmapValGoType   string   // concrete Go value type for hashmap constructor
-	HashmapDefaultVal  Node     // set by checker: default value expression for hashmap
+	TokenPos               token.Pos
+	Callee                 Node
+	Args                   []Node
+	SliceMethod            bool     // set by checker for built-in slice methods
+	SliceConvTarget        string   // set by checker for to_int/to_float/to_str ("int", "float64", "string")
+	SliceConvFunc          string   // set by checker when int()/Float()/str() is called on a slice
+	IntBaseCall            bool     // set by checker when int(str, base) is called with 2 args
+	StringMethod           string   // set by checker for built-in string methods (e.g. "split")
+	NumericMethod          string   // set by checker for built-in numeric functions (e.g. "abs_int")
+	HashmapCtor            bool     // set by checker for hashmap(K, V) constructor
+	HashmapObjKey          bool     // set by checker when hashmap key type is an obj (value-based keying)
+	HashmapKeyGoType       string   // concrete Go key type for hashmap constructor
+	HashmapValGoType       string   // concrete Go value type for hashmap constructor
+	HashmapDefaultVal      Node     // set by checker: default value expression for hashmap
 	HashmapTupleStruct     string   // set by checker: struct name for hashmap(tuple(...), V) operations
 	HashmapTupleFieldTypes []string // set by checker: Go types of tuple fields for hashmap(tuple) conversion
-	HashmapMethod      string   // set by checker: "keys" or "values" for hashmap methods
-	SetCtor            bool     // set by checker for set(T) constructor
-	SetElemGoType      string   // concrete Go element type for set constructor
-	SetMethod          string   // set by checker: "add", "exists", "remove" for set methods
-	SetTupleStruct     string   // set by checker: struct name for set(tuple(...)) operations
-	SetTupleFieldTypes []string // set by checker: Go types of tuple fields for set(tuple) conversion
-	ResolvedFunc       string   // set by checker: function key ("name" or "Type.method")
-	LocalObjModule     string   // set by checker: non-empty for cross-module obj constructor calls
-	FlagName           string   // set by checker: variable name for flag() calls
-	FlagGoType         string   // set by checker: "bool", "int", "string" for flag() calls
-	RangeMethod        bool     // set by checker for built-in range methods (e.g. "contains")
-	LenArgIsRange      bool     // set by checker when len() is called on a range object
-	ZipCall            bool     // set by checker for zip() calls
-	ZipElemGoTypes     []string // set by checker: Go types of each input array's elements
+	HashmapMethod          string   // set by checker: "keys" or "values" for hashmap methods
+	SetCtor                bool     // set by checker for set(T) constructor
+	SetElemGoType          string   // concrete Go element type for set constructor
+	SetMethod              string   // set by checker: "add", "exists", "remove" for set methods
+	SetTupleStruct         string   // set by checker: struct name for set(tuple(...)) operations
+	SetTupleFieldTypes     []string // set by checker: Go types of tuple fields for set(tuple) conversion
+	ResolvedFunc           string   // set by checker: function key ("name" or "Type.method")
+	LocalObjModule         string   // set by checker: non-empty for cross-module obj constructor calls
+	FlagName               string   // set by checker: variable name for flag() calls
+	FlagGoType             string   // set by checker: "bool", "int", "string" for flag() calls
+	RangeMethod            bool     // set by checker for built-in range methods (e.g. "contains")
+	LenArgIsRange          bool     // set by checker when len() is called on a range object
+	ZipCall                bool     // set by checker for zip() calls
+	ZipElemGoTypes         []string // set by checker: Go types of each input array's elements
 }
 
 func (c *CallExpr) Pos() token.Pos { return c.TokenPos }
@@ -448,10 +448,10 @@ func (c *CallExpr) nodeMarker()    {}
 
 // IndexExpr represents: object[index]
 type IndexExpr struct {
-	TokenPos          token.Pos
-	Object            Node
-	Index             Node
-	StrIndex          bool // set by checker when indexing a string
+	TokenPos               token.Pos
+	Object                 Node
+	Index                  Node
+	StrIndex               bool     // set by checker when indexing a string
 	HashmapObjKey          bool     // set by checker when indexing a hashmap with obj keys
 	HashmapTupleStruct     string   // set by checker: struct name for hashmap(tuple(...), V) indexing
 	HashmapTupleFieldTypes []string // set by checker: Go types for hashmap(tuple) conversion

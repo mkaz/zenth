@@ -18,14 +18,14 @@ fn main() {
     Println("lengths: {lengths[0]},{lengths[1]},{lengths[2]}");
 
     // Block closure
-    let processed = [10, 20, 30].map(fn(x: int) -> int {
+    let processed = [10, 20, 30].map(fn(x: Int) -> Int {
         let y = x + 1;
         return y;
     });
     Println("processed: {processed[0]},{processed[1]},{processed[2]}");
 
     // Explicit types
-    let typed = [1, 2, 3].map(fn(x: int) -> int x * 3);
+    let typed = [1, 2, 3].map(fn(x: Int) -> Int x * 3);
     Println("typed: {typed[0]},{typed[1]},{typed[2]}");
 
     // Filter with bool

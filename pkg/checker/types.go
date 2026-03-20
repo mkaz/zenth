@@ -27,24 +27,15 @@ func (b *BuiltinType) Equals(other ZType) bool {
 func (b *BuiltinType) typeMarker() {}
 
 var (
-	TypeInt   = &BuiltinType{"int"}
-	TypeI8    = &BuiltinType{"i8"}
-	TypeI16   = &BuiltinType{"i16"}
-	TypeI32   = &BuiltinType{"i32"}
-	TypeI64   = &BuiltinType{"i64"}
-	TypeU8    = &BuiltinType{"u8"}
-	TypeU16   = &BuiltinType{"u16"}
-	TypeU32   = &BuiltinType{"u32"}
-	TypeU64   = &BuiltinType{"u64"}
-	TypeF32   = &BuiltinType{"f32"}
-	TypeF64   = &BuiltinType{"f64"}
-	TypeBool  = &BuiltinType{"bool"}
-	TypeStr   = &BuiltinType{"str"}
-	TypeByte  = &BuiltinType{"byte"}
+	TypeInt   = &BuiltinType{"Int"}
+	TypeFloat = &BuiltinType{"Float"}
+	TypeBool  = &BuiltinType{"Bool"}
+	TypeStr   = &BuiltinType{"Str"}
+	TypeByte  = &BuiltinType{"Byte"}
 	TypeVoid  = &BuiltinType{"void"}
 	TypeError = &BuiltinType{"error"}
 	TypeNil   = &BuiltinType{"nil"}
-	TypeFile  = &BuiltinType{"file"}
+	TypeFile  = &BuiltinType{"File"}
 )
 
 // ObjType represents a user-defined obj type.
@@ -219,33 +210,15 @@ func (f *FuncType) typeMarker() {}
 // LookupBuiltinType maps type names to ZType.
 func LookupBuiltinType(name string) ZType {
 	switch name {
-	case "int":
+	case "Int":
 		return TypeInt
-	case "i8":
-		return TypeI8
-	case "i16":
-		return TypeI16
-	case "i32":
-		return TypeI32
-	case "i64":
-		return TypeI64
-	case "u8":
-		return TypeU8
-	case "u16":
-		return TypeU16
-	case "u32":
-		return TypeU32
-	case "u64":
-		return TypeU64
-	case "f32":
-		return TypeF32
-	case "f64":
-		return TypeF64
-	case "bool":
+	case "Float":
+		return TypeFloat
+	case "Bool":
 		return TypeBool
-	case "str":
+	case "Str":
 		return TypeStr
-	case "byte":
+	case "Byte":
 		return TypeByte
 	case "error":
 		return TypeError
@@ -261,7 +234,7 @@ func IsNumeric(t ZType) bool {
 		return false
 	}
 	switch b.Name {
-	case "int", "i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64", "f32", "f64":
+	case "Int", "Float":
 		return true
 	}
 	return false
@@ -274,7 +247,7 @@ func IsInteger(t ZType) bool {
 		return false
 	}
 	switch b.Name {
-	case "int", "i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64":
+	case "Int":
 		return true
 	}
 	return false
@@ -286,7 +259,7 @@ func IsFloat(t ZType) bool {
 	if !ok {
 		return false
 	}
-	return b.Name == "f32" || b.Name == "f64"
+	return b.Name == "Float"
 }
 
 // PromoteNumeric returns the promoted type when mixing numeric types.
@@ -306,9 +279,9 @@ func PromoteNumeric(a, b ZType) ZType {
 	if !aFloat && bFloat {
 		return b
 	}
-	// Both floats, different sizes → f64
+	// Both floats, different sizes → Float
 	if aFloat && bFloat {
-		return TypeF64
+		return TypeFloat
 	}
 	// Both integers, different sizes → not auto-promoted
 	return nil

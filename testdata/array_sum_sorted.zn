@@ -10,7 +10,7 @@ fn main() {
     Println("fsum=" + Str(floats.sum()));
 
     // sum on empty gives zero
-    let empty: array(int) = [];
+    let empty: Array(Int) = [];
     Println("esum=" + Str(empty.sum()));
 
     // sorted integers

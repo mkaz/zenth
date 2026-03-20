@@ -201,7 +201,7 @@ Println("a-b-a".replace("a", "x", 1)); // x-b-a
 
 ## Splitting Strings
 
-Use the `.split()` method to divide a string into an array of substrings (`array(str)`). 
+Use the `.split()` method to divide a string into an array of substrings (`Array(Str)`). 
 By default, `.split()` splits on whitespace. You can also pass a delimiter string:
 
 ```zenth
@@ -257,7 +257,7 @@ This is useful for building grid rows, padding, or repeated patterns.
 
 ## Indexing
 
-Indexing a string returns a one-character `str`:
+Indexing a string returns a one-character `Str`:
 
 ```zenth
 let s = "hello";

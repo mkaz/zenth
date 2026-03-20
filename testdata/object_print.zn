@@ -1,13 +1,13 @@
 obj Point {
-    x: int;
-    y: int;
-    val: str;
+    x: Int;
+    y: Int;
+    val: Str;
 }
 
 obj Label {
-    text: str;
+    text: Str;
 
-    fn string() -> str {
+    fn string() -> Str {
         return "Label<{self.text}>";
     }
 }

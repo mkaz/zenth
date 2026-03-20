@@ -1,4 +1,4 @@
-fn get_pair() -> (int, int) {
+fn get_pair() -> (Int,Int) {
     return "hello", 42;
 }
 

@@ -1,0 +1,5 @@
+// Should fail: i32 was removed; use Int
+fn main() {
+    let x: i32 = 5;
+    Println(Str(x));
+}

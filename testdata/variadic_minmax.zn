@@ -11,7 +11,7 @@ fn main() {
     Println(Min(9, 3, 6, 1));
     Println(Max(9, 3, 6, 1));
 
-    // f64 variadic
+    // Float variadic
     Println(Min(1.5, 0.5, 2.5));
     Println(Max(1.5, 0.5, 2.5));
 }

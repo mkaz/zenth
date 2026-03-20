@@ -6,8 +6,8 @@ Objects are user-defined types with named fields. Methods are defined inside the
 
 ```zenth
 obj Point {
-    x: f64;
-    y: f64;
+    x: Float;
+    y: Float;
 }
 ```
 
@@ -19,8 +19,8 @@ Fields can have default values. If a default is provided, the field becomes opti
 
 ```zenth
 obj Account {
-    balance: int = 0;
-    interest: f64 = 2.5;
+    balance: Int = 0;
+    interest: Float = 2.5;
 }
 ```
 
@@ -56,14 +56,14 @@ Methods are defined inside the object body. Use `self` to access the object's fi
 
 ```zenth
 obj Rectangle {
-    width: f64;
-    height: f64;
+    width: Float;
+    height: Float;
 
-    fn area() -> f64 {
+    fn area() -> Float {
         return self.width * self.height;
     }
 
-    fn perimeter() -> f64 {
+    fn perimeter() -> Float {
         return 2.0 * (self.width + self.height);
     }
 
@@ -88,10 +88,10 @@ Methods can take parameters in addition to `self`:
 
 ```zenth
 obj Point {
-    x: f64;
-    y: f64;
+    x: Float;
+    y: Float;
 
-    fn distance(other: Point) -> f64 {
+    fn distance(other: Point) -> Float {
         let dx = self.x - other.x;
         let dy = self.y - other.y;
         return Sqrt(dx * dx + dy * dy);
@@ -105,9 +105,9 @@ By default, printing an object uses constructor-like output:
 
 ```zenth
 obj Point {
-    x: int;
-    y: int;
-    val: str;
+    x: Int;
+    y: Int;
+    val: Str;
 }
 
 fn main() {
@@ -120,10 +120,10 @@ You can override this by defining a `string()` method:
 
 ```zenth
 obj Point {
-    x: f64;
-    y: f64;
+    x: Float;
+    y: Float;
 
-    fn string() -> str {
+    fn string() -> Str {
         return "({self.x}, {self.y})";
     }
 }
@@ -138,13 +138,13 @@ fn main() {
 
 ```zenth
 obj Circle {
-    radius: f64;
+    radius: Float;
 
-    fn area() -> f64 {
+    fn area() -> Float {
         return 3.14159 * self.radius * self.radius;
     }
 
-    fn circumference() -> f64 {
+    fn circumference() -> Float {
         return 2.0 * 3.14159 * self.radius;
     }
 }

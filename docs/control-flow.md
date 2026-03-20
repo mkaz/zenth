@@ -12,7 +12,7 @@ if x > 10 {
 }
 ```
 
-Conditions must be `bool` -- there is no truthy/falsy coercion. Parentheses around the condition are not required.
+Conditions must be `Bool` -- there is no truthy/falsy coercion. Parentheses around the condition are not required.
 
 ## For Loops
 
@@ -51,7 +51,7 @@ for range n {
 }
 ```
 
-The count expression must be `int`.
+The count expression must be `Int`.
 
 ### While-Style
 
@@ -271,7 +271,7 @@ All arms must return the same type.
 ### Practical Example: FizzBuzz
 
 ```zenth
-fn fizzbuzz(n: int) -> str {
+fn fizzbuzz(n: Int) -> Str {
     if n % 15 == 0 {
         return "FizzBuzz";
     } else if n % 3 == 0 {

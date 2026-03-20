@@ -1,14 +1,14 @@
 // mathutils module - simple math helper functions
 
-fn add(a: int, b: int) -> int {
+fn add(a: Int, b: Int) -> Int {
     return a + b;
 }
 
-fn multiply(a: int, b: int) -> int {
+fn multiply(a: Int, b: Int) -> Int {
     return a * b;
 }
 
-fn max_of(a: int, b: int) -> int {
+fn max_of(a: Int, b: Int) -> Int {
     if a > b {
         return a;
     }

@@ -51,11 +51,11 @@ A module file is a regular `.zn` file that **does not define `fn main`**. It can
 // mathutils.zn
 const pi = 3.14159;
 
-fn add(a: int, b: int) -> int {
+fn add(a: Int, b: Int) -> Int {
     return a + b;
 }
 
-fn multiply(a: int, b: int) -> int {
+fn multiply(a: Int, b: Int) -> Int {
     return a * b;
 }
 ```
@@ -73,10 +73,10 @@ Objects defined in a module are available to importers. Construct them using `mo
 ```zenth
 // shapes/rect.zn
 obj Rectangle {
-    width: f64;
-    height: f64;
+    width: Float;
+    height: Float;
 
-    fn area() -> f64 {
+    fn area() -> Float {
         return self.width * self.height;
     }
 }
@@ -140,11 +140,11 @@ project/
 
 ```zenth
 // testmods/mathutils.zn
-fn add(a: int, b: int) -> int {
+fn add(a: Int, b: Int) -> Int {
     return a + b;
 }
 
-fn multiply(a: int, b: int) -> int {
+fn multiply(a: Int, b: Int) -> Int {
     return a * b;
 }
 ```

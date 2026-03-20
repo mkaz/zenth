@@ -29,7 +29,7 @@ let root = m.sqrt(16.0);
 | `fmt` | Go `fmt` | `println`, `printf`, `sprintf` |
 | `math` | Go `math` | `sqrt`, `abs`, `pow`, `min`, `max` |
 | `os` | Go `os` | `exit`, `args` |
-| `strings` or `str` | Go `strings` | `split`, `join`, `contains`, `replace`, `trim` |
+| `strings` or `Str` | Go `strings` | `split`, `join`, `contains`, `replace`, `trim` |
 
 ## Calling Module Functions
 
@@ -83,7 +83,7 @@ fn main() {
     let db = sql.Open("sqlite3", "./data.db");
     let rows = db.Query("SELECT id, name FROM users");
     for rows.Next() {
-        var id: int = 0;
+        var id: Int = 0;
         var name = "";
         rows.Scan(&id, &name);
         Println("{id}: {name}");

@@ -1,3 +1,3 @@
 fn main() {
-    let t: Tuple(name: str, age: int) = Tuple("Alice", 30);
+    let t: Tuple(name: Str, age: Int) = Tuple("Alice", 30);
 }

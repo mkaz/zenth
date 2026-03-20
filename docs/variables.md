@@ -46,8 +46,8 @@ Zenth provides built-in integer limit constants:
 
 | Constant  | Value                | Description |
 |-----------|----------------------|-------------|
-| `INT_MAX` | 9223372036854775807  | Maximum `int` value (2^63-1) |
-| `INT_MIN` | -9223372036854775808 | Minimum `int` value (-2^63) |
+| `INT_MAX` | 9223372036854775807  | Maximum `Int` value (2^63-1) |
+| `INT_MIN` | -9223372036854775808 | Minimum `Int` value (-2^63) |
 
 ```zenth
 let infinity = INT_MAX;  // cleaner than magic numbers
@@ -58,10 +58,10 @@ let infinity = INT_MAX;  // cleaner than magic numbers
 Types are inferred from the assigned value by default:
 
 ```zenth
-let x = 42;        // int
-let y = 3.14;      // f64
-let s = "hello";   // str
-let b = true;      // bool
+let x = 42;        // Int
+let y = 3.14;      // Float
+let s = "hello";   // Str
+let b = true;      // Bool
 ```
 
 ## Explicit Type Annotations
@@ -69,9 +69,9 @@ let b = true;      // bool
 You can annotate the type explicitly with `: Type`:
 
 ```zenth
-let x: int = 5;
-var name: str = "Zenth";
-let ratio: f64 = 0.75;
+let x: Int = 5;
+var name: Str = "Zenth";
+let ratio: Float = 0.75;
 ```
 
 Type annotations are required on function parameters and return types, but optional on local variables.

@@ -81,7 +81,7 @@ if c != Color.Blue {
 Enums work naturally with `match`:
 
 ```zenth
-fn color_name(c: Color) -> str {
+fn color_name(c: Color) -> Str {
     return match c {
         Color.Red => "red",
         Color.Green => "green",

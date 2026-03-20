@@ -5,7 +5,7 @@ fn main() {
         "left 3"
     ];
 
-    var cmds: array(Tuple(str, int)) = [];
+    var cmds: Array(Tuple(Str,Int)) = [];
     for row in data {
         let (cmd, raw) = row.split_once(" ");
         cmds.add(Tuple(cmd, Int(raw)));

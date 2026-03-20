@@ -1,5 +1,5 @@
 // Should fail: alias references unknown type
-type Bad = array(Nope);
+type Bad = Array(Nope);
 
 fn main() {
     let x: Bad = [];

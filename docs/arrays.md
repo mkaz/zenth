@@ -14,13 +14,13 @@ let names = ["Alice", "Bob", "Charlie"];
 With an explicit type annotation:
 
 ```zenth
-let scores: array(int) = [100, 95, 87];
+let scores: Array(Int) = [100, 95, 87];
 ```
 
 An empty slice can use a type annotation:
 
 ```zenth
-var points: array(Point) = [];
+var points: Array(Point) = [];
 points.add(Point(x=1, y=2));
 ```
 
@@ -153,7 +153,7 @@ Println(floats.max());     // 3.14
 Println(floats.min());     // 1.41
 ```
 
-These methods work on any numeric array (`int`, `f64`, `i32`, etc.) and panic at runtime if called on an empty array.
+These methods work on any numeric array (`Int`, `Float`) and panic at runtime if called on an empty array.
 
 ## Sum
 
@@ -247,7 +247,7 @@ let parts = ["2026", "03", "15"];
 Println(parts.join("-"));      // "2026-03-15"
 ```
 
-Only works on `array(str)`. Calling `.join()` on a non-string array is a compile-time error.
+Only works on `Array(Str)`. Calling `.join()` on a non-string array is a compile-time error.
 
 ## Transforming Arrays
 
@@ -272,7 +272,7 @@ let result = numbers.filter(fn(x) x > 2).map(fn(x) x * 10);
 Closures with a block body use explicit `return`:
 
 ```zenth
-let processed = numbers.map(fn(x: int) -> int {
+let processed = numbers.map(fn(x: Int) -> Int {
     let y = x + 10;
     return y;
 });
@@ -320,7 +320,7 @@ The number of binding names must not exceed the array length at runtime; a runti
 ## Example
 
 ```zenth
-fn sum(numbers: array(int)) -> int {
+fn sum(numbers: Array(Int)) -> Int {
     var total = 0;
     for n in numbers {
         total += n;

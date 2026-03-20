@@ -2,7 +2,7 @@
 
 fn main() {
     // Create a set and add elements
-    var visited = Set(str);
+    var visited = Set(Str);
     visited.add("start");
     visited.add("middle");
     visited.add("end");
@@ -28,7 +28,7 @@ fn main() {
     Println(visited.length());
 
     // Integer set
-    var nums = Set(int);
+    var nums = Set(Int);
     nums.add(1);
     nums.add(2);
     nums.add(3);
@@ -43,7 +43,7 @@ fn main() {
     Println(total);
 
     // Set with explicit type annotation
-    var flags: Set(str) = Set(str);
+    var flags: Set(Str) = Set(Str);
     flags.add("verbose");
     flags.add("debug");
     Println(Len(flags));

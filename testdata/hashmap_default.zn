@@ -1,6 +1,6 @@
 fn main() {
     // compound assignment on missing key
-    var m = Hashmap(str, int, default=0);
+    var m = Hashmap(Str,Int, default=0);
     m["foo"] += 1;
     m["foo"] += 2;
     Println("foo=" + Str(m["foo"]));
@@ -16,7 +16,7 @@ fn main() {
     Println("len=" + Str(Len(m)));
 
     // increment with ++
-    var c = Hashmap(str, int, default=0);
+    var c = Hashmap(Str,Int, default=0);
     c["x"]++;
     c["x"]++;
     Println("x=" + Str(c["x"]));

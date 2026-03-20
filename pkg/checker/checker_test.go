@@ -103,24 +103,15 @@ func TestBuiltinTypeString(t *testing.T) {
 		typ  ZType
 		want string
 	}{
-		{TypeInt, "int"},
-		{TypeI8, "i8"},
-		{TypeI16, "i16"},
-		{TypeI32, "i32"},
-		{TypeI64, "i64"},
-		{TypeU8, "u8"},
-		{TypeU16, "u16"},
-		{TypeU32, "u32"},
-		{TypeU64, "u64"},
-		{TypeF32, "f32"},
-		{TypeF64, "f64"},
-		{TypeBool, "bool"},
-		{TypeStr, "str"},
-		{TypeByte, "byte"},
+		{TypeInt, "Int"},
+		{TypeFloat, "Float"},
+		{TypeBool, "Bool"},
+		{TypeStr, "Str"},
+		{TypeByte, "Byte"},
 		{TypeVoid, "void"},
 		{TypeError, "error"},
 		{TypeNil, "nil"},
-		{TypeFile, "file"},
+		{TypeFile, "File"},
 	}
 	for _, tt := range tests {
 		if got := tt.typ.String(); got != tt.want {
@@ -130,7 +121,7 @@ func TestBuiltinTypeString(t *testing.T) {
 }
 
 func TestObjTypeString(t *testing.T) {
-	o := &ObjType{Name: "Point", Fields: map[string]ZType{"x": TypeF64}}
+	o := &ObjType{Name: "Point", Fields: map[string]ZType{"x": TypeFloat}}
 	if got := o.String(); got != "Point" {
 		t.Errorf("ObjType.String() = %q, want %q", got, "Point")
 	}
@@ -138,22 +129,22 @@ func TestObjTypeString(t *testing.T) {
 
 func TestSliceTypeString(t *testing.T) {
 	s := &SliceType{Elem: TypeInt}
-	if got := s.String(); got != "[]int" {
-		t.Errorf("SliceType.String() = %q, want %q", got, "[]int")
+	if got := s.String(); got != "[]Int" {
+		t.Errorf("SliceType.String() = %q, want %q", got, "[]Int")
 	}
 }
 
 func TestHashmapTypeString(t *testing.T) {
 	h := &HashmapType{Key: TypeStr, Value: TypeInt}
-	if got := h.String(); got != "hashmap[str]int" {
-		t.Errorf("HashmapType.String() = %q, want %q", got, "hashmap[str]int")
+	if got := h.String(); got != "hashmap[Str]Int" {
+		t.Errorf("HashmapType.String() = %q, want %q", got, "hashmap[Str]Int")
 	}
 }
 
 func TestSetTypeString(t *testing.T) {
 	s := &SetType{Elem: TypeStr}
-	if got := s.String(); got != "set(str)" {
-		t.Errorf("SetType.String() = %q, want %q", got, "set(str)")
+	if got := s.String(); got != "set(Str)" {
+		t.Errorf("SetType.String() = %q, want %q", got, "set(Str)")
 	}
 }
 
@@ -164,8 +155,8 @@ func TestTupleTypeString(t *testing.T) {
 		want string
 	}{
 		{"empty", &TupleType{}, "tuple[]"},
-		{"positional", &TupleType{Elems: []ZType{TypeInt, TypeStr}}, "tuple[int, str]"},
-		{"named", &TupleType{Elems: []ZType{TypeInt, TypeStr}, Names: []string{"a", "b"}}, "tuple[a: int, b: str]"},
+		{"positional", &TupleType{Elems: []ZType{TypeInt, TypeStr}}, "tuple[Int, Str]"},
+		{"named", &TupleType{Elems: []ZType{TypeInt, TypeStr}, Names: []string{"a", "b"}}, "tuple[a: Int, b: Str]"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -185,8 +176,8 @@ func TestEnumTypeString(t *testing.T) {
 
 func TestFuncTypeString(t *testing.T) {
 	f := &FuncType{Params: []ZType{TypeInt}, Returns: TypeStr}
-	if got := f.String(); got != "fn(...) -> str" {
-		t.Errorf("FuncType.String() = %q, want %q", got, "fn(...) -> str")
+	if got := f.String(); got != "fn(...) -> Str" {
+		t.Errorf("FuncType.String() = %q, want %q", got, "fn(...) -> Str")
 	}
 }
 
@@ -339,20 +330,11 @@ func TestFuncTypeEquals(t *testing.T) {
 
 func TestLookupBuiltinType(t *testing.T) {
 	known := map[string]ZType{
-		"int":   TypeInt,
-		"i8":    TypeI8,
-		"i16":   TypeI16,
-		"i32":   TypeI32,
-		"i64":   TypeI64,
-		"u8":    TypeU8,
-		"u16":   TypeU16,
-		"u32":   TypeU32,
-		"u64":   TypeU64,
-		"f32":   TypeF32,
-		"f64":   TypeF64,
-		"bool":  TypeBool,
-		"str":   TypeStr,
-		"byte":  TypeByte,
+		"Int":   TypeInt,
+		"Float": TypeFloat,
+		"Bool":  TypeBool,
+		"Str":   TypeStr,
+		"Byte":  TypeByte,
 		"error": TypeError,
 	}
 	for name, want := range known {
@@ -369,7 +351,7 @@ func TestLookupBuiltinType(t *testing.T) {
 // IsNumeric, IsInteger, IsFloat
 
 func TestIsNumeric(t *testing.T) {
-	numeric := []ZType{TypeInt, TypeI8, TypeI16, TypeI32, TypeI64, TypeU8, TypeU16, TypeU32, TypeU64, TypeF32, TypeF64}
+	numeric := []ZType{TypeInt, TypeFloat}
 	for _, typ := range numeric {
 		if !IsNumeric(typ) {
 			t.Errorf("IsNumeric(%s) should be true", typ)
@@ -384,13 +366,13 @@ func TestIsNumeric(t *testing.T) {
 }
 
 func TestIsInteger(t *testing.T) {
-	ints := []ZType{TypeInt, TypeI8, TypeI16, TypeI32, TypeI64, TypeU8, TypeU16, TypeU32, TypeU64}
+	ints := []ZType{TypeInt}
 	for _, typ := range ints {
 		if !IsInteger(typ) {
 			t.Errorf("IsInteger(%s) should be true", typ)
 		}
 	}
-	nonInts := []ZType{TypeF32, TypeF64, TypeBool, TypeStr}
+	nonInts := []ZType{TypeFloat, TypeBool, TypeStr}
 	for _, typ := range nonInts {
 		if IsInteger(typ) {
 			t.Errorf("IsInteger(%s) should be false", typ)
@@ -399,13 +381,10 @@ func TestIsInteger(t *testing.T) {
 }
 
 func TestIsFloat(t *testing.T) {
-	if !IsFloat(TypeF32) {
-		t.Error("IsFloat(f32) should be true")
+	if !IsFloat(TypeFloat) {
+		t.Error("IsFloat(Float) should be true")
 	}
-	if !IsFloat(TypeF64) {
-		t.Error("IsFloat(f64) should be true")
-	}
-	nonFloats := []ZType{TypeInt, TypeI8, TypeBool, TypeStr, &ObjType{Name: "Foo"}}
+	nonFloats := []ZType{TypeInt, TypeBool, TypeStr, &ObjType{Name: "Foo"}}
 	for _, typ := range nonFloats {
 		if IsFloat(typ) {
 			t.Errorf("IsFloat(%s) should be false", typ)
@@ -422,11 +401,10 @@ func TestPromoteNumeric(t *testing.T) {
 		want ZType
 	}{
 		{"same int", TypeInt, TypeInt, TypeInt},
-		{"same f64", TypeF64, TypeF64, TypeF64},
-		{"f32+int -> f32", TypeF32, TypeInt, TypeF32},
-		{"int+f64 -> f64", TypeInt, TypeF64, TypeF64},
-		{"f32+f64 -> f64", TypeF32, TypeF64, TypeF64},
-		{"diff ints -> nil", TypeI8, TypeI16, nil},
+		{"same Float", TypeFloat, TypeFloat, TypeFloat},
+		{"Float+int -> Float", TypeFloat, TypeInt, TypeFloat},
+		{"int+Float -> Float", TypeInt, TypeFloat, TypeFloat},
+		{"Float+Float -> Float", TypeFloat, TypeFloat, TypeFloat},
 		{"non-numeric -> nil", TypeStr, TypeInt, nil},
 		{"both non-numeric -> nil", TypeStr, TypeBool, nil},
 	}
@@ -461,7 +439,7 @@ func TestCheckerSuccess(t *testing.T) {
 		},
 		{
 			"let with type annotation",
-			`let x: int = 5;`,
+			`let x: Int = 5;`,
 		},
 		{
 			"var declaration",
@@ -469,7 +447,7 @@ func TestCheckerSuccess(t *testing.T) {
 		},
 		{
 			"var with type annotation",
-			`var x: int = 10;`,
+			`var x: Int = 10;`,
 		},
 		{
 			"const declaration",
@@ -481,11 +459,11 @@ func TestCheckerSuccess(t *testing.T) {
 		},
 		{
 			"function with typed params and return",
-			`fn add(a: int, b: int) -> int { return a + b; }`,
+			`fn add(a: Int, b: Int) -> Int { return a + b; }`,
 		},
 		{
 			"function void return",
-			`fn greet(name: str) { Println(name); }`,
+			`fn greet(name: Str) { Println(name); }`,
 		},
 		{
 			"if/else with bool condition",
@@ -513,11 +491,11 @@ func TestCheckerSuccess(t *testing.T) {
 		},
 		{
 			"obj with fields and method",
-			"obj Rect {\n  width: f64;\n  height: f64;\n  fn area() -> f64 {\n    return self.width * self.height;\n  }\n}\nfn main() {\n  let r = Rect(width=3.0, height=4.0);\n  Println(Str(r.area()));\n}\n",
+			"obj Rect {\n  width: Float;\n  height: Float;\n  fn area() -> Float {\n    return self.width * self.height;\n  }\n}\nfn main() {\n  let r = Rect(width=3.0, height=4.0);\n  Println(Str(r.area()));\n}\n",
 		},
 		{
 			"uppercase method name allowed",
-			"obj Rect {\n  width: f64;\n  height: f64;\n  fn Area() -> f64 {\n    return self.width * self.height;\n  }\n}\nfn main() {\n  let r = Rect(width=3.0, height=4.0);\n  Println(Str(r.Area()));\n}\n",
+			"obj Rect {\n  width: Float;\n  height: Float;\n  fn Area() -> Float {\n    return self.width * self.height;\n  }\n}\nfn main() {\n  let r = Rect(width=3.0, height=4.0);\n  Println(Str(r.Area()));\n}\n",
 		},
 		{
 			"enum declaration and variant access",
@@ -540,7 +518,7 @@ func TestCheckerSuccess(t *testing.T) {
 			`let a = 1 + 2; let b = 3 * 4; let c = 10 - 5; let d = 8 / 2;`,
 		},
 		{
-			"type promotion int + f64",
+			"type promotion int + Float",
 			`let a = 1 + 2.0;`,
 		},
 		{
@@ -561,7 +539,7 @@ func TestCheckerSuccess(t *testing.T) {
 		},
 		{
 			"function calling function",
-			`fn double(n: int) -> int { return n * 2; } fn quad(n: int) -> int { return double(double(n)); }`,
+			`fn double(n: Int) -> Int { return n * 2; } fn quad(n: Int) -> Int { return double(double(n)); }`,
 		},
 		{
 			"built-in len",
@@ -647,17 +625,17 @@ func TestCheckerErrors(t *testing.T) {
 		},
 		{
 			"type mismatch in let annotation",
-			`let x: int = "hello";`,
+			`let x: Int = "hello";`,
 			"type mismatch",
 		},
 		{
 			"type mismatch in var annotation",
-			`var x: int = "hello";`,
+			`var x: Int = "hello";`,
 			"type mismatch",
 		},
 		{
 			"return type mismatch",
-			`fn foo() -> int { return "hello"; }`,
+			`fn foo() -> Int { return "hello"; }`,
 			"return type mismatch",
 		},
 		{
@@ -673,22 +651,22 @@ func TestCheckerErrors(t *testing.T) {
 		{
 			"if condition not bool",
 			`fn main() { if 42 { Println("oops"); } }`,
-			"if condition must be bool",
+			"if condition must be Bool",
 		},
 		{
 			"for condition not bool",
 			`fn main() { for var i = 0; 42; i++ { break; } }`,
-			"for condition must be bool",
+			"for condition must be Bool",
 		},
 		{
 			"logical op non-bool",
 			`let x = 1 && 2;`,
-			"logical operators require bool operands",
+			"logical operators require Bool operands",
 		},
 		{
 			"unary ! on non-bool",
 			`let x = !5;`,
-			"! requires bool",
+			"! requires Bool",
 		},
 		{
 			"unary - on non-numeric",
@@ -702,13 +680,13 @@ func TestCheckerErrors(t *testing.T) {
 		},
 		{
 			"function wrong arg count",
-			`fn foo(a: int, b: int) -> int { return a + b; } let x = foo(1);`,
+			`fn foo(a: Int, b: Int) -> Int { return a + b; } let x = foo(1);`,
 			"expects 2 arguments, got 1",
 		},
 		{
 			"function arg type mismatch",
-			`fn foo(a: int) -> int { return a; } let x = foo("bad");`,
-			"has type str, expected int",
+			`fn foo(a: Int) -> Int { return a; } let x = foo("bad");`,
+			"has type Str, expected Int",
 		},
 		{
 			"enum bad variant",
@@ -742,7 +720,7 @@ func TestCheckerErrors(t *testing.T) {
 		},
 		{
 			"function missing return value",
-			`fn foo() -> int { return; }`,
+			`fn foo() -> Int { return; }`,
 			"function expects return type",
 		},
 		{
@@ -809,7 +787,7 @@ func TestNewCheckerBuiltinFunctions(t *testing.T) {
 		{"Rangei", TypeRangei},
 		{"File", TypeFile},
 		{"Int", TypeInt},
-		{"F64", TypeF64},
+		{"Float", TypeFloat},
 		{"Flag", TypeVoid},
 	}
 	for _, tt := range builtins {

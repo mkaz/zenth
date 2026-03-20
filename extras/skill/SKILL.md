@@ -42,12 +42,12 @@ zenth build --emit-go hello.zn
 
 ```zenth
 let x = 5;              // immutable, type inferred
-let x: int = 5;         // immutable, explicit type
+let x: Int = 5;         // immutable, explicit type
 var counter = 0;         // mutable, type inferred
-var counter: int = 0;    // mutable, explicit type
+var counter: Int = 0;    // mutable, explicit type
 const pi = 3.14159;      // constant
-INT_MAX                  // built-in: max int value (9223372036854775807)
-INT_MIN                  // built-in: min int value (-9223372036854775808)
+INT_MAX                  // built-in: max Int value (9223372036854775807)
+INT_MIN                  // built-in: min Int value (-9223372036854775808)
 ```
 
 - `let` is immutable (cannot reassign)
@@ -60,38 +60,38 @@ INT_MIN                  // built-in: min int value (-9223372036854775808)
 
 ### Types
 
-**Primitive:** `int`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`, `f32`, `f64`, `bool`, `str`, `byte`
+**Primitive:** `Int`, `Float`, `Bool`, `Str`, `Byte`
 
-**Composite:** `array(int)`, `Tuple(str, int)`, `Hashmap(str, int)`, `Set(str)`, `Set(Tuple(int, int))`, obj types
+**Composite:** `Array(Int)`, `Tuple(Str, Int)`, `Hashmap(Str, Int)`, `Set(Str)`, `Set(Tuple(Int, Int))`, obj types
 
 **Type aliases:**
 ```zenth
-type Grid = Hashmap(Point, int);
-type Pair = Tuple(str, int);
+type Grid = Hashmap(Point, Int);
+type Pair = Tuple(Str, Int);
 ```
 
 **Type conversions:**
 ```zenth
-let n = Int("42");        // str to int
-let f = F64(42);          // int to f64
-let s = Str(42);          // any to str
-let b = Int("ff", 16);   // str to int with base (255)
+let n = Int("42");        // Str to Int
+let f = Float(42);        // Int to Float
+let s = Str(42);          // any to Str
+let b = Int("ff", 16);   // Str to Int with base (255)
 let bin = Int("1010", 2); // binary string to Int (10)
 ```
 
 ### Functions
 
 ```zenth
-fn add(a: int, b: int) -> int {
+fn add(a: Int, b: Int) -> Int {
     return a + b;
 }
 
-fn greet(name: str) {
+fn greet(name: Str) {
     Println("Hello, " + name);
 }
 
 // Default parameters
-fn connect(host: str, port: int = 8080) {
+fn connect(host: Str, port: Int = 8080) {
     Println("{host}:{port}");
 }
 
@@ -100,7 +100,7 @@ connect(host="localhost", port=3000);
 connect(host="localhost");  // uses default port
 
 // Recursion works
-fn factorial(n: int) -> int {
+fn factorial(n: Int) -> Int {
     if n <= 1 { return 1; }
     return n * factorial(n - 1);
 }
@@ -113,7 +113,7 @@ Top-level user-defined function names must start with a lowercase letter.
 **Multi-return functions** use parenthesized return types and `return a, b;` shorthand:
 
 ```zenth
-fn min_max(nums: array(int)) -> (int, int) {
+fn min_max(nums: Array(Int)) (Int,Int) {
     var lo = nums[0];
     var hi = nums[0];
     for n in nums {
@@ -129,7 +129,7 @@ fn main() {
 }
 ```
 
-`-> (int, int)` is shorthand for `-> Tuple(int, int)`. `return a, b;` is shorthand for `return Tuple(a, b);`.
+`(Int,Int)` is shorthand for `-> Tuple(Int,Int)`. `return a, b;` is shorthand for `return Tuple(a, b);`.
 
 ### Strings
 
@@ -173,7 +173,7 @@ Len("hello")                 // 5
 **String indexing and slicing:**
 ```zenth
 let s = "hello";
-let ch = s[0];      // "h" (returns str, not byte)
+let ch = s[0];      // "h" (returns Str, not Byte)
 let sub = s[1:3];   // "el"
 let rest = s[2:];   // "llo"
 let head = s[:3];   // "hel"
@@ -207,7 +207,7 @@ for i, item in items {
     Println("{i}: {item}");
 }
 
-// for-in over strings (yields each character as str)
+// for-in over strings (yields each character as Str)
 for ch in "hello" {
     Print(ch);
 }
@@ -296,7 +296,7 @@ Note: `.contains()` is a bounds check only, not sequence membership.
 
 ```zenth
 let numbers = [1, 2, 3, 4, 5];
-let names: array(str) = [];       // empty with type annotation
+let names: Array(Str) = [];       // empty with type annotation
 
 // Access and length
 Println(numbers[0]);
@@ -304,7 +304,7 @@ Println(Len(numbers));
 Println(numbers.length());
 
 // Mutating (requires var)
-var items: array(int) = [];
+var items: Array(Int) = [];
 items[0] = 99;         // direct index assignment
 items[0] += 1;         // compound assignment by index
 items.add(10);         // append
@@ -329,7 +329,7 @@ let doubled = numbers.map(fn(x) x * 2);
 let evens = numbers.filter(fn(x) x % 2 == 0);
 
 // Block closure with explicit types
-let processed = numbers.map(fn(x: int) -> int {
+let processed = numbers.map(fn(x: Int) -> Int {
     let y = x + 1;
     return y;
 });
@@ -369,12 +369,12 @@ let scores = [95, 87];
 for pair in Zip(names, scores) {
     Println(pair.0 + "=" + Str(pair.1));
 }
-// Zip 3+ arrays: Zip(a, b, c) → array(Tuple(T1, T2, T3))
+// Zip 3+ arrays: Zip(a, b, c) → Array(Tuple(T1, T2, T3))
 
 // Type conversions for string arrays
 let strs = ["1", "2", "3"];
 let ints = strs.to_int();     // [1, 2, 3]
-let floats = strs.to_f64();   // [1.0, 2.0, 3.0]
+let floats = strs.to_float();   // [1.0, 2.0, 3.0]
 
 // Array destructuring — bind elements directly to variables
 let [a, b, c] = [10, 20, 30];
@@ -406,13 +406,13 @@ Println(person.age);       // "30"
 Println(person.0);         // also works by index
 
 // Type annotation
-let t: Tuple(key: str, value: int) = Tuple(key="x", value=42);
+let t: Tuple(key: Str, value: Int) = Tuple(key="x", value=42);
 
 // Destructuring
 let (k, v) = t;
 
 // Array of named tuples
-let pairs: array(Tuple(name: str, score: int)) = [];
+let pairs: Array(Tuple(name: Str, score: Int)) = [];
 pairs.add(Tuple(name="Bob", score=95));
 for p in pairs {
     Println("{p.name}: {Str(p.score)}");
@@ -423,7 +423,7 @@ for p in pairs {
 
 ```zenth
 // Create with type arguments
-var scores = Hashmap(str, int);
+var scores = Hashmap(Str,Int);
 scores["Alice"] = 95;
 scores["Bob"] = 80;
 
@@ -432,7 +432,7 @@ Println(scores["Alice"]);
 Println(Len(scores));
 
 // Default values (like Python's defaultdict)
-var counts = Hashmap(str, int, default=0);
+var counts = Hashmap(Str,Int, default=0);
 counts["x"] += 1;  // no KeyError, starts from 0
 
 // Iteration
@@ -444,23 +444,23 @@ for key in scores {       // keys only
 }
 
 // Methods
-let keys = scores.keys();       // array(str)
-let vals = scores.values();     // array(int)
+let keys = scores.keys();       // Array(Str)
+let vals = scores.values();     // Array(Int)
 if scores.exists("Alice") {     // check key existence
     Println("found");
 }
 
 // Object keys (value-based lookup)
 obj Point {
-    x: int;
-    y: int;
+    x: Int;
+    y: Int;
 }
-var grid = Hashmap(Point, str);
+var grid = Hashmap(Point,Str);
 grid[Point(x=1, y=2)] = "#";
 Println(grid[Point(x=1, y=2)]);  // "#" (same-value lookup works)
 
 // Tuple keys (composite keys for multi-dimensional lookups)
-var cells = Hashmap(Tuple(int, int), str);
+var cells = Hashmap(Tuple(Int,Int),Str);
 cells[Tuple(0, 0)] = "origin";
 cells[Tuple(1, 2)] = "point";
 Println(cells[Tuple(0, 0)]);        // "origin"
@@ -471,7 +471,7 @@ Println(cells.exists(Tuple(1, 2))); // true
 
 ```zenth
 // Create a set
-var visited = Set(str);
+var visited = Set(Str);
 visited.add("start");
 visited.add("middle");
 visited.exists("start");   // true
@@ -480,7 +480,7 @@ Println(Len(visited));       // 1
 Println(visited.length());   // 1
 
 // Integer set
-var nums = Set(int);
+var nums = Set(Int);
 nums.add(1);
 nums.add(2);
 nums.add(2);  // duplicate, ignored
@@ -492,7 +492,7 @@ for n in nums {
 }
 
 // Set of tuples (composite keys without string round-tripping)
-var dots = Set(Tuple(int, int));
+var dots = Set(Tuple(Int,Int));
 dots.add(Tuple(6, 10));
 dots.add(Tuple(0, 14));
 dots.add(Tuple(6, 10));  // duplicate, ignored
@@ -509,14 +509,14 @@ for dot in dots {
 
 ```zenth
 obj Rectangle {
-    width: f64;
-    height: f64;
+    width: Float;
+    height: Float;
 
-    fn area() -> f64 {
+    fn area() -> Float {
         return self.width * self.height;
     }
 
-    fn scale(factor: f64) -> Rectangle {
+    fn scale(factor: Float) -> Rectangle {
         return Rectangle(
             width=self.width * factor,
             height=self.height * factor
@@ -524,7 +524,7 @@ obj Rectangle {
     }
 
     // Override default string representation
-    fn string() -> str {
+    fn string() -> Str {
         return "Rect({self.width}x{self.height})";
     }
 }
@@ -536,8 +536,8 @@ Println(r);                // "Rect(10x5)"
 
 // Default field values
 obj Account {
-    balance: int = 0;
-    interest: f64 = 2.5;
+    balance: Int = 0;
+    interest: Float = 2.5;
 }
 let a = Account();                    // all defaults
 let b = Account(balance=100);         // partial
@@ -601,7 +601,7 @@ fn main() {
     let db = sql.Open("sqlite3", "./data.db");
     let rows = db.Query("SELECT id, name FROM users");
     for rows.Next() {
-        var id: int = 0;
+        var id: Int = 0;
         var name = "";
         rows.Scan(&id, &name);
         Println("{id}: {name}");
@@ -623,7 +623,7 @@ A module file is a regular `.zn` file without `fn main`. It can contain function
 
 ```zenth
 // utils.zn
-fn double(x: int) -> int {
+fn double(x: Int) -> Int {
     return x * 2;
 }
 ```
@@ -658,15 +658,15 @@ Module objects are constructed with `module.ObjName(field=value)` syntax and the
 | `Print(...)` | Print without newline |
 | `Println(...)` | Print with newline |
 | `Len(x)` | Length of string, array, or hashmap |
-| `Str(x)` | Convert any value to string |
-| `Int(x)` | Convert string or float to int |
-| `Int(str, base)` | Convert string to int with base (2, 8, 16, etc.) |
-| `F64(x)` | Convert to float64 |
-| `Abs(x)` | Absolute value (int or float) |
-| `Min(a, b, ...)` | Minimum of two or more values (all must be same type: int or f64) |
-| `Max(a, b, ...)` | Maximum of two or more values (all must be same type: int or f64) |
+| `Str(x)` | Convert any value to String |
+| `Int(x)` | Convert string or float to Int |
+| `Int(Str, base)` | Convert string to Int with base (2, 8, 16, etc.) |
+| `Float(x)` | Convert to Float |
+| `Abs(x)` | Absolute value (Int or float) |
+| `Min(a, b, ...)` | Minimum of two or more values (all must be same type: Int or Float) |
+| `Max(a, b, ...)` | Maximum of two or more values (all must be same type: Int or Float) |
 | `Clamp(x, lo, hi)` | Clamp value to range |
-| `Round(x)` | Round float to nearest int |
+| `Round(x)` | Round float to nearest Int |
 | `Floor(x)` | Floor of float |
 | `Ceil(x)` | Ceiling of float |
 | `Pow(base, exp)` | Exponentiation |
@@ -689,8 +689,8 @@ Module objects are constructed with `module.ObjName(field=value)` syntax and the
 
 | Constant | Description |
 |---|---|
-| `INT_MAX` | Maximum `int` value (2^63-1 = 9223372036854775807) |
-| `INT_MIN` | Minimum `int` value (-2^63 = -9223372036854775808) |
+| `INT_MAX` | Maximum `Int` value (2^63-1 = 9223372036854775807) |
+| `INT_MIN` | Minimum `Int` value (-2^63 = -9223372036854775808) |
 
 These are true constants and cannot be reassigned. Use them instead of magic numbers for sentinel values:
 
@@ -707,9 +707,9 @@ if cost < best {
 let f = File("data.txt");
 
 if f.exists() {
-    let content = f.read();       // entire file as str
-    let lines = f.lines();        // array(str)
-    let parts = f.sections();     // split on blank lines -> array(str)
+    let content = f.read();       // entire file as Str
+    let lines = f.lines();        // Array(Str)
+    let parts = f.sections();     // split on blank lines -> Array(Str)
     Println("Name: " + f.name()); // filename
     Println("Ext: " + f.ext());   // extension
 }
@@ -720,9 +720,9 @@ if f.exists() {
 Flag names are inferred from the variable name:
 
 ```zenth
-let debug = Flag(default=false);  // --debug Flag (bool)
-let count = Flag(default=5);      // --count Flag (int)
-let msg = Flag(default="hi");     // --msg Flag (str)
+let debug = Flag(default=false);  // --debug Flag (Bool)
+let count = Flag(default=5);      // --count Flag (Int)
+let msg = Flag(default="hi");     // --msg Flag (Str)
 ```
 
 Run with: `./program --debug --count=10 --msg="hello"`
@@ -752,7 +752,7 @@ fn main() {
 ### Hashmap Word Counter
 ```zenth
 fn main() {
-    var counts = Hashmap(str, int, default=0);
+    var counts = Hashmap(Str,Int, default=0);
     let words = ["apple", "banana", "apple", "cherry", "banana", "apple"];
     for word in words {
         counts[word] += 1;
@@ -766,18 +766,18 @@ fn main() {
 ### Object with Methods
 ```zenth
 obj Vec2 {
-    x: f64;
-    y: f64;
+    x: Float;
+    y: Float;
 
     fn add(other: Vec2) -> Vec2 {
         return Vec2(x=self.x + other.x, y=self.y + other.y);
     }
 
-    fn magnitude() -> f64 {
+    fn magnitude() -> Float {
         return Sqrt(self.x * self.x + self.y * self.y);
     }
 
-    fn string() -> str {
+    fn string() -> Str {
         return "({self.x}, {self.y})";
     }
 }

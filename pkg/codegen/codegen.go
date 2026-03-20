@@ -386,12 +386,12 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\tcase string:")
 		g.writeln("\t\tn, err := strconv.ParseFloat(x, 64)")
 		g.writeln("\t\tif err != nil {")
-		g.writeln("\t\t\tfmt.Fprintf(os.Stderr, \"error: cannot convert %q to f64\\n\", x)")
+		g.writeln("\t\t\tfmt.Fprintf(os.Stderr, \"error: cannot convert %q to Float\\n\", x)")
 		g.writeln("\t\t\tos.Exit(1)")
 		g.writeln("\t\t}")
 		g.writeln("\t\treturn n")
 		g.writeln("\tdefault:")
-		g.writeln("\t\tfmt.Fprintf(os.Stderr, \"error: cannot convert %T to f64\\n\", v)")
+		g.writeln("\t\tfmt.Fprintf(os.Stderr, \"error: cannot convert %T to Float\\n\", v)")
 		g.writeln("\t\tos.Exit(1)")
 		g.writeln("\t\treturn 0")
 		g.writeln("\t}")
@@ -433,7 +433,7 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\t\tfor _, v := range xs {")
 		g.writeln("\t\t\tn, err := strconv.ParseFloat(fmt.Sprint(v), 64)")
 		g.writeln("\t\t\tif err != nil {")
-		g.writeln("\t\t\t\tfmt.Fprintf(os.Stderr, \"error: cannot convert %q to f64\\n\", fmt.Sprint(v))")
+		g.writeln("\t\t\t\tfmt.Fprintf(os.Stderr, \"error: cannot convert %q to Float\\n\", fmt.Sprint(v))")
 		g.writeln("\t\t\t\tos.Exit(1)")
 		g.writeln("\t\t\t}")
 		g.writeln("\t\t\tresult = append(result, n)")
@@ -442,7 +442,7 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\t\tfor _, v := range xs {")
 		g.writeln("\t\t\tn, err := strconv.ParseFloat(v, 64)")
 		g.writeln("\t\t\tif err != nil {")
-		g.writeln("\t\t\t\tfmt.Fprintf(os.Stderr, \"error: cannot convert %q to f64\\n\", v)")
+		g.writeln("\t\t\t\tfmt.Fprintf(os.Stderr, \"error: cannot convert %q to Float\\n\", v)")
 		g.writeln("\t\t\t\tos.Exit(1)")
 		g.writeln("\t\t\t}")
 		g.writeln("\t\t\tresult = append(result, n)")
@@ -998,7 +998,7 @@ func objHasStringMethod(s *ast.ObjDecl) bool {
 }
 
 func objFieldFormatVerb(t *ast.TypeExpr) string {
-	if t != nil && !t.IsSlice && t.Name == "str" {
+	if t != nil && !t.IsSlice && t.Name == "Str" {
 		return "%q"
 	}
 	return "%v"
@@ -1989,8 +1989,8 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write(")")
 			}
 			return
-		case "F64":
-			if c.SliceConvFunc == "F64" {
+		case "Float":
+			if c.SliceConvFunc == "Float" {
 				g.needsSliceToF64 = true
 				g.write("zenth_slice_to_f64(")
 			} else {
@@ -2410,13 +2410,13 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 					g.write(")")
 				}
 				return
-			case "to_f64":
+			case "to_float":
 				if c.SliceConvTarget == "" {
-					// Scalar: str.to_f64()
+					// Scalar: str.to_float()
 					g.needsF64Conv = true
 					g.write("zenth_f64(")
 				} else {
-					// Slice: []str.to_f64()
+					// Slice: []str.to_float()
 					g.needsSliceToF64 = true
 					g.write("zenth_slice_to_f64(")
 				}
@@ -3058,33 +3058,15 @@ func genTypeExprResolved(t *ast.TypeExpr, aliases map[string]*ast.TypeExpr) stri
 
 func mapTypeName(name string) string {
 	switch name {
-	case "int":
+	case "Int":
 		return "int"
-	case "i8":
-		return "int8"
-	case "i16":
-		return "int16"
-	case "i32":
-		return "int32"
-	case "i64":
-		return "int64"
-	case "u8":
-		return "uint8"
-	case "u16":
-		return "uint16"
-	case "u32":
-		return "uint32"
-	case "u64":
-		return "uint64"
-	case "f32":
-		return "float32"
-	case "f64":
+	case "Float":
 		return "float64"
-	case "bool":
+	case "Bool":
 		return "bool"
-	case "str":
+	case "Str":
 		return "string"
-	case "byte":
+	case "Byte":
 		return "byte"
 	default:
 		// User-defined obj types are always pointers

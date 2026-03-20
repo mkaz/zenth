@@ -72,7 +72,7 @@ Zenth source files use the `.zn` extension.
 Here's a Fibonacci program that shows functions, loops, and type annotations:
 
 ```zenth
-fn fibonacci(n: int) -> int {
+fn fibonacci(n: Int) -> Int {
     if n <= 1 {
         return n;
     }

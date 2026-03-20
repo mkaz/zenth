@@ -1,13 +1,13 @@
 fn main() {
-    // Int(str, base) — binary
+    // Int(Str, base) — binary
     let bin = Int("1010", 2);
     Println(Str(bin));
 
-    // Int(str, base) — hexadecimal
+    // Int(Str, base) — hexadecimal
     let hex = Int("ff", 16);
     Println(Str(hex));
 
-    // Int(str, base) — octal
+    // Int(Str, base) — octal
     let oct = Int("77", 8);
     Println(Str(oct));
 

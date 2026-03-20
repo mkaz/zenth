@@ -6,7 +6,7 @@ fn main() {
     let u = Tuple(1, "x", true);
     Println(Str(u.0) + "-" + u.1 + "-" + Str(u.2));
 
-    let pairs: array(Tuple(str, str)) = [];
+    let pairs: Array(Tuple(Str,Str)) = [];
     pairs.add(Tuple("left", "right"));
     Println(pairs[0].0 + ":" + pairs[0].1);
 

@@ -1,5 +1,5 @@
 // Should fail: Hashmap() expects type names
 fn main() {
-    var bad = Hashmap(1, str);
+    var bad = Hashmap(1,Str);
     Println(Len(bad));
 }

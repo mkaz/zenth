@@ -77,7 +77,7 @@ func TestFnMain(t *testing.T) {
 }
 
 func TestFnWithReturn(t *testing.T) {
-	out := generate(t, `fn add(a: int, b: int) -> int { return a + b; } fn main() { Println(Str(add(1, 2))); }`)
+	out := generate(t, `fn add(a: Int, b: Int) -> Int { return a + b; } fn main() { Println(Str(add(1, 2))); }`)
 	assertContains(t, out, "func add(a int, b int) int")
 	assertContains(t, out, "return a + b")
 }
@@ -88,7 +88,7 @@ func TestFnNoParams(t *testing.T) {
 }
 
 func TestFnMultipleParams(t *testing.T) {
-	out := generate(t, `fn calc(a: int, b: int, c: int) -> int { return a + b + c; } fn main() { Println(Str(calc(1, 2, 3))); }`)
+	out := generate(t, `fn calc(a: Int, b: Int, c: Int) -> Int { return a + b + c; } fn main() { Println(Str(calc(1, 2, 3))); }`)
 	assertContains(t, out, "func calc(a int, b int, c int) int")
 }
 
@@ -100,7 +100,7 @@ func TestLetDecl(t *testing.T) {
 }
 
 func TestLetDeclWithType(t *testing.T) {
-	out := generate(t, `fn main() { let x: int = 5; Println(Str(x)); }`)
+	out := generate(t, `fn main() { let x: Int = 5; Println(Str(x)); }`)
 	assertContains(t, out, "x")
 	assertContains(t, out, "5")
 }
@@ -121,8 +121,8 @@ func TestConstDecl(t *testing.T) {
 func TestObjDecl(t *testing.T) {
 	src := `
 		obj Point {
-			x: f64;
-			y: f64;
+			x: Float;
+			y: Float;
 		}
 		fn main() {
 			let p = Point(x=1.0, y=2.0);
@@ -138,10 +138,10 @@ func TestObjDecl(t *testing.T) {
 func TestObjMethod(t *testing.T) {
 	src := `
 		obj Rect {
-			w: f64;
-			h: f64;
+			w: Float;
+			h: Float;
 
-			fn area() -> f64 {
+			fn area() -> Float {
 				return self.w * self.h;
 			}
 		}
@@ -314,7 +314,7 @@ func TestArrayLiteral(t *testing.T) {
 }
 
 func TestEmptyArrayWithType(t *testing.T) {
-	src := `fn main() { let xs: array(int) = []; Println(Str(Len(xs))); }`
+	src := `fn main() { let xs: Array(Int) = []; Println(Str(Len(xs))); }`
 	out := generate(t, src)
 	assertContains(t, out, "[]int{}")
 }
@@ -331,7 +331,7 @@ func TestInterpString(t *testing.T) {
 // ---------- Return Statement ----------
 
 func TestReturnValue(t *testing.T) {
-	src := `fn double(x: int) -> int { return x * 2; } fn main() { Println(Str(double(5))); }`
+	src := `fn double(x: Int) -> Int { return x * 2; } fn main() { Println(Str(double(5))); }`
 	out := generate(t, src)
 	assertContains(t, out, "return x * 2")
 }
@@ -380,8 +380,8 @@ func TestBreakContinue(t *testing.T) {
 func TestObjConstructor(t *testing.T) {
 	src := `
 		obj Point {
-			x: f64;
-			y: f64;
+			x: Float;
+			y: Float;
 		}
 		fn main() {
 			let p = Point(x=1.0, y=2.0);
@@ -399,8 +399,8 @@ func TestObjConstructor(t *testing.T) {
 func TestFieldAccess(t *testing.T) {
 	src := `
 		obj Point {
-			x: f64;
-			y: f64;
+			x: Float;
+			y: Float;
 		}
 		fn main() {
 			let p = Point(x=1.0, y=2.0);
@@ -441,8 +441,8 @@ func TestBoolLiterals(t *testing.T) {
 func TestObjAutoString(t *testing.T) {
 	src := `
 		obj Point {
-			x: f64;
-			y: f64;
+			x: Float;
+			y: Float;
 		}
 		fn main() {
 			let p = Point(x=1.0, y=2.0);
@@ -459,7 +459,7 @@ func TestObjAutoString(t *testing.T) {
 func TestInterfaceDecl(t *testing.T) {
 	src := `
 		interface Greeter {
-			fn greet() -> str;
+			fn greet() -> Str;
 		}
 		fn main() { Println("hi"); }
 	`
@@ -472,7 +472,7 @@ func TestInterfaceDecl(t *testing.T) {
 
 func TestTypeAlias(t *testing.T) {
 	src := `
-		type ID = int;
+		type ID = Int;
 		fn main() {
 			let x: ID = 42;
 			Println(Str(x));
@@ -487,7 +487,7 @@ func TestTypeAlias(t *testing.T) {
 
 func TestMultipleFunctions(t *testing.T) {
 	src := `
-		fn square(x: int) -> int { return x * x; }
+		fn square(x: Int) -> Int { return x * x; }
 		fn main() { Println(Str(square(4))); }
 	`
 	out := generate(t, src)
@@ -518,7 +518,7 @@ func TestNestedIfInFor(t *testing.T) {
 
 func TestDefaultParams(t *testing.T) {
 	src := `
-		fn greet(name: str = "world") -> str {
+		fn greet(name: Str = "world") -> Str {
 			return "hello " + name;
 		}
 		fn main() {
@@ -568,8 +568,8 @@ func TestEnumExplicitValues(t *testing.T) {
 func TestObjDefaultField(t *testing.T) {
 	src := `
 		obj Config {
-			debug: bool = false;
-			name: str = "default";
+			debug: Bool = false;
+			name: Str = "default";
 		}
 		fn main() {
 			let c = Config();

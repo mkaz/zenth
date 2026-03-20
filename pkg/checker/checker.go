@@ -133,10 +133,10 @@ func New() *Checker {
 		Params: []ZType{TypeInt},
 		Return: TypeInt,
 	}
-	c.funcs["F64"] = &FuncInfo{
-		Name:   "F64",
-		Params: []ZType{TypeF64},
-		Return: TypeF64,
+	c.funcs["Float"] = &FuncInfo{
+		Name:   "Float",
+		Params: []ZType{TypeFloat},
+		Return: TypeFloat,
 	}
 	c.funcs["Flag"] = &FuncInfo{
 		Name:        "Flag",
@@ -596,7 +596,7 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 	case *ast.IntLitExpr:
 		return TypeInt
 	case *ast.FloatLitExpr:
-		return TypeF64
+		return TypeFloat
 	case *ast.StringLitExpr:
 		return TypeStr
 	case *ast.BoolLitExpr:
@@ -902,7 +902,7 @@ func (c *Checker) checkReturnStmt(s *ast.ReturnStmt) ZType {
 func (c *Checker) checkIfStmt(s *ast.IfStmt) ZType {
 	condType := c.checkNode(s.Condition)
 	if !condType.Equals(TypeBool) {
-		c.errorf(s.Condition.Pos(), "if condition must be bool, got %s", condType)
+		c.errorf(s.Condition.Pos(), "if condition must be Bool, got %s", condType)
 	}
 	c.checkNode(s.Body)
 	if s.Else != nil {
@@ -919,7 +919,7 @@ func (c *Checker) checkForStmt(s *ast.ForStmt) ZType {
 	if s.Condition != nil {
 		condType := c.checkNode(s.Condition)
 		if !condType.Equals(TypeBool) {
-			c.errorf(s.Condition.Pos(), "for condition must be bool, got %s", condType)
+			c.errorf(s.Condition.Pos(), "for condition must be Bool, got %s", condType)
 		}
 	}
 	if s.Post != nil {
@@ -1007,7 +1007,7 @@ func (c *Checker) checkForInStmt(s *ast.ForInStmt) ZType {
 func (c *Checker) checkLoopStmt(s *ast.LoopStmt) ZType {
 	countType := c.checkNode(s.Count)
 	if !countType.Equals(TypeInt) {
-		c.errorf(s.Count.Pos(), "for-range count must be int, got %s", countType)
+		c.errorf(s.Count.Pos(), "for-range count must be Int, got %s", countType)
 	}
 	for _, stmt := range s.Body.Stmts {
 		c.checkNode(stmt)
@@ -1091,7 +1091,7 @@ func (c *Checker) checkBinaryExpr(e *ast.BinaryExpr) ZType {
 
 	case token.And, token.Or:
 		if !left.Equals(TypeBool) || !right.Equals(TypeBool) {
-			c.errorf(e.Pos(), "logical operators require bool operands, got %s and %s", left, right)
+			c.errorf(e.Pos(), "logical operators require Bool operands, got %s and %s", left, right)
 		}
 		return TypeBool
 	}
@@ -1113,7 +1113,7 @@ func (c *Checker) checkUnaryExpr(e *ast.UnaryExpr) ZType {
 	switch e.Op {
 	case token.Not:
 		if !operand.Equals(TypeBool) {
-			c.errorf(e.Pos(), "! requires bool, got %s", operand)
+			c.errorf(e.Pos(), "! requires Bool, got %s", operand)
 		}
 		return TypeBool
 	case token.Minus:
@@ -1172,7 +1172,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				if len(e.Args) == 1 {
 					argType := c.checkNode(e.Args[0])
 					if !IsInteger(argType) {
-						c.errorf(e.Args[0].Pos(), "pop() index must be integer, got %s", argType)
+						c.errorf(e.Args[0].Pos(), "pop() index must be Int, got %s", argType)
 					}
 				}
 				e.SliceMethod = true
@@ -1251,7 +1251,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				closureType := c.checkClosureExpr(closure, sliceType.Elem)
 				if ft, ok := closureType.(*FuncType); ok {
 					if !ft.Returns.Equals(TypeBool) {
-						c.errorf(e.Args[0].Pos(), "filter() closure must return bool, got %s", ft.Returns)
+						c.errorf(e.Args[0].Pos(), "filter() closure must return Bool, got %s", ft.Returns)
 					}
 				}
 				e.SliceMethod = true
@@ -1261,27 +1261,27 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 					c.errorf(e.Pos(), "to_int() takes no arguments, got %d", len(e.Args))
 				}
 				if !sliceType.Elem.Equals(TypeStr) {
-					c.errorf(e.Pos(), "to_int() requires []str, got %s", objType)
+					c.errorf(e.Pos(), "to_int() requires []Str, got %s", objType)
 				}
 				e.SliceMethod = true
 				e.SliceConvTarget = "int"
 				return &SliceType{Elem: TypeInt}
-			case "to_f64":
+			case "to_float":
 				if len(e.Args) != 0 {
-					c.errorf(e.Pos(), "to_f64() takes no arguments, got %d", len(e.Args))
+					c.errorf(e.Pos(), "to_float() takes no arguments, got %d", len(e.Args))
 				}
 				if !sliceType.Elem.Equals(TypeStr) {
-					c.errorf(e.Pos(), "to_f64() requires []str, got %s", objType)
+					c.errorf(e.Pos(), "to_float() requires []Str, got %s", objType)
 				}
 				e.SliceMethod = true
 				e.SliceConvTarget = "float64"
-				return &SliceType{Elem: TypeF64}
+				return &SliceType{Elem: TypeFloat}
 			case "to_str":
 				if len(e.Args) != 0 {
 					c.errorf(e.Pos(), "to_str() takes no arguments, got %d", len(e.Args))
 				}
-				if !sliceType.Elem.Equals(TypeInt) && !sliceType.Elem.Equals(TypeF64) {
-					c.errorf(e.Pos(), "to_str() requires []int or []f64, got %s", objType)
+				if !sliceType.Elem.Equals(TypeInt) && !sliceType.Elem.Equals(TypeFloat) {
+					c.errorf(e.Pos(), "to_str() requires []Int or []Float, got %s", objType)
 				}
 				e.SliceMethod = true
 				e.SliceConvTarget = "string"
@@ -1369,7 +1369,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				if len(e.Args) >= 1 {
 					argType := c.checkNode(e.Args[0])
 					if !IsInteger(argType) {
-						c.errorf(e.Args[0].Pos(), "insert() index must be integer, got %s", argType)
+						c.errorf(e.Args[0].Pos(), "insert() index must be Int, got %s", argType)
 					}
 				}
 				if len(e.Args) == 2 {
@@ -1387,7 +1387,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				if len(e.Args) == 1 {
 					argType := c.checkNode(e.Args[0])
 					if !IsInteger(argType) {
-						c.errorf(e.Args[0].Pos(), "remove() index must be integer, got %s", argType)
+						c.errorf(e.Args[0].Pos(), "remove() index must be Int, got %s", argType)
 					}
 				}
 				e.SliceMethod = true
@@ -1399,7 +1399,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				if len(e.Args) == 1 {
 					argType := c.checkNode(e.Args[0])
 					if !IsInteger(argType) {
-						c.errorf(e.Args[0].Pos(), "repeat() argument must be int, got %s", argType)
+						c.errorf(e.Args[0].Pos(), "repeat() argument must be Int, got %s", argType)
 					}
 				}
 				e.SliceMethod = true
@@ -1421,12 +1421,12 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 					c.errorf(e.Pos(), "join() takes exactly 1 argument (separator), got %d", len(e.Args))
 				}
 				if !sliceType.Elem.Equals(TypeStr) {
-					c.errorf(e.Pos(), "join() requires array(str), got %s", objType)
+					c.errorf(e.Pos(), "join() requires Array(Str), got %s", objType)
 				}
 				if len(e.Args) == 1 {
 					argType := c.checkNode(e.Args[0])
 					if !argType.Equals(TypeStr) {
-						c.errorf(e.Args[0].Pos(), "join() separator must be str, got %s", argType)
+						c.errorf(e.Args[0].Pos(), "join() separator must be Str, got %s", argType)
 					}
 				}
 				e.SliceMethod = true
@@ -1484,7 +1484,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				if len(e.Args) == 1 {
 					argType := c.checkNode(e.Args[0])
 					if !IsInteger(argType) {
-						c.errorf(e.Args[0].Pos(), "contains() argument must be int, got %s", argType)
+						c.errorf(e.Args[0].Pos(), "contains() argument must be Int, got %s", argType)
 					}
 				}
 				e.RangeMethod = true
@@ -1507,17 +1507,17 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				if len(e.Args) == 1 {
 					argType := c.checkNode(e.Args[0])
 					if !IsInteger(argType) {
-						c.errorf(e.Args[0].Pos(), "to_int() base must be int, got %s", argType)
+						c.errorf(e.Args[0].Pos(), "to_int() base must be Int, got %s", argType)
 					}
 				}
 				e.SliceMethod = true
 				return TypeInt
-			case "to_f64":
+			case "to_float":
 				if len(e.Args) != 0 {
-					c.errorf(e.Pos(), "to_f64() takes no arguments, got %d", len(e.Args))
+					c.errorf(e.Pos(), "to_float() takes no arguments, got %d", len(e.Args))
 				}
 				e.SliceMethod = true
-				return TypeF64
+				return TypeFloat
 			}
 		}
 
@@ -1531,7 +1531,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				if len(e.Args) == 1 {
 					argType := c.checkNode(e.Args[0])
 					if !argType.Equals(TypeStr) {
-						c.errorf(e.Args[0].Pos(), "split() separator must be str, got %s", argType)
+						c.errorf(e.Args[0].Pos(), "split() separator must be Str, got %s", argType)
 					}
 				}
 				e.StringMethod = "split"
@@ -1543,7 +1543,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				if len(e.Args) == 1 {
 					argType := c.checkNode(e.Args[0])
 					if !argType.Equals(TypeStr) {
-						c.errorf(e.Args[0].Pos(), "split_once() separator must be str, got %s", argType)
+						c.errorf(e.Args[0].Pos(), "split_once() separator must be Str, got %s", argType)
 					}
 				}
 				e.StringMethod = "split_once"
@@ -1567,7 +1567,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				if len(e.Args) == 1 {
 					argType := c.checkNode(e.Args[0])
 					if !argType.Equals(TypeStr) {
-						c.errorf(e.Args[0].Pos(), "starts_with() argument must be str, got %s", argType)
+						c.errorf(e.Args[0].Pos(), "starts_with() argument must be Str, got %s", argType)
 					}
 				}
 				e.StringMethod = "starts_with"
@@ -1579,7 +1579,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				if len(e.Args) == 1 {
 					argType := c.checkNode(e.Args[0])
 					if !argType.Equals(TypeStr) {
-						c.errorf(e.Args[0].Pos(), "ends_with() argument must be str, got %s", argType)
+						c.errorf(e.Args[0].Pos(), "ends_with() argument must be Str, got %s", argType)
 					}
 				}
 				e.StringMethod = "ends_with"
@@ -1591,7 +1591,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				if len(e.Args) == 1 {
 					argType := c.checkNode(e.Args[0])
 					if !argType.Equals(TypeStr) {
-						c.errorf(e.Args[0].Pos(), "strip() argument must be str, got %s", argType)
+						c.errorf(e.Args[0].Pos(), "strip() argument must be Str, got %s", argType)
 					}
 				}
 				e.StringMethod = "strip"
@@ -1603,7 +1603,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				if len(e.Args) == 1 {
 					argType := c.checkNode(e.Args[0])
 					if !argType.Equals(TypeStr) {
-						c.errorf(e.Args[0].Pos(), "find() argument must be str, got %s", argType)
+						c.errorf(e.Args[0].Pos(), "find() argument must be Str, got %s", argType)
 					}
 				}
 				e.StringMethod = "find"
@@ -1615,7 +1615,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				if len(e.Args) == 1 {
 					argType := c.checkNode(e.Args[0])
 					if !argType.Equals(TypeStr) {
-						c.errorf(e.Args[0].Pos(), "count() argument must be str, got %s", argType)
+						c.errorf(e.Args[0].Pos(), "count() argument must be Str, got %s", argType)
 					}
 				}
 				e.StringMethod = "count"
@@ -1627,19 +1627,19 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				if len(e.Args) >= 1 {
 					argType := c.checkNode(e.Args[0])
 					if !argType.Equals(TypeStr) {
-						c.errorf(e.Args[0].Pos(), "replace() argument 1 must be str, got %s", argType)
+						c.errorf(e.Args[0].Pos(), "replace() argument 1 must be Str, got %s", argType)
 					}
 				}
 				if len(e.Args) >= 2 {
 					argType := c.checkNode(e.Args[1])
 					if !argType.Equals(TypeStr) {
-						c.errorf(e.Args[1].Pos(), "replace() argument 2 must be str, got %s", argType)
+						c.errorf(e.Args[1].Pos(), "replace() argument 2 must be Str, got %s", argType)
 					}
 				}
 				if len(e.Args) == 3 {
 					argType := c.checkNode(e.Args[2])
 					if !IsInteger(argType) {
-						c.errorf(e.Args[2].Pos(), "replace() argument 3 must be int, got %s", argType)
+						c.errorf(e.Args[2].Pos(), "replace() argument 3 must be Int, got %s", argType)
 					}
 				}
 				e.StringMethod = "replace"
@@ -1657,7 +1657,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				if len(e.Args) == 1 {
 					argType := c.checkNode(e.Args[0])
 					if !argType.Equals(TypeStr) {
-						c.errorf(e.Args[0].Pos(), "contains() argument must be str, got %s", argType)
+						c.errorf(e.Args[0].Pos(), "contains() argument must be Str, got %s", argType)
 					}
 				}
 				e.StringMethod = "contains"
@@ -1669,7 +1669,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				if len(e.Args) == 1 {
 					argType := c.checkNode(e.Args[0])
 					if !argType.Equals(TypeStr) {
-						c.errorf(e.Args[0].Pos(), "strip_prefix() argument must be str, got %s", argType)
+						c.errorf(e.Args[0].Pos(), "strip_prefix() argument must be Str, got %s", argType)
 					}
 				}
 				e.StringMethod = "strip_prefix"
@@ -1681,7 +1681,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				if len(e.Args) == 1 {
 					argType := c.checkNode(e.Args[0])
 					if !argType.Equals(TypeStr) {
-						c.errorf(e.Args[0].Pos(), "strip_suffix() argument must be str, got %s", argType)
+						c.errorf(e.Args[0].Pos(), "strip_suffix() argument must be Str, got %s", argType)
 					}
 				}
 				e.StringMethod = "strip_suffix"
@@ -1693,7 +1693,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				if len(e.Args) == 1 {
 					argType := c.checkNode(e.Args[0])
 					if !IsInteger(argType) {
-						c.errorf(e.Args[0].Pos(), "repeat() argument must be int, got %s", argType)
+						c.errorf(e.Args[0].Pos(), "repeat() argument must be Int, got %s", argType)
 					}
 				}
 				e.StringMethod = "repeat"
@@ -1716,7 +1716,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				if len(e.Args) == 1 {
 					argType := c.checkNode(e.Args[0])
 					if !IsInteger(argType) {
-						c.errorf(e.Args[0].Pos(), "to_base() argument must be int, got %s", argType)
+						c.errorf(e.Args[0].Pos(), "to_base() argument must be Int, got %s", argType)
 					}
 				}
 				e.StringMethod = "to_base"
@@ -1860,16 +1860,16 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				argType := c.checkNode(e.Args[0])
 				baseType := c.checkNode(e.Args[1])
 				if !argType.Equals(TypeStr) {
-					c.errorf(e.Args[0].Pos(), "Int() with base requires first argument to be str, got %s", argType)
+					c.errorf(e.Args[0].Pos(), "Int() with base requires first argument to be Str, got %s", argType)
 				}
 				if !IsInteger(baseType) {
-					c.errorf(e.Args[1].Pos(), "Int() base must be int, got %s", baseType)
+					c.errorf(e.Args[1].Pos(), "Int() base must be Int, got %s", baseType)
 				}
 				e.IntBaseCall = true
 				return TypeInt
 			}
 			// Conversion builtins on slices: Int([]str) -> []int, etc.
-			if (info.Name == "Int" || info.Name == "F64" || info.Name == "Str") && len(e.Args) == 1 {
+			if (info.Name == "Int" || info.Name == "Float" || info.Name == "Str") && len(e.Args) == 1 {
 				argType := c.checkNode(e.Args[0])
 				if st, ok := argType.(*SliceType); ok {
 					switch info.Name {
@@ -1878,10 +1878,10 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 							e.SliceConvFunc = "Int"
 							return &SliceType{Elem: TypeInt}
 						}
-					case "F64":
+					case "Float":
 						if st.Elem.Equals(TypeStr) {
-							e.SliceConvFunc = "F64"
-							return &SliceType{Elem: TypeF64}
+							e.SliceConvFunc = "Float"
+							return &SliceType{Elem: TypeFloat}
 						}
 					case "Str":
 						e.SliceConvFunc = "Str"
@@ -1947,7 +1947,7 @@ func (c *Checker) getPositionalArgsForBuiltin(e *ast.CallExpr, name string) []as
 }
 
 func isBasicNumberType(t ZType) bool {
-	return t.Equals(TypeInt) || t.Equals(TypeF64)
+	return t.Equals(TypeInt) || t.Equals(TypeFloat)
 }
 
 func (c *Checker) checkNumericBuiltinCall(e *ast.CallExpr, name string) ZType {
@@ -1966,11 +1966,11 @@ func (c *Checker) checkNumericBuiltinCall(e *ast.CallExpr, name string) ZType {
 			e.NumericMethod = "abs_int"
 			return TypeInt
 		}
-		if t.Equals(TypeF64) {
+		if t.Equals(TypeFloat) {
 			e.NumericMethod = "abs_f64"
-			return TypeF64
+			return TypeFloat
 		}
-		c.errorf(args[0].Pos(), "Abs() argument must be int or f64, got %s", t)
+		c.errorf(args[0].Pos(), "Abs() argument must be Int or Float, got %s", t)
 		return TypeVoid
 	case "Min", "Max":
 		if len(args) < 2 {
@@ -1987,7 +1987,7 @@ func (c *Checker) checkNumericBuiltinCall(e *ast.CallExpr, name string) ZType {
 			if !t.Equals(TypeInt) {
 				allInt = false
 			}
-			if !t.Equals(TypeF64) {
+			if !t.Equals(TypeFloat) {
 				allF64 = false
 			}
 		}
@@ -2005,9 +2005,9 @@ func (c *Checker) checkNumericBuiltinCall(e *ast.CallExpr, name string) ZType {
 			} else {
 				e.NumericMethod = strings.ToLower(name) + "_f64_variadic"
 			}
-			return TypeF64
+			return TypeFloat
 		}
-		c.errorf(e.Pos(), "%s() arguments must all be int or all be f64", name)
+		c.errorf(e.Pos(), "%s() arguments must all be Int or all be Float", name)
 		return TypeVoid
 	case "Clamp":
 		if len(args) != 3 {
@@ -2024,11 +2024,11 @@ func (c *Checker) checkNumericBuiltinCall(e *ast.CallExpr, name string) ZType {
 			e.NumericMethod = "clamp_int"
 			return TypeInt
 		}
-		if t1.Equals(TypeF64) && t2.Equals(TypeF64) && t3.Equals(TypeF64) {
+		if t1.Equals(TypeFloat) && t2.Equals(TypeFloat) && t3.Equals(TypeFloat) {
 			e.NumericMethod = "clamp_f64"
-			return TypeF64
+			return TypeFloat
 		}
-		c.errorf(e.Pos(), "Clamp() arguments must all be int or all be f64, got %s, %s, %s", t1, t2, t3)
+		c.errorf(e.Pos(), "Clamp() arguments must all be Int or all be Float, got %s, %s, %s", t1, t2, t3)
 		return TypeVoid
 	case "Round", "Floor", "Ceil", "Sqrt":
 		if len(args) != 1 {
@@ -2040,11 +2040,11 @@ func (c *Checker) checkNumericBuiltinCall(e *ast.CallExpr, name string) ZType {
 		}
 		t := c.checkNode(args[0])
 		if !isBasicNumberType(t) {
-			c.errorf(args[0].Pos(), "%s() argument must be int or f64, got %s", name, t)
+			c.errorf(args[0].Pos(), "%s() argument must be Int or Float, got %s", name, t)
 			return TypeVoid
 		}
 		e.NumericMethod = strings.ToLower(name)
-		return TypeF64
+		return TypeFloat
 	case "Pow":
 		if len(args) != 2 {
 			c.errorf(e.Pos(), "Pow() takes exactly 2 arguments, got %d", len(args))
@@ -2056,13 +2056,13 @@ func (c *Checker) checkNumericBuiltinCall(e *ast.CallExpr, name string) ZType {
 		t1 := c.checkNode(args[0])
 		t2 := c.checkNode(args[1])
 		if !isBasicNumberType(t1) {
-			c.errorf(args[0].Pos(), "Pow() argument 1 must be int or f64, got %s", t1)
+			c.errorf(args[0].Pos(), "Pow() argument 1 must be Int or Float, got %s", t1)
 		}
 		if !isBasicNumberType(t2) {
-			c.errorf(args[1].Pos(), "Pow() argument 2 must be int or f64, got %s", t2)
+			c.errorf(args[1].Pos(), "Pow() argument 2 must be Int or Float, got %s", t2)
 		}
 		e.NumericMethod = "pow"
-		return TypeF64
+		return TypeFloat
 	default:
 		for _, arg := range args {
 			c.checkNode(arg)
@@ -2097,19 +2097,19 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 				c.errorf(named.Pos(), "named arguments are not supported for %s()", info.Name)
 				argType := c.checkNode(named.Value)
 				if !argType.Equals(TypeBool) {
-					c.errorf(named.Pos(), "second argument to %s must be bool, got %s", info.Name, argType)
+					c.errorf(named.Pos(), "second argument to %s must be Bool, got %s", info.Name, argType)
 				}
 			} else {
 				argType := c.checkNode(e.Args[1])
 				if !argType.Equals(TypeBool) {
-					c.errorf(e.Args[1].Pos(), "second argument to %s must be bool, got %s", info.Name, argType)
+					c.errorf(e.Args[1].Pos(), "second argument to %s must be Bool, got %s", info.Name, argType)
 				}
 			}
 		}
 		return
 	}
 	// Conversion builtins accept any single arg (Int() also accepts 2 for base)
-	if info.Name == "Int" || info.Name == "F64" || info.Name == "Str" {
+	if info.Name == "Int" || info.Name == "Float" || info.Name == "Str" {
 		for _, arg := range e.Args {
 			if named, ok := arg.(*ast.NamedArgExpr); ok {
 				c.errorf(named.Pos(), "named arguments are not supported for %s()", info.Name)
@@ -2145,7 +2145,7 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 		} else if _, ok := argType.(*SliceType); !ok && !argType.Equals(TypeStr) {
 			if _, ok := argType.(*HashmapType); !ok {
 				if _, ok := argType.(*SetType); !ok {
-					c.errorf(e.Args[0].Pos(), "argument 1 to len has type %s, expected str, slice, hashmap, set, or range", argType)
+					c.errorf(e.Args[0].Pos(), "argument 1 to len has type %s, expected Str, slice, hashmap, set, or range", argType)
 				}
 			}
 		}
@@ -2161,7 +2161,7 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 			}
 			argType := c.checkNode(arg)
 			if !IsInteger(argType) {
-				c.errorf(arg.Pos(), "argument %d to %s must be int, got %s", i+1, info.Name, argType)
+				c.errorf(arg.Pos(), "argument %d to %s must be Int, got %s", i+1, info.Name, argType)
 			}
 		}
 		if len(e.Args) < 2 || len(e.Args) > 3 {
@@ -2307,7 +2307,7 @@ func (c *Checker) checkIndexExpr(e *ast.IndexExpr) ZType {
 	switch t := objType.(type) {
 	case *SliceType:
 		if !IsInteger(idxType) {
-			c.errorf(e.Pos(), "index must be integer, got %s", idxType)
+			c.errorf(e.Pos(), "index must be Int, got %s", idxType)
 		}
 		return t.Elem
 	case *HashmapType:
@@ -2332,7 +2332,7 @@ func (c *Checker) checkIndexExpr(e *ast.IndexExpr) ZType {
 	default:
 		if objType.Equals(TypeStr) {
 			if !IsInteger(idxType) {
-				c.errorf(e.Pos(), "index must be integer, got %s", idxType)
+				c.errorf(e.Pos(), "index must be Int, got %s", idxType)
 			}
 			e.StrIndex = true
 			return TypeStr
@@ -2347,13 +2347,13 @@ func (c *Checker) checkSliceExpr(e *ast.SliceExpr) ZType {
 	if e.Low != nil {
 		lowType := c.checkNode(e.Low)
 		if !IsInteger(lowType) {
-			c.errorf(e.Pos(), "slice index must be integer, got %s", lowType)
+			c.errorf(e.Pos(), "slice index must be Int, got %s", lowType)
 		}
 	}
 	if e.High != nil {
 		highType := c.checkNode(e.High)
 		if !IsInteger(highType) {
-			c.errorf(e.Pos(), "slice index must be integer, got %s", highType)
+			c.errorf(e.Pos(), "slice index must be Int, got %s", highType)
 		}
 	}
 	if objType.Equals(TypeStr) {
@@ -2557,7 +2557,7 @@ func (c *Checker) resolveTypeRefArg(arg ast.Node) ZType {
 	if call, ok := arg.(*ast.CallExpr); ok {
 		if callee, ok := call.Callee.(*ast.IdentExpr); ok {
 			switch callee.Name {
-			case "array":
+			case "Array":
 				if len(call.Args) != 1 {
 					c.errorf(arg.Pos(), "array() type expects exactly 1 argument, got %d", len(call.Args))
 					return nil
@@ -2567,7 +2567,7 @@ func (c *Checker) resolveTypeRefArg(arg ast.Node) ZType {
 					return nil
 				}
 				return &SliceType{Elem: elem}
-			case "hashmap", "Hashmap":
+			case "Hashmap":
 				// Filter out named args (like default=)
 				var posArgs []ast.Node
 				for _, a := range call.Args {
@@ -2585,7 +2585,7 @@ func (c *Checker) resolveTypeRefArg(arg ast.Node) ZType {
 					return nil
 				}
 				return &HashmapType{Key: keyType, Value: valType}
-			case "tuple", "Tuple":
+			case "Tuple":
 				elems := make([]ZType, 0, len(call.Args))
 				for _, a := range call.Args {
 					et := c.resolveTypeRefArg(a)
@@ -2595,7 +2595,7 @@ func (c *Checker) resolveTypeRefArg(arg ast.Node) ZType {
 					elems = append(elems, et)
 				}
 				return &TupleType{Elems: elems}
-			case "set", "Set":
+			case "Set":
 				if len(call.Args) != 1 {
 					c.errorf(arg.Pos(), "set() type expects exactly 1 argument, got %d", len(call.Args))
 					return nil
@@ -2728,7 +2728,7 @@ func (c *Checker) checkFlagCall(e *ast.CallExpr) ZType {
 	case valType.Equals(TypeStr):
 		goType = "string"
 	default:
-		c.errorf(e.Pos(), "Flag() default must be bool, int, or str, got %s", valType)
+		c.errorf(e.Pos(), "Flag() default must be Bool, Int, or Str, got %s", valType)
 		return TypeVoid
 	}
 
@@ -2793,7 +2793,7 @@ func (c *Checker) checkClosureExpr(e *ast.ClosureExpr, expectedParamType ZType) 
 func (c *Checker) checkIfExpr(e *ast.IfExpr) ZType {
 	condType := c.checkNode(e.Condition)
 	if !condType.Equals(TypeBool) {
-		c.errorf(e.Condition.Pos(), "if-expression condition must be bool, got %s", condType)
+		c.errorf(e.Condition.Pos(), "if-expression condition must be Bool, got %s", condType)
 	}
 	thenType := c.checkNode(e.Then)
 	elseType := c.checkNode(e.Else)
@@ -2835,7 +2835,7 @@ func (c *Checker) checkAssertCall(e *ast.CallExpr) ZType {
 	}
 	argType := c.checkNode(args[0])
 	if !argType.Equals(TypeBool) {
-		c.errorf(args[0].Pos(), "Assert() argument must be bool, got %s", argType)
+		c.errorf(args[0].Pos(), "Assert() argument must be Bool, got %s", argType)
 	}
 	e.ResolvedFunc = "Assert"
 	return TypeVoid
@@ -2899,33 +2899,15 @@ func goTypeName(t ZType) string {
 	switch ty := t.(type) {
 	case *BuiltinType:
 		switch ty.Name {
-		case "int":
+		case "Int":
 			return "int"
-		case "i8":
-			return "int8"
-		case "i16":
-			return "int16"
-		case "i32":
-			return "int32"
-		case "i64":
-			return "int64"
-		case "u8":
-			return "uint8"
-		case "u16":
-			return "uint16"
-		case "u32":
-			return "uint32"
-		case "u64":
-			return "uint64"
-		case "f32":
-			return "float32"
-		case "f64":
+		case "Float":
 			return "float64"
-		case "bool":
+		case "Bool":
 			return "bool"
-		case "str":
+		case "Str":
 			return "string"
-		case "byte":
+		case "Byte":
 			return "byte"
 		default:
 			return ty.Name

@@ -1,5 +1,5 @@
 // Match statements and control flow
-fn fizzbuzz(n: int) -> str {
+fn fizzbuzz(n: Int) -> Str {
     if n % 15 == 0 {
         return "FizzBuzz";
     } else if n % 3 == 0 {

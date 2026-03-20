@@ -179,31 +179,30 @@ func (p *Parser) parseTypeExpr() *ast.TypeExpr {
 			}
 		}
 		p.expect(token.RParen)
-		return &ast.TypeExpr{TokenPos: pos, Name: "tuple", IsTuple: true, Params: params}
+		return &ast.TypeExpr{TokenPos: pos, Name: "Tuple", IsTuple: true, Params: params}
 	}
 
 	// Array type: array(T)
-	if p.peek() == token.Ident && p.cur().Literal == "array" && p.peekAt(1) == token.LParen {
-		p.advance() // array
+	if p.peek() == token.Ident && p.cur().Literal == "Array" && p.peekAt(1) == token.LParen {
+		p.advance() // Array
 		p.expect(token.LParen)
 		elem := p.parseTypeExpr()
 		p.expect(token.RParen)
-		return &ast.TypeExpr{TokenPos: pos, Name: "array", IsSlice: true, Params: []*ast.TypeExpr{elem}}
+		return &ast.TypeExpr{TokenPos: pos, Name: "Array", IsSlice: true, Params: []*ast.TypeExpr{elem}}
 	}
 
-	// Set type: set(T) or Set(T)
-	if p.peek() == token.Ident && (p.cur().Literal == "set" || p.cur().Literal == "Set") && p.peekAt(1) == token.LParen {
-		p.advance() // set
+	// Set type: Set(T)
+	if p.peek() == token.Ident && p.cur().Literal == "Set" && p.peekAt(1) == token.LParen {
+		p.advance() // Set
 		p.expect(token.LParen)
 		elem := p.parseTypeExpr()
 		p.expect(token.RParen)
-		return &ast.TypeExpr{TokenPos: pos, Name: "set", IsSet: true, Params: []*ast.TypeExpr{elem}}
+		return &ast.TypeExpr{TokenPos: pos, Name: "Set", IsSet: true, Params: []*ast.TypeExpr{elem}}
 	}
 
-	// Tuple type: tuple(T1, T2, ...) or tuple(name: T1, name: T2, ...)
-	// Also accepts capitalized Tuple(...) for consistency with built-in calls.
-	if p.peek() == token.Ident && (p.cur().Literal == "tuple" || p.cur().Literal == "Tuple") && p.peekAt(1) == token.LParen {
-		p.advance() // tuple
+	// Tuple type: Tuple(T1, T2, ...) or Tuple(name: T1, name: T2, ...)
+	if p.peek() == token.Ident && p.cur().Literal == "Tuple" && p.peekAt(1) == token.LParen {
+		p.advance() // Tuple
 		p.expect(token.LParen)
 		params := []*ast.TypeExpr{}
 		var paramNames []string
@@ -232,27 +231,27 @@ func (p *Parser) parseTypeExpr() *ast.TypeExpr {
 			}
 		}
 		p.expect(token.RParen)
-		return &ast.TypeExpr{TokenPos: pos, Name: "tuple", IsTuple: true, Params: params, ParamNames: paramNames}
+		return &ast.TypeExpr{TokenPos: pos, Name: "Tuple", IsTuple: true, Params: params, ParamNames: paramNames}
 	}
 
 	// Hashmap type: hashmap[K]V or hashmap(K, V)
 	// Also accepts capitalized Hashmap(...) for consistency with built-in calls.
-	if p.peek() == token.Ident && (p.cur().Literal == "hashmap" || p.cur().Literal == "Hashmap") && p.peekAt(1) == token.LBracket {
+	if p.peek() == token.Ident && p.cur().Literal == "Hashmap" && p.peekAt(1) == token.LBracket {
 		p.advance() // hashmap
 		p.advance() // [
 		key := p.parseTypeExpr()
 		p.expect(token.RBracket)
 		val := p.parseTypeExpr()
-		return &ast.TypeExpr{TokenPos: pos, Name: "hashmap", IsHashmap: true, Params: []*ast.TypeExpr{key, val}}
+		return &ast.TypeExpr{TokenPos: pos, Name: "Hashmap", IsHashmap: true, Params: []*ast.TypeExpr{key, val}}
 	}
-	if p.peek() == token.Ident && (p.cur().Literal == "hashmap" || p.cur().Literal == "Hashmap") && p.peekAt(1) == token.LParen {
+	if p.peek() == token.Ident && p.cur().Literal == "Hashmap" && p.peekAt(1) == token.LParen {
 		p.advance() // hashmap
 		p.expect(token.LParen)
 		key := p.parseTypeExpr()
 		p.expect(token.Comma)
 		val := p.parseTypeExpr()
 		p.expect(token.RParen)
-		return &ast.TypeExpr{TokenPos: pos, Name: "hashmap", IsHashmap: true, Params: []*ast.TypeExpr{key, val}}
+		return &ast.TypeExpr{TokenPos: pos, Name: "Hashmap", IsHashmap: true, Params: []*ast.TypeExpr{key, val}}
 	}
 
 	name := p.expect(token.Ident).Literal
@@ -934,7 +933,7 @@ func (p *Parser) parsePrimary() ast.Node {
 
 	case token.Ident:
 		p.advance()
-		if (tok.Literal == "tuple" || tok.Literal == "Tuple") && p.peek() == token.LParen {
+		if tok.Literal == "Tuple" && p.peek() == token.LParen {
 			p.advance() // consume '('
 			tuple := &ast.TupleLitExpr{TokenPos: tok.Pos}
 			// Detect named tuple: first element is Ident followed by Assign

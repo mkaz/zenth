@@ -1,5 +1,5 @@
 // Fibonacci in Zenth
-fn fibonacci(n: int) -> int {
+fn fibonacci(n: Int) -> Int {
     if n <= 1 {
         return n;
     }

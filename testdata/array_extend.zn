@@ -12,7 +12,7 @@ fn main() {
 
     // Extend with empty array
     var items = [10, 20];
-    let empty: array(int) = [];
+    let empty: Array(Int) = [];
     items.extend(empty);
     Println(Len(items));
 

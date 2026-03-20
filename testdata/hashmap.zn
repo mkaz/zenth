@@ -1,18 +1,18 @@
 obj Point {
-    x: int;
-    y: int;
+    x: Int;
+    y: Int;
 }
 
 fn main() {
     let pt = Point(x=1, y=2);
     let same = Point(x=1, y=2);
-    var grid = Hashmap(Point, str);
+    var grid = Hashmap(Point,Str);
     grid[pt] = "#";
 
     Println("val=" + grid[same]);
     Println("len=" + Str(Len(grid)));
 
-    var scores = Hashmap(str, int);
+    var scores = Hashmap(Str,Int);
     scores["Alice"] = 95;
     scores["Bert"] = 80;
     Println(scores);
