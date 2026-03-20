@@ -62,10 +62,19 @@ func Build(opts Options) error {
 	}
 
 	// Resolve local imports: set GoPackagePath and collect module entries
+	// Also collect external Go module paths for import_go statements
 	var modules []moduleEntry
+	var goExternalPaths []string
 	for _, stmt := range prog.Stmts {
 		imp, ok := stmt.(*ast.ImportDecl)
-		if !ok || !imp.IsLocal {
+		if !ok {
+			continue
+		}
+		if imp.IsGoExternal {
+			goExternalPaths = append(goExternalPaths, imp.Path)
+			continue
+		}
+		if !imp.IsLocal {
 			continue
 		}
 		rel := strings.TrimPrefix(imp.Path, "./")
@@ -119,6 +128,20 @@ func Build(opts Options) error {
 	goMod := "module zenth_output\n\ngo 1.21\n"
 	if err := os.WriteFile(filepath.Join(tmpDir, "go.mod"), []byte(goMod), 0644); err != nil {
 		return fmt.Errorf("cannot write go.mod: %w", err)
+	}
+
+	// Fetch external Go modules declared via import_go
+	for _, modPath := range goExternalPaths {
+		if opts.Verbose {
+			fmt.Fprintf(os.Stderr, "go get %s\n", modPath)
+		}
+		getCmd := exec.Command("go", "get", modPath)
+		getCmd.Dir = tmpDir
+		getCmd.Stdout = os.Stdout
+		getCmd.Stderr = os.Stderr
+		if err := getCmd.Run(); err != nil {
+			return fmt.Errorf("go get %s failed: %w", modPath, err)
+		}
 	}
 
 	// Write main.go

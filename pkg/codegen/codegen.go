@@ -739,6 +739,11 @@ func (g *Generator) addImport(imp *ast.ImportDecl) {
 		g.imports[imp.GoPackagePath] = imp.Alias
 		return
 	}
+	if imp.IsGoExternal {
+		// External Go module — use path verbatim
+		g.imports[imp.Path] = imp.Alias
+		return
+	}
 	goPath := mapImportPath(imp.Path)
 	g.imports[goPath] = imp.Alias
 }

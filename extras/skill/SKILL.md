@@ -579,6 +579,33 @@ import "math" as m;
 
 Available modules map to Go stdlib: `fmt`, `math`, `os`, `strings`
 
+### External Go Package Imports
+
+Use `import_go` to import any Go package, including third-party libraries. The toolchain runs `go get` automatically before compiling.
+
+```zenth
+import_go "github.com/some/library";
+import_go "github.com/some/library" as lib;
+```
+
+Calls on `import_go` packages bypass type checking and pass through to Go verbatim. Return values are untyped — you can assign them to variables and chain further calls.
+
+```zenth
+import_go "database/sql";
+import_go "github.com/mattn/go-sqlite3" as _;
+
+fn main() {
+    let db = sql.Open("sqlite3", "./data.db");
+    let rows = db.Query("SELECT id, name FROM users");
+    for rows.Next() {
+        var id: int = 0;
+        var name = "";
+        rows.Scan(&id, &name);
+        println("{id}: {name}");
+    }
+}
+```
+
 ### Local Modules
 
 Import your own `.zn` files using a path starting with `./` or `../`. The module name is the filename stem:

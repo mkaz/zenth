@@ -59,6 +59,42 @@ fn main() {
 }
 ```
 
+## External Go Package Imports
+
+Use `import_go` to import any Go package — including third-party libraries. The Zenth toolchain automatically fetches the package using `go get` before compiling.
+
+```zenth
+import_go "github.com/some/library";
+```
+
+With an alias:
+
+```zenth
+import_go "github.com/some/library" as lib;
+```
+
+Calls on `import_go` packages bypass Zenth's type checker and pass through directly to Go. This means you get full access to any Go library, with errors surfacing at compile time from Go rather than from Zenth.
+
+```zenth
+import_go "database/sql";
+import_go "github.com/mattn/go-sqlite3" as _;
+
+fn main() {
+    let db = sql.Open("sqlite3", "./data.db");
+    let rows = db.Query("SELECT id, name FROM users");
+    for rows.Next() {
+        var id: int = 0;
+        var name = "";
+        rows.Scan(&id, &name);
+        println("{id}: {name}");
+    }
+}
+```
+
+> **Note:** `import_go "github.com/mattn/go-sqlite3"` requires CGO (`gcc` must be installed). For a pure-Go SQLite option, use `modernc.org/sqlite` instead.
+
+Return values from `import_go` function calls are untyped — you can assign them to variables and chain further calls, but Zenth will not validate the types.
+
 ## Local Module Imports
 
 To import your own `.zn` files, use a path starting with `./` or `../`:

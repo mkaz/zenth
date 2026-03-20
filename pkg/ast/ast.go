@@ -110,6 +110,7 @@ type ImportDecl struct {
 	Path          string
 	Alias         string // empty means use default name
 	IsLocal       bool   // true when path starts with ./ or ../
+	IsGoExternal  bool   // true when imported via import_go (external Go module)
 	GoPackagePath string // resolved Go package path, set by driver (e.g., "zenth_output/utils")
 }
 

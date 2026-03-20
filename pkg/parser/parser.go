@@ -93,7 +93,9 @@ func (p *Parser) parseTopLevel() ast.Node {
 	case token.Interface:
 		return p.parseInterfaceDecl()
 	case token.Import:
-		return p.parseImportDecl()
+		return p.parseImportDecl(false)
+	case token.ImportGo:
+		return p.parseImportDecl(true)
 	case token.TypeKw:
 		return p.parseTypeAliasDecl()
 	case token.Let:
@@ -1150,11 +1152,16 @@ func (p *Parser) parseInterfaceDecl() *ast.InterfaceDecl {
 	return decl
 }
 
-func (p *Parser) parseImportDecl() *ast.ImportDecl {
-	tok := p.expect(token.Import)
-	decl := &ast.ImportDecl{TokenPos: tok.Pos}
+func (p *Parser) parseImportDecl(isGoExternal bool) *ast.ImportDecl {
+	var tok token.Token
+	if isGoExternal {
+		tok = p.expect(token.ImportGo)
+	} else {
+		tok = p.expect(token.Import)
+	}
+	decl := &ast.ImportDecl{TokenPos: tok.Pos, IsGoExternal: isGoExternal}
 	decl.Path = p.expect(token.StringLit).Literal
-	decl.IsLocal = strings.HasPrefix(decl.Path, "./") || strings.HasPrefix(decl.Path, "../")
+	decl.IsLocal = !isGoExternal && (strings.HasPrefix(decl.Path, "./") || strings.HasPrefix(decl.Path, "../"))
 	if p.peek() == token.As {
 		p.advance()
 		decl.Alias = p.expect(token.Ident).Literal

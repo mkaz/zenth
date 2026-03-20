@@ -73,6 +73,7 @@ const (
 	Enum
 	Interface
 	Import
+	ImportGo
 	From
 	As
 	Nil
@@ -140,6 +141,7 @@ var typeNames = map[Type]string{
 	Enum:       "enum",
 	Interface:  "interface",
 	Import:     "import",
+	ImportGo:   "import_go",
 	From:       "from",
 	As:         "as",
 	Nil:        "nil",
@@ -177,6 +179,7 @@ var keywords = map[string]Type{
 	"enum":      Enum,
 	"interface": Interface,
 	"import":    Import,
+	"import_go": ImportGo,
 	"from":      From,
 	"as":        As,
 	"nil":       Nil,
