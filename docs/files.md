@@ -1,6 +1,6 @@
 # Files
 
-The `File()` built-in creates a file object for reading files and inspecting file paths. File objects are value types -- there are no open handles and nothing to close.
+The `File()` built-in creates a file object for reading and writing files and inspecting file paths. File objects are value types -- there are no open handles and nothing to close.
 
 ## Creating a File Object
 
@@ -81,7 +81,46 @@ let f = File("report.csv");
 Println(f.ext());  // .csv
 ```
 
-## Example
+### write
+
+Writes content to the file, creating it if it doesn't exist or overwriting it if it does. Exits with an error if the file cannot be written:
+
+```zenth
+let f = File("output.txt");
+f.write("Hello world\n");
+```
+
+After this call, `output.txt` contains exactly `Hello world\n` regardless of any previous contents.
+
+### append
+
+Appends content to the end of the file. Creates the file if it doesn't exist. Exits with an error if the file cannot be written:
+
+```zenth
+let f = File("log.txt");
+f.append("first line\n");
+f.append("second line\n");
+```
+
+After these calls, `log.txt` contains:
+```
+first line
+second line
+```
+
+`append()` is useful for building up files incrementally, such as log files or accumulated output:
+
+```zenth
+let out = File("results.txt");
+out.write("");  // start fresh
+for i in Range(5) {
+    out.append("result {i}\n");
+}
+```
+
+## Examples
+
+### Reading a file
 
 ```zenth
 fn main() {
@@ -92,5 +131,24 @@ fn main() {
     }
     let lines = f.lines();
     Println("Read {lines.length()} lines from {f.name()}");
+}
+```
+
+### Writing and appending
+
+```zenth
+fn main() {
+    let f = File("output.txt");
+
+    // write creates or overwrites the file
+    f.write("Hello world\n");
+
+    // append adds to the end
+    f.append("Goodbye world\n");
+
+    // verify
+    Println(f.read());
+    // Hello world
+    // Goodbye world
 }
 ```

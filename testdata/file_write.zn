@@ -1,6 +1,6 @@
 // Test file write and append methods
 fn main() {
-    let f = File("../../testdata/_write_test.txt");
+    let f = File("_write_test.txt");
 
     // write creates/overwrites a file
     f.write("hello\n");

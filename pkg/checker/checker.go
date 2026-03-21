@@ -1478,6 +1478,30 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.SliceMethod = true
 				return &SliceType{Elem: TypeStr}
+			case "write":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "write() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !argType.Equals(TypeStr) {
+						c.errorf(e.Args[0].Pos(), "write() argument must be Str, got %s", argType)
+					}
+				}
+				e.SliceMethod = true
+				return TypeVoid
+			case "append":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "append() takes exactly 1 argument, got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !argType.Equals(TypeStr) {
+						c.errorf(e.Args[0].Pos(), "append() argument must be Str, got %s", argType)
+					}
+				}
+				e.SliceMethod = true
+				return TypeVoid
 			}
 		}
 		// Check for built-in range methods

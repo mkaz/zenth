@@ -1,2 +1,4 @@
+# Ignore binary
 /zenth
-todo.md
+
+plan-*.md

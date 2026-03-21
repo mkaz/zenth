@@ -12,6 +12,7 @@ func TestBuildAndRun(t *testing.T) {
 	tests := []struct {
 		file     string
 		contains []string // expected substrings in output
+		cleanup  []string // files to remove after test
 	}{
 		{
 			file:     "hello.zn",
@@ -451,10 +452,18 @@ func TestBuildAndRun(t *testing.T) {
 			file:     "modules_dir.zn",
 			contains: []string{"15", "16", "50."},
 		},
+		{
+			file:     "file_write.zn",
+			contains: []string{"write=hello\n", "append=hello\nworld\n", "overwrite=replaced\n"},
+			cleanup:  []string{"_write_test.txt"},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.file, func(t *testing.T) {
+			for _, f := range tt.cleanup {
+				defer os.Remove(f)
+			}
 			// Find testdata relative to this test file
 			input := filepath.Join("..", "..", "testdata", tt.file)
 			if _, err := os.Stat(input); err != nil {
@@ -674,6 +683,18 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/modules_unknown_fn.zn",
 			errMsg: "has no function or type 'bogus'",
+		},
+		{
+			file:   "errors/file_write_no_arg.zn",
+			errMsg: "write() takes exactly 1 argument",
+		},
+		{
+			file:   "errors/file_write_bad_type.zn",
+			errMsg: "write() argument must be Str",
+		},
+		{
+			file:   "errors/file_append_no_arg.zn",
+			errMsg: "append() takes exactly 1 argument",
 		},
 	}
 

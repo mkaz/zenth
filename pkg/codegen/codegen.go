@@ -330,6 +330,28 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\treturn strings.Split(content, \"\\n\\n\")")
 		g.writeln("}")
 		g.writeln("")
+		g.writeln("func zenth_file_write(f ZenthFile, content string) {")
+		g.writeln("\terr := os.WriteFile(f.Path, []byte(content), 0644)")
+		g.writeln("\tif err != nil {")
+		g.writeln("\t\tfmt.Fprintf(os.Stderr, \"error: %v\\n\", err)")
+		g.writeln("\t\tos.Exit(1)")
+		g.writeln("\t}")
+		g.writeln("}")
+		g.writeln("")
+		g.writeln("func zenth_file_append(f ZenthFile, content string) {")
+		g.writeln("\tfile, err := os.OpenFile(f.Path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)")
+		g.writeln("\tif err != nil {")
+		g.writeln("\t\tfmt.Fprintf(os.Stderr, \"error: %v\\n\", err)")
+		g.writeln("\t\tos.Exit(1)")
+		g.writeln("\t}")
+		g.writeln("\tdefer file.Close()")
+		g.writeln("\t_, err = file.WriteString(content)")
+		g.writeln("\tif err != nil {")
+		g.writeln("\t\tfmt.Fprintf(os.Stderr, \"error: %v\\n\", err)")
+		g.writeln("\t\tos.Exit(1)")
+		g.writeln("\t}")
+		g.writeln("}")
+		g.writeln("")
 	}
 	if g.needsIntConv {
 		g.writeln("func zenth_int(v interface{}) int {")
@@ -2393,6 +2415,22 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.needsFile = true
 				g.write("zenth_file_sections(")
 				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "write":
+				g.needsFile = true
+				g.write("zenth_file_write(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(")")
+				return
+			case "append":
+				g.needsFile = true
+				g.write("zenth_file_append(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
 				g.write(")")
 				return
 			case "map":

@@ -714,6 +714,10 @@ if f.exists() {
     Println("Name: " + f.name()); // filename
     Println("Ext: " + f.ext());   // extension
 }
+
+// Writing files
+f.write("Hello world\n");        // create/overwrite file
+f.append("More content\n");      // append to file (creates if missing)
 ```
 
 ### Command-Line Flags

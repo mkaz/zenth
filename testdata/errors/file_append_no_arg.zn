@@ -1,0 +1,4 @@
+fn main() {
+    let f = File("test.txt");
+    f.append();
+}
