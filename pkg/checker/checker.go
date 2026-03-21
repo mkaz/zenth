@@ -1236,6 +1236,21 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.SliceMethod = true
 				return TypeBool
+			case "get":
+				if len(e.Args) != 2 {
+					c.errorf(e.Pos(), "get() takes exactly 2 arguments (index, default), got %d", len(e.Args))
+					return sliceType.Elem
+				}
+				idxType := c.checkNode(e.Args[0])
+				if !IsInteger(idxType) {
+					c.errorf(e.Args[0].Pos(), "get() index must be Int, got %s", idxType)
+				}
+				defType := c.checkNode(e.Args[1])
+				if !sliceType.Elem.Equals(defType) {
+					c.errorf(e.Args[1].Pos(), "get() default type %s does not match element type %s", defType, sliceType.Elem)
+				}
+				e.SliceMethod = true
+				return sliceType.Elem
 			case "map":
 				if len(e.Args) != 1 {
 					c.errorf(e.Pos(), "map() takes exactly 1 argument, got %d", len(e.Args))

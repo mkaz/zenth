@@ -346,6 +346,10 @@ items.extend([30, 40]);  // append all elements from another array
 let zeros = [0].repeat(10);      // [0, 0, 0, ..., 0] (10 zeros)
 let pattern = [1, 2].repeat(6);  // [1, 2, 1, 2, 1, 2]
 
+// Safe indexing with default
+let val = numbers.get(0, 0);     // returns numbers[0] or 0 if out of bounds
+let x = numbers.get(99, -1);    // returns -1 (index out of bounds)
+
 // Containment
 if numbers.exists(3) {
     Println("found");

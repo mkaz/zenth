@@ -82,6 +82,29 @@ if nums.exists(20) {
 }
 ```
 
+## Safe Indexing with `.get()`
+
+Use `.get(index, default)` to safely access an element by index. If the index is out of bounds, the default value is returned instead of panicking:
+
+```zenth
+let parts = "a,b,c".split(",");
+let first = parts.get(0, "");     // "a"
+let fourth = parts.get(3, "");    // "" (out of bounds)
+let neg = parts.get(-1, "none");  // "none" (negative index)
+
+// Chainable with other methods
+let val = parts.get(2, "").strip();
+```
+
+This is especially useful for parsing lines with optional fields:
+
+```zenth
+let fields = line.split(",");
+let name = fields.get(0, "");
+let email = fields.get(1, "");
+let role = fields.get(2, "member");  // default to "member" if missing
+```
+
 ## Modifying Arrays
 
 Zenth provides methods to append, prepend, and remove elements from an array. The array must be assigned to a mutable `var` to use these methods.

@@ -468,6 +468,13 @@ func TestBuildAndRun(t *testing.T) {
 			},
 		},
 		{
+			file: "array_get.zn",
+			contains: []string{
+				"get0: a", "get2: c", "get5: default", "neg: none",
+				"num0: 10", "num9: -1", "chain: ''", "field3: missing",
+			},
+		},
+		{
 			file:     "file_write.zn",
 			contains: []string{"write=hello\n", "append=hello\nworld\n", "overwrite=replaced\n"},
 			cleanup:  []string{"_write_test.txt"},
@@ -714,6 +721,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/func_type_mismatch.zn",
 			errMsg: "expected Fn(...) -> Int",
+		},
+		{
+			file:   "errors/get_bad_args.zn",
+			errMsg: "get() index must be Int, got Str",
 		},
 	}
 

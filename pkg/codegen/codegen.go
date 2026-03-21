@@ -64,6 +64,7 @@ type Generator struct {
 	needsRemove         bool
 	needsExtend         bool
 	needsRepeat         bool
+	needsGet            bool
 	needsAssert         bool
 	needsAssertEq       bool
 	enums               map[string]*ast.EnumDecl
@@ -258,6 +259,13 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\t\tif v == elem { return true }")
 		g.writeln("\t}")
 		g.writeln("\treturn false")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsGet {
+		g.writeln("func zenth_get[T any](s []T, i int, def T) T {")
+		g.writeln("\tif i >= 0 && i < len(s) { return s[i] }")
+		g.writeln("\treturn def")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -2368,6 +2376,16 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			case "length":
 				g.write("len(")
 				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "get":
+				g.needsGet = true
+				g.write("zenth_get(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				g.write(", ")
+				g.genExpr(c.Args[1])
 				g.write(")")
 				return
 			case "exists":

@@ -1,0 +1,27 @@
+fn main() {
+    let items = ["a", "b", "c"];
+
+    // In-bounds access
+    Println("get0: " + items.get(0, "x"));
+    Println("get2: " + items.get(2, "x"));
+
+    // Out-of-bounds returns default
+    Println("get5: " + items.get(5, "default"));
+    Println("neg: " + items.get(-1, "none"));
+
+    // Works with integers
+    let nums = [10, 20, 30];
+    Println("num0: " + Str(nums.get(0, 0)));
+    Println("num9: " + Str(nums.get(9, -1)));
+
+    // Chainable with string methods
+    let parts = "hello world".split(" ");
+    let third = parts.get(2, "").strip();
+    Println("chain: '" + third + "'");
+
+    // Real-world pattern: safe field parsing
+    let line = "a,b,c";
+    let fields = line.split(",");
+    let d = fields.get(3, "missing");
+    Println("field3: " + d);
+}
