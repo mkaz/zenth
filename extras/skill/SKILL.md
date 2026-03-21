@@ -207,6 +207,9 @@ The first newline after opening `"""` and the last newline before closing `"""` 
 "hello world".split()        // ["hello", "world"] (whitespace)
 "hi".contains("h")           // true
 ".".repeat(5)                // "....."
+"hello".pad_left(10)         // "     hello"
+"hello".pad_right(10)        // "hello     "
+"42".pad_left(5, "0")        // "00042"
 Len("hello")                 // 5
 "hello".length()             // 5
 "hello".to_int()             // error; use on numeric strings

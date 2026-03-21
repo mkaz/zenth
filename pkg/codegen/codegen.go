@@ -60,6 +60,8 @@ type Generator struct {
 	needsSliceSorted    bool
 	needsSliceReduce    bool
 	needsIsDigit        bool
+	needsPadLeft        bool
+	needsPadRight       bool
 	needsInsert         bool
 	needsRemove         bool
 	needsExtend         bool
@@ -272,6 +274,32 @@ func (g *Generator) Generate(prog *ast.Program) string {
 	if g.needsIsDigit {
 		g.writeln("func zenth_is_digit(s string) bool {")
 		g.writeln("\treturn len(s) == 1 && s[0] >= '0' && s[0] <= '9'")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsPadLeft {
+		g.writeln("func zenth_pad_left(s string, width int, fill string) string {")
+		g.writeln("\tr := []rune(s)")
+		g.writeln("\tif len(r) >= width { return s }")
+		g.writeln("\tf := []rune(fill)")
+		g.writeln("\tif len(f) == 0 { return s }")
+		g.writeln("\tvar pad []rune")
+		g.writeln("\tfor len(pad)+len(r) < width { pad = append(pad, f...) }")
+		g.writeln("\tpad = pad[:width-len(r)]")
+		g.writeln("\treturn string(pad) + s")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsPadRight {
+		g.writeln("func zenth_pad_right(s string, width int, fill string) string {")
+		g.writeln("\tr := []rune(s)")
+		g.writeln("\tif len(r) >= width { return s }")
+		g.writeln("\tf := []rune(fill)")
+		g.writeln("\tif len(f) == 0 { return s }")
+		g.writeln("\tvar pad []rune")
+		g.writeln("\tfor len(r)+len(pad) < width { pad = append(pad, f...) }")
+		g.writeln("\tpad = pad[:width-len(r)]")
+		g.writeln("\treturn s + string(pad)")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -2773,6 +2801,34 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.needsIsDigit = true
 				g.write("zenth_is_digit(")
 				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "pad_left":
+				g.needsPadLeft = true
+				g.write("zenth_pad_left(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				if len(c.Args) == 2 {
+					g.write(", ")
+					g.genExpr(c.Args[1])
+				} else {
+					g.write(`, " "`)
+				}
+				g.write(")")
+				return
+			case "pad_right":
+				g.needsPadRight = true
+				g.write("zenth_pad_right(")
+				g.genExpr(field.Object)
+				g.write(", ")
+				g.genExpr(c.Args[0])
+				if len(c.Args) == 2 {
+					g.write(", ")
+					g.genExpr(c.Args[1])
+				} else {
+					g.write(`, " "`)
+				}
 				g.write(")")
 				return
 			}

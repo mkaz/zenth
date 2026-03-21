@@ -282,6 +282,36 @@ for ch in "abc123" {
 Println(digits);  // 3
 ```
 
+## Padding
+
+Use `.pad_left(width)` and `.pad_right(width)` to pad a string to a minimum width. By default, padding uses spaces. Pass a second argument to specify a custom fill string:
+
+```zenth
+// Space-padded (default)
+Println("hello".pad_right(10));      // "hello     "
+Println("hello".pad_left(10));       // "     hello"
+
+// Custom fill character
+Println("42".pad_left(5, "0"));      // "00042"
+Println("hi".pad_right(6, "."));     // "hi...."
+
+// No padding if already wide enough
+Println("toolong".pad_right(3));     // "toolong"
+```
+
+This is especially useful for tabular CLI output:
+
+```zenth
+let items = ["apples", "bread", "milk"];
+let prices = ["1.50", "2.99", "3.25"];
+for i, item in items {
+    Println(item.pad_right(10) + prices[i].pad_left(6));
+}
+// apples      1.50
+// bread       2.99
+// milk        3.25
+```
+
 ## Repeating
 
 Use `.repeat(n)` to repeat a string `n` times:

@@ -1791,6 +1791,24 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.StringMethod = "is_digit"
 				return TypeBool
+			case "pad_left", "pad_right":
+				if len(e.Args) < 1 || len(e.Args) > 2 {
+					c.errorf(e.Pos(), "%s() takes 1 or 2 arguments (width, fill), got %d", field.Field, len(e.Args))
+				}
+				if len(e.Args) >= 1 {
+					argType := c.checkNode(e.Args[0])
+					if !IsInteger(argType) {
+						c.errorf(e.Args[0].Pos(), "%s() width must be Int, got %s", field.Field, argType)
+					}
+				}
+				if len(e.Args) == 2 {
+					argType := c.checkNode(e.Args[1])
+					if !argType.Equals(TypeStr) {
+						c.errorf(e.Args[1].Pos(), "%s() fill must be Str, got %s", field.Field, argType)
+					}
+				}
+				e.StringMethod = field.Field
+				return TypeStr
 			}
 		}
 

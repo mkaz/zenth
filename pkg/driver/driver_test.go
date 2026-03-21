@@ -484,6 +484,19 @@ func TestBuildAndRun(t *testing.T) {
 			},
 		},
 		{
+			file: "string_pad.zn",
+			contains: []string{
+				"'hello     '",
+				"'     hello'",
+				"00042",
+				"hi....",
+				"toolong",
+				"apples      1.50",
+				"bread       2.99",
+				"milk        3.25",
+			},
+		},
+		{
 			file:     "file_write.zn",
 			contains: []string{"write=hello\n", "append=hello\nworld\n", "overwrite=replaced\n"},
 			cleanup:  []string{"_write_test.txt"},
@@ -734,6 +747,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/get_bad_args.zn",
 			errMsg: "get() index must be Int, got Str",
+		},
+		{
+			file:   "errors/pad_bad_args.zn",
+			errMsg: "pad_left() width must be Int, got Str",
 		},
 	}
 
