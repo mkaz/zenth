@@ -1475,6 +1475,43 @@ func (g *Generator) genForClause(node ast.Node) {
 
 func (g *Generator) genForInStmt(s *ast.ForInStmt) {
 	g.writeIndent()
+	// Tuple destructuring: for (a, b) in expr
+	if len(s.DestructNames) > 0 {
+		tmpVar := fmt.Sprintf("_ztd%d_", g.tempCounter)
+		g.tempCounter++
+		g.write("for _, ")
+		g.write(tmpVar)
+		g.write(" := range ")
+		g.genExpr(s.Iterable)
+		g.write(" {\n")
+		g.indent++
+		for i, name := range s.DestructNames {
+			if name == "_" {
+				continue
+			}
+			g.writeIndent()
+			goType := s.DestructGoTypes[i]
+			if goType == "interface{}" {
+				g.writef("%s := %s[%d]\n", name, tmpVar, i)
+			} else {
+				g.writef("%s := %s[%d].(%s)\n", name, tmpVar, i, goType)
+			}
+		}
+		// Suppress unused variable errors
+		for _, name := range s.DestructNames {
+			if name == "_" {
+				continue
+			}
+			g.writeIndent()
+			g.writef("_ = %s\n", name)
+		}
+		for _, stmt := range s.Body.Stmts {
+			g.genNode(stmt)
+		}
+		g.indent--
+		g.writeln("}")
+		return
+	}
 	if s.IterStr {
 		// Go's range over string yields (index, rune); wrap value in string().
 		g.write("for ")

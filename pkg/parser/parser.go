@@ -554,11 +554,52 @@ func (p *Parser) isForIn() bool {
 	if p.peekAt(0) == token.Ident && p.peekAt(1) == token.Comma && p.peekAt(2) == token.Ident && p.peekAt(3) == token.In {
 		return true
 	}
+	// (ident, ident, ...) in ... — tuple destructuring
+	if p.peekAt(0) == token.LParen {
+		i := 1
+		for {
+			if p.peekAt(i) != token.Ident {
+				break
+			}
+			i++
+			if p.peekAt(i) == token.RParen {
+				i++
+				if p.peekAt(i) == token.In {
+					return true
+				}
+				break
+			}
+			if p.peekAt(i) != token.Comma {
+				break
+			}
+			i++
+		}
+	}
 	return false
 }
 
 func (p *Parser) parseForInStmt(tok token.Token) *ast.ForInStmt {
 	stmt := &ast.ForInStmt{TokenPos: tok.Pos}
+
+	// Tuple destructuring: for (a, b, c) in expr
+	if p.peek() == token.LParen {
+		p.advance() // consume (
+		var names []string
+		for {
+			names = append(names, p.expect(token.Ident).Literal)
+			if p.peek() != token.Comma {
+				break
+			}
+			p.advance() // consume ,
+		}
+		p.expect(token.RParen)
+		stmt.DestructNames = names
+		stmt.Value = "_destruct_" // placeholder, not used directly
+		p.expect(token.In)
+		stmt.Iterable = p.parseExpr(0)
+		stmt.Body = p.parseBlock()
+		return stmt
+	}
 
 	first := p.expect(token.Ident).Literal
 	if p.peek() == token.Comma {

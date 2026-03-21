@@ -506,6 +506,15 @@ func TestBuildAndRun(t *testing.T) {
 			},
 		},
 		{
+			file: "tuple_destruct_for.zn",
+			contains: []string{
+				"Alice: 95", "Bob: 87", "Charlie: 92",
+				"0=apple", "1=banana", "2=cherry",
+				"x", "y", "z",
+				"a 1 true", "b 2 false",
+			},
+		},
+		{
 			file:     "file_write.zn",
 			contains: []string{"write=hello\n", "append=hello\nworld\n", "overwrite=replaced\n"},
 			cleanup:  []string{"_write_test.txt"},

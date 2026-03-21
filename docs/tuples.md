@@ -112,6 +112,43 @@ let (n, a) = person;
 Println(n);              // "Alice"
 ```
 
+### Destructuring in For-In Loops
+
+Tuple destructuring also works in `for-in` loop headers. When iterating over an array of tuples, use `(a, b)` to bind each element directly:
+
+```zenth
+let names = ["Alice", "Bob"];
+let scores = [95, 87];
+
+for (name, score) in Zip(names, scores) {
+    Println("{name}: {score}");
+}
+// Alice: 95
+// Bob: 87
+```
+
+This works with `.enumerate()` and any array of tuples:
+
+```zenth
+let items = ["apple", "banana", "cherry"];
+for (i, item) in items.enumerate() {
+    Println("{i}: {item}");
+}
+
+let pairs = [Tuple(1, "x"), Tuple(2, "y")];
+for (num, letter) in pairs {
+    Println("{num}={letter}");
+}
+```
+
+Use `_` to discard positions you don't need:
+
+```zenth
+for (_, val) in pairs {
+    Println(val);
+}
+```
+
 ## Tuples as Hashmap and Set Keys
 
 Tuples with comparable element types (built-in types like `Int`, `Str`, `Float`, `Bool`) can be used as hashmap keys and set elements:

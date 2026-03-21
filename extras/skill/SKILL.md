@@ -277,6 +277,11 @@ for _, item in items {   // discard index
     Println(item);
 }
 
+// tuple destructuring in for-in
+for (name, score) in Zip(names, scores) {
+    Println("{name}: {score}");
+}
+
 // while-style
 for running {
     process();
@@ -470,6 +475,14 @@ let t: Tuple(key: Str, value: Int) = Tuple(key="x", value=42);
 
 // Destructuring
 let (k, v) = t;
+
+// Destructuring in for-in loops
+for (name, score) in Zip(["Alice", "Bob"], [95, 87]) {
+    Println("{name}: {score}");
+}
+for (i, item) in items.enumerate() {
+    Println("{i}: {item}");
+}
 
 // Array of named tuples
 let pairs: Array(Tuple(name: Str, score: Int)) = [];

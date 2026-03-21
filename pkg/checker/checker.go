@@ -956,6 +956,53 @@ func (c *Checker) checkForInStmt(s *ast.ForInStmt) ZType {
 	}
 
 	c.pushScope()
+
+	// Tuple destructuring: for (a, b) in expr
+	if len(s.DestructNames) > 0 {
+		// Determine the element type
+		var elemType ZType
+		switch t := iterType.(type) {
+		case *SliceType:
+			elemType = t.Elem
+		default:
+			c.errorf(s.Pos(), "tuple destructuring requires an array, got %s", iterType)
+			for _, stmt := range s.Body.Stmts {
+				c.checkNode(stmt)
+			}
+			c.popScope()
+			return TypeVoid
+		}
+
+		tt, ok := elemType.(*TupleType)
+		if !ok {
+			c.errorf(s.Pos(), "tuple destructuring requires an array of tuples, got Array(%s)", elemType)
+			for _, stmt := range s.Body.Stmts {
+				c.checkNode(stmt)
+			}
+			c.popScope()
+			return TypeVoid
+		}
+
+		if len(s.DestructNames) != len(tt.Elems) {
+			c.errorf(s.Pos(), "tuple destructuring: expected %d names, got %d", len(tt.Elems), len(s.DestructNames))
+		}
+
+		var goTypes []string
+		for i, name := range s.DestructNames {
+			if i < len(tt.Elems) {
+				defineLoopVar(name, tt.Elems[i])
+				goTypes = append(goTypes, goTypeName(tt.Elems[i]))
+			}
+		}
+		s.DestructGoTypes = goTypes
+
+		for _, stmt := range s.Body.Stmts {
+			c.checkNode(stmt)
+		}
+		c.popScope()
+		return TypeVoid
+	}
+
 	switch t := iterType.(type) {
 	case *RangeType:
 		s.IterRange = true

@@ -276,10 +276,13 @@ func (f *ForStmt) Pos() token.Pos { return f.TokenPos }
 func (f *ForStmt) nodeMarker()    {}
 
 // ForInStmt represents: for [index,] value in iterable { ... }
+// Also supports: for (a, b) in iterable { ... } (tuple destructuring)
 type ForInStmt struct {
 	TokenPos                   token.Pos
 	Index                      string // empty if no index variable
 	Value                      string
+	DestructNames              []string // set by parser for tuple destructuring: (a, b, c)
+	DestructGoTypes            []string // set by checker: Go types of each tuple element
 	Iterable                   Node
 	Body                       *Block
 	IterStr                    bool     // set by checker when iterating over a string

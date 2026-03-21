@@ -1,0 +1,27 @@
+fn main() {
+    // Basic tuple destructuring in for-in with Zip
+    let names = ["Alice", "Bob", "Charlie"];
+    let scores = [95, 87, 92];
+
+    for (name, score) in Zip(names, scores) {
+        Println("{name}: {score}");
+    }
+
+    // Tuple destructuring with enumerate
+    let items = ["apple", "banana", "cherry"];
+    for (i, item) in items.enumerate() {
+        Println("{i}={item}");
+    }
+
+    // Discard with _
+    let pairs = [Tuple(1, "x"), Tuple(2, "y"), Tuple(3, "z")];
+    for (_, val) in pairs {
+        Println(val);
+    }
+
+    // Three-element tuple
+    let triples = [Tuple("a", 1, true), Tuple("b", 2, false)];
+    for (letter, num, flag) in triples {
+        Println("{letter} {num} {flag}");
+    }
+}
