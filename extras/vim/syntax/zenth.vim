@@ -30,6 +30,7 @@ syn match zenthNumber         /\<\d\+\>/
 syn match zenthFloat          /\<\d\+\.\d*\>/
 
 " Strings
+syn region zenthString        start=/"""/ end=/"""/
 syn region zenthString        start=/"/ skip=/\\"/ end=/"/
 syn region zenthString        start=/'/ skip=/\\'/ end=/'/
 

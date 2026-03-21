@@ -81,6 +81,45 @@ Single-quoted strings support the same escape sequences as double-quoted strings
 | `\'` | Single quote |
 | `\0` | Null byte |
 
+## Multi-line Strings
+
+Use triple double-quotes (`"""..."""`) for multi-line string literals. The content between the opening and closing `"""` is preserved as-is, including newlines and indentation:
+
+```zenth
+let text = """
+Hello
+World
+""";
+Println(text);  // prints "Hello\nWorld"
+```
+
+The first newline after the opening `"""` and the last newline before the closing `"""` are stripped, so the content is exactly what appears between them.
+
+Multi-line strings support interpolation, just like regular double-quoted strings:
+
+```zenth
+let name = "Zenth";
+let msg = """
+Welcome to {name}!
+Enjoy coding.
+""";
+```
+
+They also support escape sequences (`\n`, `\t`, `\\`, `\"`, `\{`, `\}`, `\0`).
+
+Multi-line strings are useful for help text, templates, and any string that spans multiple lines:
+
+```zenth
+Print("""
+tasks — a pipe-delimited todo manager
+
+Usage:
+  tasks                    list active tasks
+  tasks add 'title'        add a new task
+  tasks done <id>          mark a task as done
+""");
+```
+
 ## String Concatenation
 
 Strings can be concatenated with `+`:

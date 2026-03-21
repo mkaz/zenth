@@ -1,0 +1,33 @@
+fn main() {
+    // Basic multi-line string
+    let text = """
+Hello
+World
+""";
+    Println(text);
+
+    // Multi-line with interpolation
+    let name = "Zenth";
+    let greeting = """
+Welcome to {name}!
+Enjoy coding.
+""";
+    Println(greeting);
+
+    // Multi-line preserves internal blank lines
+    let spaced = """
+line one
+
+line three
+""";
+    Println(spaced);
+
+    // Multi-line with indented content
+    let usage = """
+Usage:
+  run       Run a program
+  build     Build a binary
+  help      Show help
+""";
+    Print(usage);
+}

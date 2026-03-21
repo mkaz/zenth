@@ -475,6 +475,15 @@ func TestBuildAndRun(t *testing.T) {
 			},
 		},
 		{
+			file: "multiline_string.zn",
+			contains: []string{
+				"Hello\nWorld",
+				"Welcome to Zenth!\nEnjoy coding.",
+				"line one\n\nline three",
+				"Usage:\n  run",
+			},
+		},
+		{
 			file:     "file_write.zn",
 			contains: []string{"write=hello\n", "append=hello\nworld\n", "overwrite=replaced\n"},
 			cleanup:  []string{"_write_test.txt"},

@@ -186,6 +186,52 @@ func TestEscapedBrace(t *testing.T) {
 	}
 }
 
+func TestMultilineString(t *testing.T) {
+	src := "let x = \"\"\"\nline one\nline two\n\"\"\";"
+	l := New("test.zn", src)
+	tokens, err := l.Tokenize()
+	if err != nil {
+		t.Fatal(err)
+	}
+	// let, x, =, StringLit, ;, EOF
+	if tokens[3].Type != token.StringLit {
+		t.Errorf("expected StringLit, got %s", tokens[3].Type)
+	}
+	if tokens[3].Literal != "line one\nline two" {
+		t.Errorf("expected 'line one\\nline two', got %q", tokens[3].Literal)
+	}
+}
+
+func TestMultilineStringInterp(t *testing.T) {
+	src := "let x = \"\"\"\nhello {name}\nworld\n\"\"\";"
+	l := New("test.zn", src)
+	tokens, err := l.Tokenize()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tokens[3].Type != token.InterpStringLit {
+		t.Errorf("expected InterpStringLit, got %s", tokens[3].Type)
+	}
+	if tokens[3].Literal != "hello {name}\nworld" {
+		t.Errorf("expected 'hello {name}\\nworld', got %q", tokens[3].Literal)
+	}
+}
+
+func TestMultilineStringEmpty(t *testing.T) {
+	src := "let x = \"\"\"\n\"\"\";"
+	l := New("test.zn", src)
+	tokens, err := l.Tokenize()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tokens[3].Type != token.StringLit {
+		t.Errorf("expected StringLit, got %s", tokens[3].Type)
+	}
+	if tokens[3].Literal != "" {
+		t.Errorf("expected empty string, got %q", tokens[3].Literal)
+	}
+}
+
 func TestPositionTracking(t *testing.T) {
 	src := "fn main() {\n    Println(\"hi\");\n}"
 	l := New("test.zn", src)

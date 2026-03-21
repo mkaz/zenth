@@ -170,6 +170,25 @@ Println('Raw {name} string');      // no interpolation
 Println("Use \{braces\} literally"); // escaped braces
 ```
 
+**Multi-line strings** use triple double-quotes:
+
+```zenth
+let text = """
+Hello
+World
+""";
+// text is "Hello\nWorld"
+
+// Supports interpolation
+let name = "Zenth";
+let msg = """
+Welcome to {name}!
+Enjoy coding.
+""";
+```
+
+The first newline after opening `"""` and the last newline before closing `"""` are stripped.
+
 **String methods:**
 ```zenth
 "hello".upper()              // "HELLO"
@@ -918,6 +937,7 @@ Both assertions are available in all Zenth programs, not just test files.
 - Function parameters require type annotations; local variables use inference
 - String interpolation only works in double-quoted strings: `"hello {name}"`
 - Single-quoted strings are raw (no interpolation, no escape sequences): `'raw'`
+- Triple double-quoted strings (`"""..."""`) are multi-line with interpolation support
 - The `for` keyword is used for all loops (no `while` keyword)
 - `match` replaces `switch`; use `_` for the default case
 - Objects use `self` (not `this`) for method access

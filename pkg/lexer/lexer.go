@@ -139,6 +139,12 @@ func (l *Lexer) skipWhitespaceAndComments() {
 }
 
 func (l *Lexer) readString(pos token.Pos) {
+	// Check for triple-quoted multi-line string: """
+	if l.peekAt(1) == '"' && l.peekAt(2) == '"' {
+		l.readMultilineString(pos)
+		return
+	}
+
 	l.advance() // opening "
 	var lit []rune
 	hasInterp := false
@@ -224,6 +230,76 @@ func (l *Lexer) readRawString(pos token.Pos) {
 		lit = append(lit, l.advance())
 	}
 	l.error(pos, "unterminated string literal")
+}
+
+func (l *Lexer) readMultilineString(pos token.Pos) {
+	l.advance() // first "
+	l.advance() // second "
+	l.advance() // third "
+
+	// Skip the first newline after opening """
+	if l.pos < len(l.src) && l.peek() == '\n' {
+		l.advance()
+	} else if l.pos < len(l.src) && l.peek() == '\r' && l.peekAt(1) == '\n' {
+		l.advance()
+		l.advance()
+	}
+
+	var lit []rune
+	hasInterp := false
+	for l.pos < len(l.src) {
+		ch := l.peek()
+		// Check for closing """
+		if ch == '"' && l.peekAt(1) == '"' && l.peekAt(2) == '"' {
+			l.advance() // first "
+			l.advance() // second "
+			l.advance() // third "
+
+			// Strip trailing newline before closing """
+			if len(lit) > 0 && lit[len(lit)-1] == '\n' {
+				lit = lit[:len(lit)-1]
+				// Also strip \r if present (Windows line endings)
+				if len(lit) > 0 && lit[len(lit)-1] == '\r' {
+					lit = lit[:len(lit)-1]
+				}
+			}
+
+			if hasInterp {
+				l.emit(token.InterpStringLit, string(lit), pos)
+			} else {
+				l.emit(token.StringLit, string(lit), pos)
+			}
+			return
+		}
+		if ch == '\\' {
+			l.advance()
+			esc := l.advance()
+			switch esc {
+			case 'n':
+				lit = append(lit, '\n')
+			case 't':
+				lit = append(lit, '\t')
+			case '\\':
+				lit = append(lit, '\\')
+			case '"':
+				lit = append(lit, '"')
+			case '0':
+				lit = append(lit, 0)
+			case '{':
+				lit = append(lit, '{')
+			case '}':
+				lit = append(lit, '}')
+			default:
+				lit = append(lit, '\\', esc)
+			}
+			continue
+		}
+		if ch == '{' {
+			hasInterp = true
+		}
+		lit = append(lit, l.advance())
+	}
+	l.error(pos, "unterminated multi-line string literal")
 }
 
 func (l *Lexer) readNumber(pos token.Pos) {
