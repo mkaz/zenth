@@ -788,7 +788,6 @@ func TestNewCheckerBuiltinFunctions(t *testing.T) {
 		{"File", TypeFile},
 		{"Int", TypeInt},
 		{"Float", TypeFloat},
-		{"Flag", TypeVoid},
 	}
 	for _, tt := range builtins {
 		t.Run(tt.name, func(t *testing.T) {

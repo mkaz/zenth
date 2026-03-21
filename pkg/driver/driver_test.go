@@ -241,7 +241,7 @@ func TestBuildAndRun(t *testing.T) {
 		},
 		{
 			file:     "flag.zn",
-			contains: []string{"debug=false", "times=5", "msg=Hello"},
+			contains: []string{"debug=false", "times=5", "msg=Hello", "args=0"},
 		},
 		{
 			file:     "str_contains.zn",
@@ -619,7 +619,7 @@ func TestCompileErrors(t *testing.T) {
 		},
 		{
 			file:   "errors/flag_no_default.zn",
-			errMsg: "Flag() requires a 'default' argument",
+			errMsg: "Args.flag() requires a 'default' argument",
 		},
 		{
 			file:   "errors/in_not_operator.zn",

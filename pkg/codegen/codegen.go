@@ -1901,6 +1901,19 @@ func (g *Generator) genExpr(node ast.Node) {
 }
 
 func (g *Generator) genCallExpr(c *ast.CallExpr) {
+	// Args.flag() — same codegen as old Flag()
+	if c.FlagName != "" {
+		g.genFlagCall(c)
+		return
+	}
+	// Args.args() — remaining positional arguments
+	if c.ArgsCall {
+		g.imports["flag"] = ""
+		g.needsFlag = true
+		g.write("flag.Args()")
+		return
+	}
+
 	// Translate built-in functions
 	if ident, ok := c.Callee.(*ast.IdentExpr); ok {
 		switch ident.Name {
@@ -2237,9 +2250,6 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.genArgList(c.Args)
 				g.write(")")
 			}
-			return
-		case "Flag":
-			g.genFlagCall(c)
 			return
 		}
 	}

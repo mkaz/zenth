@@ -444,6 +444,7 @@ type CallExpr struct {
 	ZipCall                bool     // set by checker for zip() calls
 	ZipElemGoTypes         []string // set by checker: Go types of each input array's elements
 	ReduceReturnGoType     string   // set by checker: Go return type for reduce() when arg is not a closure
+	ArgsCall               bool     // set by checker: true for Args.args() calls
 }
 
 func (c *CallExpr) Pos() token.Pos { return c.TokenPos }

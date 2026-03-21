@@ -144,13 +144,7 @@ func New() *Checker {
 		Return:      TypeStr,
 		NumRequired: 1,
 	}
-	c.funcs["Flag"] = &FuncInfo{
-		Name:        "Flag",
-		Params:      []ZType{TypeVoid}, // placeholder; actual type inferred from default
-		ParamNames:  []string{"default"},
-		Return:      TypeVoid, // return type set dynamically
-		NumRequired: 1,
-	}
+
 
 	// Register built-in constants
 	global.Define(&Symbol{Name: "INT_MAX", Type: TypeInt, IsConst: true})
@@ -1145,6 +1139,23 @@ func (c *Checker) checkUnaryExpr(e *ast.UnaryExpr) ZType {
 func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 	// Handle method calls: obj.method(args)
 	if field, ok := e.Callee.(*ast.FieldExpr); ok {
+		// Args built-in: Args.flag(), Args.args()
+		if ident, ok := field.Object.(*ast.IdentExpr); ok && ident.Name == "Args" {
+			switch field.Field {
+			case "flag":
+				return c.checkFlagCall(e)
+			case "args":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "Args.args() takes no arguments, got %d", len(e.Args))
+				}
+				e.ArgsCall = true
+				return &SliceType{Elem: TypeStr}
+			default:
+				c.errorf(e.Pos(), "Args has no method '%s' (available: flag, args)", field.Field)
+				return TypeVoid
+			}
+		}
+
 		// Module function call (fmt.println, math.sqrt, etc.)
 		if ident, ok := field.Object.(*ast.IdentExpr); ok && c.isModuleName(ident.Name) {
 			// Local module — type-check properly
@@ -1970,9 +1981,6 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 		}
 		if ident.Name == "Set" {
 			return c.checkSetConstructor(e)
-		}
-		if ident.Name == "Flag" {
-			return c.checkFlagCall(e)
 		}
 		if ident.Name == "Assert" {
 			return c.checkAssertCall(e)
@@ -2870,7 +2878,7 @@ func (c *Checker) checkArgWithFuncType(arg ast.Node, expectedType ZType) ZType {
 
 func (c *Checker) checkFlagCall(e *ast.CallExpr) ZType {
 	if c.pendingFlagName == "" {
-		c.errorf(e.Pos(), "Flag() must be assigned to a variable (let x = Flag(default=...))")
+		c.errorf(e.Pos(), "Args.flag() must be assigned to a variable (let x = Args.flag(default=...))")
 		return TypeVoid
 	}
 
@@ -2881,14 +2889,14 @@ func (c *Checker) checkFlagCall(e *ast.CallExpr) ZType {
 			if named.Name == "default" {
 				defaultNode = named.Value
 			} else {
-				c.errorf(named.Pos(), "Flag() has no parameter named '%s'", named.Name)
+				c.errorf(named.Pos(), "Args.flag() has no parameter named '%s'", named.Name)
 			}
 		} else {
-			c.errorf(arg.Pos(), "Flag() requires named argument: default=<value>")
+			c.errorf(arg.Pos(), "Args.flag() requires named argument: default=<value>")
 		}
 	}
 	if defaultNode == nil {
-		c.errorf(e.Pos(), "Flag() requires a 'default' argument")
+		c.errorf(e.Pos(), "Args.flag() requires a 'default' argument")
 		return TypeVoid
 	}
 
@@ -2902,7 +2910,7 @@ func (c *Checker) checkFlagCall(e *ast.CallExpr) ZType {
 	case valType.Equals(TypeStr):
 		goType = "string"
 	default:
-		c.errorf(e.Pos(), "Flag() default must be Bool, Int, or Str, got %s", valType)
+		c.errorf(e.Pos(), "Args.flag() default must be Bool, Int, or Str, got %s", valType)
 		return TypeVoid
 	}
 

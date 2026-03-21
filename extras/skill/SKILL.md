@@ -741,7 +741,8 @@ Module objects are constructed with `module.ObjName(field=value)` syntax and the
 | `Tuple(...)` | Create Tuple (positional or named) |
 | `File(path)` | Create file handle |
 | `Env(name)` / `Env(name, default)` | Read environment variable (returns Str; default when unset) |
-| `Flag(default=val)` | Command-line Flag (name inferred from variable) |
+| `Args.flag(default=val)` | Command-line flag (name inferred from variable) |
+| `Args.args()` | Get remaining positional arguments as `Array(Str)` |
 | `Exit(code)` | Exit program with status code |
 | `Assert(cond)` | Panic if `cond` is false (reports file:line) |
 | `AssertEq(got, expected)` | Panic if `got != expected` (reports file:line and both values) |
@@ -780,17 +781,18 @@ f.write("Hello world\n");        // create/overwrite file
 f.append("More content\n");      // append to file (creates if missing)
 ```
 
-### Command-Line Flags
+### Command-Line Arguments
 
 Flag names are inferred from the variable name:
 
 ```zenth
-let debug = Flag(default=false);  // --debug Flag (Bool)
-let count = Flag(default=5);      // --count Flag (Int)
-let msg = Flag(default="hi");     // --msg Flag (Str)
+let debug = Args.flag(default=false);  // --debug (Bool)
+let count = Args.flag(default=5);      // --count (Int)
+let msg = Args.flag(default="hi");     // --msg (Str)
+let args = Args.args();               // remaining positional args
 ```
 
-Run with: `./program --debug --count=10 --msg="hello"`
+Run with: `./program --debug --count=10 --msg="hello" file1.txt file2.txt`
 
 ### Environment Variables
 

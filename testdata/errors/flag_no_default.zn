@@ -1,4 +1,4 @@
 fn main() {
-    let x = Flag();
+    let x = Args.flag();
     Println(x);
 }

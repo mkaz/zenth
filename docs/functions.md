@@ -155,7 +155,8 @@ Zenth provides several built-in functions that are always available:
 | `Tuple(a, b, ...)` | Build a tuple value |
 | `Zip(a, b, ...)` | Combine two or more arrays into an array of tuples |
 | `Env(name)` / `Env(name, default)` | Read an environment variable (returns `Str`; default used when unset) |
-| `Flag(default=val)` | Declare a command-line flag with a default value |
+| `Args.flag(default=val)` | Declare a command-line flag with a default value |
+| `Args.args()` | Get remaining positional arguments as `Array(Str)` |
 | `File(path)` | Build a file value for file methods |
 | `Exit([code])` | Exit the program (`0` when omitted) |
 | `Assert(cond)` / `AssertEq(got, expected)` | Built-in test/assertion helpers |
@@ -223,15 +224,19 @@ let b = [10, 20];
 let zipped = Zip(a, b);  // [Tuple(1, 10), Tuple(2, 20)]
 ```
 
-## Command-Line Flags
+## Command-Line Arguments
 
-The `Flag()` built-in declares command-line flags. The flag name is inferred from the variable name, and the type is inferred from the default value (`Bool`, `Int`, or `Str`).
+The `Args` object provides access to command-line flags and positional arguments.
+
+### Flags
+
+`Args.flag(default=val)` declares a command-line flag. The flag name is inferred from the variable name, and the type is inferred from the default value (`Bool`, `Int`, or `Str`).
 
 ```zenth
 fn main() {
-    let debug = Flag(default=false);   // --debug
-    let times = Flag(default=5);       // --times 10
-    let msg = Flag(default="Hello");   // --msg "world"
+    let debug = Args.flag(default=false);   // --debug
+    let times = Args.flag(default=5);       // --times 10
+    let msg = Args.flag(default="Hello");   // --msg "world"
 
     for var i = 0; i < times; i++ {
         Println(msg, !debug);
@@ -253,6 +258,28 @@ zenth run greet.zn --times 3 --msg "Hi"
 ```
 
 When no flags are provided, the default values are used. Boolean flags are set to `true` by passing `--name` with no value.
+
+### Positional Arguments
+
+`Args.args()` returns an `Array(Str)` of all remaining positional arguments (those not consumed by flags):
+
+```zenth
+fn main() {
+    let verbose = Args.flag(default=false);
+    let args = Args.args();
+
+    for file in args {
+        Println("Processing: {file}");
+    }
+}
+```
+
+```sh
+./program --verbose file1.txt file2.txt
+# args = ["file1.txt", "file2.txt"]
+```
+
+Positional arguments are everything that appears after the flags (or after `--` to force the end of flag parsing).
 
 ## Environment Variables
 
@@ -282,7 +309,7 @@ With one argument, `Env(name)` returns the value of the environment variable, or
 
 Zenth reserves leading uppercase for system names:
 
-- Built-in functions are capitalized (`Println`, `Len`, `Flag`, `Range`, etc.).
+- Built-in functions are capitalized (`Println`, `Len`, `Range`, etc.).
 - User-defined **top-level** functions must start with a lowercase letter.
 - User-defined variables (`let`, `var`, `const`, including destructuring and loop bindings) must start with a lowercase letter.
 
@@ -290,7 +317,7 @@ Examples:
 
 ```zenth
 fn build_report() {    // ok
-    let debug = Flag(default=false);   // ok
+    let debug = Args.flag(default=false);   // ok
     let value = 10;                    // ok
 }
 

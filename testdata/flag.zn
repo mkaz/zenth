@@ -1,11 +1,14 @@
-// Test Flag() built-in with default values
+// Test Args.flag() and Args.args() built-ins
 
 fn main() {
-    let debug = Flag(default=false);
-    let times = Flag(default=5);
-    let msg = Flag(default="Hello");
+    let debug = Args.flag(default=false);
+    let times = Args.flag(default=5);
+    let msg = Args.flag(default="Hello");
 
     Println("debug=" + Str(debug));
     Println("times=" + Str(times));
     Println("msg=" + msg);
+
+    let remaining = Args.args();
+    Println("args=" + Str(Len(remaining)));
 }

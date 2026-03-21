@@ -56,8 +56,8 @@ func TestVersion(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if !strings.Contains(stdout, "0.6.10") {
-		t.Errorf("expected version output to contain '0.6.10', got: %q", stdout)
+	if !strings.Contains(stdout, "0.7.0") {
+		t.Errorf("expected version output to contain '0.7.0', got: %q", stdout)
 	}
 }
 
@@ -176,7 +176,7 @@ func TestEmitGo(t *testing.T) {
 func TestRunWithArgs(t *testing.T) {
 	dir := t.TempDir()
 	src := writeZenthFile(t, dir, `fn main() {
-    let msg = Flag(default="default_val");
+    let msg = Args.flag(default="default_val");
     Println(msg);
 }`)
 
