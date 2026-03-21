@@ -36,6 +36,7 @@ var (
 	TypeError = &BuiltinType{"error"}
 	TypeNil   = &BuiltinType{"nil"}
 	TypeFile  = &BuiltinType{"File"}
+	TypeDate  = &BuiltinType{"Date"}
 )
 
 // ObjType represents a user-defined obj type.
@@ -220,6 +221,8 @@ func LookupBuiltinType(name string) ZType {
 		return TypeStr
 	case "Byte":
 		return TypeByte
+	case "Date":
+		return TypeDate
 	case "error":
 		return TypeError
 	default:

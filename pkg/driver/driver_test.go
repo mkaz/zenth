@@ -519,6 +519,22 @@ func TestBuildAndRun(t *testing.T) {
 			contains: []string{"write=hello\n", "append=hello\nworld\n", "overwrite=replaced\n"},
 			cleanup:  []string{"_write_test.txt"},
 		},
+		{
+			file: "date.zn",
+			contains: []string{
+				"today:",
+				"epoch: 1970-01-01",
+				"jan13: 2007-01-13",
+				"tomorrow: 1970-01-02",
+				"next_month: 1970-02-01",
+				"next_year: 1971-01-01",
+				"yesterday: 1970-01-01",
+				"prev_month: 1970-01-01",
+				"chained: 2001-09-25",
+				"formatted: 13/01/2007",
+				"str:",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -769,6 +785,22 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/pad_bad_args.zn",
 			errMsg: "pad_left() width must be Int, got Str",
+		},
+		{
+			file:   "errors/date_bad_format_arg.zn",
+			errMsg: "format() argument must be Str, got Int",
+		},
+		{
+			file:   "errors/date_bad_add_arg.zn",
+			errMsg: "add() value must be Int, got Str",
+		},
+		{
+			file:   "errors/date_bad_method.zn",
+			errMsg: "Date has no method 'invalid'",
+		},
+		{
+			file:   "errors/date_today_args.zn",
+			errMsg: "Date.today() takes no arguments",
 		},
 	}
 

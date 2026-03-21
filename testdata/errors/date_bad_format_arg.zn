@@ -1,0 +1,4 @@
+fn main() {
+    let d = Date.today();
+    let s = d.format(42);
+}

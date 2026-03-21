@@ -1203,6 +1203,33 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 			}
 		}
 
+		// Date built-in: Date.today(), Date.from()
+		if ident, ok := field.Object.(*ast.IdentExpr); ok && ident.Name == "Date" {
+			switch field.Field {
+			case "today":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "Date.today() takes no arguments, got %d", len(e.Args))
+				}
+				e.DateCall = "today"
+				return TypeDate
+			case "from":
+				if len(e.Args) < 1 || len(e.Args) > 2 {
+					c.errorf(e.Pos(), "Date.from() takes 1 or 2 arguments (date_string, format), got %d", len(e.Args))
+				}
+				for _, arg := range e.Args {
+					argType := c.checkNode(arg)
+					if !argType.Equals(TypeStr) {
+						c.errorf(arg.Pos(), "Date.from() arguments must be Str, got %s", argType)
+					}
+				}
+				e.DateCall = "from"
+				return TypeDate
+			default:
+				c.errorf(e.Pos(), "Date has no method '%s' (available: today, from)", field.Field)
+				return TypeVoid
+			}
+		}
+
 		// Module function call (fmt.println, math.sqrt, etc.)
 		if ident, ok := field.Object.(*ast.IdentExpr); ok && c.isModuleName(ident.Name) {
 			// Local module — type-check properly
@@ -1643,6 +1670,44 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 					}
 				}
 				e.SliceMethod = true
+				return TypeVoid
+			}
+		}
+		// Check for built-in date methods
+		if objType.Equals(TypeDate) {
+			switch field.Field {
+			case "format":
+				if len(e.Args) != 1 {
+					c.errorf(e.Pos(), "format() takes exactly 1 argument (format string), got %d", len(e.Args))
+				}
+				if len(e.Args) == 1 {
+					argType := c.checkNode(e.Args[0])
+					if !argType.Equals(TypeStr) {
+						c.errorf(e.Args[0].Pos(), "format() argument must be Str, got %s", argType)
+					}
+				}
+				e.DateMethod = "format"
+				return TypeStr
+			case "add", "sub":
+				if len(e.Args) < 1 || len(e.Args) > 2 {
+					c.errorf(e.Pos(), "%s() takes 1 or 2 arguments (value, unit), got %d", field.Field, len(e.Args))
+				}
+				if len(e.Args) >= 1 {
+					argType := c.checkNode(e.Args[0])
+					if !IsInteger(argType) {
+						c.errorf(e.Args[0].Pos(), "%s() value must be Int, got %s", field.Field, argType)
+					}
+				}
+				if len(e.Args) == 2 {
+					argType := c.checkNode(e.Args[1])
+					if !argType.Equals(TypeStr) {
+						c.errorf(e.Args[1].Pos(), "%s() unit must be Str, got %s", field.Field, argType)
+					}
+				}
+				e.DateMethod = field.Field
+				return TypeDate
+			default:
+				c.errorf(e.Pos(), "Date has no method '%s' (available: format, add, sub)", field.Field)
 				return TypeVoid
 			}
 		}
@@ -3190,6 +3255,8 @@ func goTypeName(t ZType) string {
 			return "string"
 		case "Byte":
 			return "byte"
+		case "Date":
+			return "time.Time"
 		default:
 			return ty.Name
 		}

@@ -15,11 +15,11 @@ syn keyword zenthConstant     true false nil INT_MAX INT_MIN
 syn keyword zenthIdentifier   self
 
 " Built-in types
-syn keyword zenthType         Int Float Bool Str Byte
+syn keyword zenthType         Int Float Bool Str Byte Date
 syn keyword zenthType         Array Tuple Hashmap Set Fn
 
 " Built-in functions
-syn keyword zenthBuiltin      Print Println Len Str Hashmap File Args Env Exit Range Rangei Int Float Abs Min Max Clamp Round Floor Ceil Pow Sqrt Assert AssertEq Zip Tuple
+syn keyword zenthBuiltin      Print Println Len Str Hashmap File Args Env Exit Range Rangei Int Float Abs Min Max Clamp Round Floor Ceil Pow Sqrt Assert AssertEq Zip Tuple Date
 
 " Operators
 syn match zenthOperator       /[+\-*/%=<>!&|^~]/

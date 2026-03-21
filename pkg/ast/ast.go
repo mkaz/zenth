@@ -448,6 +448,8 @@ type CallExpr struct {
 	ZipElemGoTypes         []string // set by checker: Go types of each input array's elements
 	ReduceReturnGoType     string   // set by checker: Go return type for reduce() when arg is not a closure
 	ArgsCall               bool     // set by checker: true for Args.args() calls
+	DateCall               string   // set by checker: "today" or "from" for Date.today()/Date.from()
+	DateMethod             string   // set by checker: "format", "add", "sub" for Date methods
 }
 
 func (c *CallExpr) Pos() token.Pos { return c.TokenPos }

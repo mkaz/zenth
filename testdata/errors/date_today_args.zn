@@ -1,0 +1,3 @@
+fn main() {
+    let d = Date.today(42);
+}

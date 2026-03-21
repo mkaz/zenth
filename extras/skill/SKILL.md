@@ -60,7 +60,7 @@ INT_MIN                  // built-in: min Int value (-9223372036854775808)
 
 ### Types
 
-**Primitive:** `Int`, `Float`, `Bool`, `Str`, `Byte`
+**Primitive:** `Int`, `Float`, `Bool`, `Str`, `Byte`, `Date`
 
 **Composite:** `Array(Int)`, `Tuple(Str, Int)`, `Hashmap(Str, Int)`, `Set(Str)`, `Set(Tuple(Int, Int))`, obj types
 
@@ -756,6 +756,9 @@ Module objects are constructed with `module.ObjName(field=value)` syntax and the
 | `Env(name)` / `Env(name, default)` | Read environment variable (returns Str; default when unset) |
 | `Args.flag(default=val)` | Command-line flag (name inferred from variable) |
 | `Args.args()` | Get remaining positional arguments as `Array(Str)` |
+| `Date.today()` | Get today's date as a Date object |
+| `Date.from(str)` | Parse date from string (default format: `%Y-%m-%d`) |
+| `Date.from(str, fmt)` | Parse date from string with custom format |
 | `Exit(code)` | Exit program with status code |
 | `Assert(cond)` | Panic if `cond` is false (reports file:line) |
 | `AssertEq(got, expected)` | Panic if `got != expected` (reports file:line and both values) |
@@ -793,6 +796,38 @@ if f.exists() {
 f.write("Hello world\n");        // create/overwrite file
 f.append("More content\n");      // append to file (creates if missing)
 ```
+
+### Dates
+
+```zenth
+// Today's date
+let d = Date.today();
+Println(d.format("%Y-%m-%d"));
+
+// Parse from string (default format: %Y-%m-%d)
+let epoch = Date.from("1970-01-01");
+
+// Parse with custom format
+let jan13 = Date.from("01/13/2007", "%m/%d/%Y");
+
+// Add time (default unit: "days", also: "months", "years")
+let tomorrow = d.add(1);
+let next_month = d.add(1, "months");
+let next_year = d.add(1, "years");
+
+// Subtract time
+let yesterday = d.sub(1);
+let last_year = d.sub(1, "years");
+
+// Chaining
+let future = Date.today().add(1, "years").add(3, "months").add(10);
+Println(future.format("%B %d, %Y"));
+```
+
+**Date methods:**
+- `.format(fmt)` — format as string using Python-style specifiers (`%Y`, `%m`, `%d`, `%H`, `%M`, `%S`, `%B`, `%b`, `%A`, `%a`, `%y`)
+- `.add(val)` / `.add(val, unit)` — add days/months/years, returns new Date
+- `.sub(val)` / `.sub(val, unit)` — subtract days/months/years, returns new Date
 
 ### Command-Line Arguments
 

@@ -97,6 +97,23 @@ let b: Byte = 65;
 
 Indexing into a string returns a one-character `Str`.
 
+## Date
+
+The `Date` type represents a calendar date. Create dates with `Date.today()` or `Date.from()`:
+
+```zenth
+let today = Date.today();
+let epoch = Date.from("1970-01-01");
+let custom = Date.from("01/13/2007", "%m/%d/%Y");
+```
+
+Date methods:
+- `.format(fmt)` — format as string (`%Y-%m-%d`, `%B %d, %Y`, etc.)
+- `.add(val)` / `.add(val, unit)` — add days, months, or years (returns new Date)
+- `.sub(val)` / `.sub(val, unit)` — subtract days, months, or years (returns new Date)
+
+See [Dates](dates.md) for full documentation.
+
 ## Nil
 
 `nil` represents the absence of a value for reference types (hashmaps, arrays, objects). It must be used with an explicit type annotation:

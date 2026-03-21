@@ -157,6 +157,8 @@ Zenth provides several built-in functions that are always available:
 | `Env(name)` / `Env(name, default)` | Read an environment variable (returns `Str`; default used when unset) |
 | `Args.flag(default=val)` | Declare a command-line flag with a default value |
 | `Args.args()` | Get remaining positional arguments as `Array(Str)` |
+| `Date.today()` | Get today's date as a `Date` object |
+| `Date.from(str[, fmt])` | Parse date from string (default format: `%Y-%m-%d`) |
 | `File(path)` | Build a file value for file methods |
 | `Exit([code])` | Exit the program (`0` when omitted) |
 | `Assert(cond)` / `AssertEq(got, expected)` | Built-in test/assertion helpers |

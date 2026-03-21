@@ -74,6 +74,10 @@ type Generator struct {
 	tupleStructs        map[string][]string // struct name -> field Go types
 	needsEnvDefault     bool
 	needsFlag           bool
+	needsDateFormat     bool
+	needsDateFrom       bool
+	needsDateAdd        bool
+	needsDateSub        bool
 	flagDecls           []flagDecl
 	tempCounter         int
 }
@@ -737,6 +741,58 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\t\treturn v")
 		g.writeln("\t}")
 		g.writeln("\treturn def")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsDateFormat {
+		g.writeln("func zenth_date_format(d time.Time, fmt string) string {")
+		g.writeln("\treplacer := map[string]string{")
+		g.writeln("\t\t\"%Y\": \"2006\", \"%m\": \"01\", \"%d\": \"02\",")
+		g.writeln("\t\t\"%H\": \"15\", \"%M\": \"04\", \"%S\": \"05\",")
+		g.writeln("\t\t\"%y\": \"06\", \"%B\": \"January\", \"%b\": \"Jan\",")
+		g.writeln("\t\t\"%A\": \"Monday\", \"%a\": \"Mon\",")
+		g.writeln("\t}")
+		g.writeln("\tgoFmt := fmt")
+		g.writeln("\tfor py, go_ := range replacer { goFmt = strings.ReplaceAll(goFmt, py, go_) }")
+		g.writeln("\treturn d.Format(goFmt)")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsDateFrom {
+		g.writeln("func zenth_date_from(dateStr, fmt string) time.Time {")
+		g.writeln("\treplacer := map[string]string{")
+		g.writeln("\t\t\"%Y\": \"2006\", \"%m\": \"01\", \"%d\": \"02\",")
+		g.writeln("\t\t\"%H\": \"15\", \"%M\": \"04\", \"%S\": \"05\",")
+		g.writeln("\t\t\"%y\": \"06\", \"%B\": \"January\", \"%b\": \"Jan\",")
+		g.writeln("\t\t\"%A\": \"Monday\", \"%a\": \"Mon\",")
+		g.writeln("\t}")
+		g.writeln("\tgoFmt := fmt")
+		g.writeln("\tfor py, go_ := range replacer { goFmt = strings.ReplaceAll(goFmt, py, go_) }")
+		g.writeln("\tt, err := time.Parse(goFmt, dateStr)")
+		g.writeln("\tif err != nil { panic(\"Date.from: \" + err.Error()) }")
+		g.writeln("\treturn t")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsDateAdd {
+		g.writeln("func zenth_date_add(d time.Time, val int, unit string) time.Time {")
+		g.writeln("\tswitch unit {")
+		g.writeln("\tcase \"days\": return d.AddDate(0, 0, val)")
+		g.writeln("\tcase \"months\": return d.AddDate(0, val, 0)")
+		g.writeln("\tcase \"years\": return d.AddDate(val, 0, 0)")
+		g.writeln("\tdefault: panic(\"Date.add: unknown unit '\" + unit + \"' (use days, months, years)\")")
+		g.writeln("\t}")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsDateSub {
+		g.writeln("func zenth_date_sub(d time.Time, val int, unit string) time.Time {")
+		g.writeln("\tswitch unit {")
+		g.writeln("\tcase \"days\": return d.AddDate(0, 0, -val)")
+		g.writeln("\tcase \"months\": return d.AddDate(0, -val, 0)")
+		g.writeln("\tcase \"years\": return d.AddDate(-val, 0, 0)")
+		g.writeln("\tdefault: panic(\"Date.sub: unknown unit '\" + unit + \"' (use days, months, years)\")")
+		g.writeln("\t}")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -1949,6 +2005,76 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 		g.needsFlag = true
 		g.write("flag.Args()")
 		return
+	}
+
+	// Date.today() / Date.from() static calls
+	if c.DateCall != "" {
+		g.imports["time"] = ""
+		switch c.DateCall {
+		case "today":
+			g.write("func() time.Time { y, m, d := time.Now().Date(); return time.Date(y, m, d, 0, 0, 0, 0, time.UTC) }()")
+			return
+		case "from":
+			g.needsDateFrom = true
+			g.imports["strings"] = ""
+			g.write("zenth_date_from(")
+			g.genExpr(c.Args[0])
+			if len(c.Args) == 2 {
+				g.write(", ")
+				g.genExpr(c.Args[1])
+			} else {
+				g.write(`, "%Y-%m-%d"`)
+			}
+			g.write(")")
+			return
+		}
+	}
+
+	// Date method calls: d.format(), d.add(), d.sub()
+	if c.DateMethod != "" {
+		g.imports["time"] = ""
+		field := c.Callee.(*ast.FieldExpr)
+		switch c.DateMethod {
+		case "format":
+			g.needsDateFormat = true
+			g.imports["strings"] = ""
+			g.write("zenth_date_format(")
+			g.genExpr(field.Object)
+			g.write(", ")
+			g.genExpr(c.Args[0])
+			g.write(")")
+			return
+		case "add":
+			g.needsDateAdd = true
+			g.write("zenth_date_add(")
+			g.genExpr(field.Object)
+			g.write(", int(")
+			g.genExpr(c.Args[0])
+			g.write(")")
+			if len(c.Args) == 2 {
+				g.write(", ")
+				g.genExpr(c.Args[1])
+			} else {
+				g.write(`, "days"`)
+			}
+			g.write(")")
+			return
+		case "sub":
+			g.needsDateSub = true
+			g.write("zenth_date_sub(")
+			g.genExpr(field.Object)
+			g.write(", int(")
+			g.genExpr(c.Args[0])
+			g.write(")")
+			if len(c.Args) == 2 {
+				g.write(", ")
+				g.genExpr(c.Args[1])
+			} else {
+				g.write(`, "days"`)
+			}
+			g.write(")")
+			return
+		}
 	}
 
 	// Translate built-in functions
@@ -3325,6 +3451,8 @@ func mapTypeName(name string) string {
 		return "string"
 	case "Byte":
 		return "byte"
+	case "Date":
+		return "time.Time"
 	default:
 		// User-defined obj types are always pointers
 		return "*" + name

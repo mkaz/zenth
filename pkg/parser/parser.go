@@ -915,7 +915,7 @@ func (p *Parser) parsePostfix() ast.Node {
 			tok := p.advance()
 			fieldTok := p.cur()
 			var field string
-			if fieldTok.Type == token.Ident || fieldTok.Type == token.IntLit {
+			if fieldTok.Type == token.Ident || fieldTok.Type == token.IntLit || fieldTok.Type == token.From {
 				field = p.advance().Literal
 			} else {
 				p.errorf(fieldTok.Pos, "expected field name after '.', got %s", fieldTok.Type)
