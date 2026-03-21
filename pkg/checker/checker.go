@@ -138,6 +138,12 @@ func New() *Checker {
 		Params: []ZType{TypeFloat},
 		Return: TypeFloat,
 	}
+	c.funcs["Env"] = &FuncInfo{
+		Name:        "Env",
+		Params:      []ZType{TypeStr, TypeStr},
+		Return:      TypeStr,
+		NumRequired: 1,
+	}
 	c.funcs["Flag"] = &FuncInfo{
 		Name:        "Flag",
 		Params:      []ZType{TypeVoid}, // placeholder; actual type inferred from default

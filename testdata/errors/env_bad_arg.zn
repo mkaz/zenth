@@ -1,0 +1,4 @@
+fn main() {
+    let val = Env(42);
+    Println(val);
+}

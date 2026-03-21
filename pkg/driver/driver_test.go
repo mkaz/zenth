@@ -235,6 +235,10 @@ func TestBuildAndRun(t *testing.T) {
 			contains: []string{"sum=6", "count=3", "nkeys=3", "vsum=6"},
 		},
 		{
+			file:     "env.zn",
+			contains: []string{"HOME=", "missing=fallback", "empty="},
+		},
+		{
 			file:     "flag.zn",
 			contains: []string{"debug=false", "times=5", "msg=Hello"},
 		},
@@ -546,6 +550,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/numeric_min_type_mismatch.zn",
 			errMsg: "Min() arguments must all be Int or all be Float",
+		},
+		{
+			file:   "errors/env_bad_arg.zn",
+			errMsg: "expected Str",
 		},
 		{
 			file:   "errors/flag_no_default.zn",

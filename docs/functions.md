@@ -154,6 +154,7 @@ Zenth provides several built-in functions that are always available:
 | `Set(T)` | Build an empty set |
 | `Tuple(a, b, ...)` | Build a tuple value |
 | `Zip(a, b, ...)` | Combine two or more arrays into an array of tuples |
+| `Env(name)` / `Env(name, default)` | Read an environment variable (returns `Str`; default used when unset) |
 | `Flag(default=val)` | Declare a command-line flag with a default value |
 | `File(path)` | Build a file value for file methods |
 | `Exit([code])` | Exit the program (`0` when omitted) |
@@ -252,6 +253,30 @@ zenth run greet.zn --times 3 --msg "Hi"
 ```
 
 When no flags are provided, the default values are used. Boolean flags are set to `true` by passing `--name` with no value.
+
+## Environment Variables
+
+The `Env()` built-in reads environment variables. It always returns a `Str`.
+
+```zenth
+fn main() {
+    // Read an environment variable (empty string if not set)
+    let home = Env("HOME");
+    Println("Home: " + home);
+
+    // Provide a default value for when the variable is unset or empty
+    let editor = Env("EDITOR", "vim");
+    Println("Editor: " + editor);
+
+    // Use in conditionals
+    let debug = Env("DEBUG", "false");
+    if debug == "true" {
+        Println("Debug mode enabled");
+    }
+}
+```
+
+With one argument, `Env(name)` returns the value of the environment variable, or an empty string `""` if it is not set. With two arguments, `Env(name, default)` returns the default value when the variable is unset or empty.
 
 ## Naming Rules
 

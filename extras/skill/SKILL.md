@@ -680,6 +680,7 @@ Module objects are constructed with `module.ObjName(field=value)` syntax and the
 | `Set(T)` | Create empty set |
 | `Tuple(...)` | Create Tuple (positional or named) |
 | `File(path)` | Create file handle |
+| `Env(name)` / `Env(name, default)` | Read environment variable (returns Str; default when unset) |
 | `Flag(default=val)` | Command-line Flag (name inferred from variable) |
 | `Exit(code)` | Exit program with status code |
 | `Assert(cond)` | Panic if `cond` is false (reports file:line) |
@@ -726,6 +727,13 @@ let msg = Flag(default="hi");     // --msg Flag (Str)
 ```
 
 Run with: `./program --debug --count=10 --msg="hello"`
+
+### Environment Variables
+
+```zenth
+let home = Env("HOME");           // returns Str, empty if unset
+let editor = Env("EDITOR", "vim"); // returns "vim" if EDITOR is unset
+```
 
 ### Multi-Variable Assignment
 

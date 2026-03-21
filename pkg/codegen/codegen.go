@@ -68,6 +68,7 @@ type Generator struct {
 	needsAssertEq       bool
 	enums               map[string]*ast.EnumDecl
 	tupleStructs        map[string][]string // struct name -> field Go types
+	needsEnvDefault     bool
 	needsFlag           bool
 	flagDecls           []flagDecl
 	tempCounter         int
@@ -660,6 +661,15 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\tif got != expected {")
 		g.writeln("\t\tpanic(fmt.Sprintf(\"assert_eq failed at %s:%d\\n  expected: %v\\n       got: %v\", file, line, expected, got))")
 		g.writeln("\t}")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsEnvDefault {
+		g.writeln("func zenth_env_default(key, def string) string {")
+		g.writeln("\tif v := os.Getenv(key); v != \"\" {")
+		g.writeln("\t\treturn v")
+		g.writeln("\t}")
+		g.writeln("\treturn def")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -2143,6 +2153,22 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write("]struct{})")
 			} else {
 				g.write("/* invalid set() */")
+			}
+			return
+		case "Env":
+			g.imports["os"] = ""
+			if len(c.Args) == 2 {
+				// Env("NAME", "default") — use default if empty
+				g.needsEnvDefault = true
+				g.write("zenth_env_default(")
+				g.genExpr(c.Args[0])
+				g.write(", ")
+				g.genExpr(c.Args[1])
+				g.write(")")
+			} else {
+				g.write("os.Getenv(")
+				g.genArgList(c.Args)
+				g.write(")")
 			}
 			return
 		case "Flag":
