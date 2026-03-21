@@ -56,6 +56,75 @@ docs/               Language reference; keep aligned with code changes
 extras/vim/         Vim/Neovim syntax, ftdetect, and indent support
 ```
 
+## How to Add a Built-in Function
+
+Built-in functions touch four compiler packages plus docs/tests. Here is the checklist:
+
+### 1. Register in the checker (`pkg/checker/checker.go`)
+
+In `New()`, add to the `c.funcs` map (around line 89–147):
+
+```go
+c.funcs["MyFunc"] = &FuncInfo{
+    Name:        "MyFunc",
+    Params:      []ZType{TypeStr, TypeInt},  // parameter types
+    Return:      TypeStr,                     // return type
+    NumRequired: 1,                           // for optional params (omit if all required)
+}
+```
+
+This handles standard type-checking automatically via `checkArgs()`. For built-ins
+that need special validation (like `Flag`, `Zip`, `Hashmap`), add a special-case
+block in `checkCallExpr()` (around line 1830–1850) that calls a dedicated
+`checkMyFuncCall()` method instead.
+
+### 2. Generate Go code (`pkg/codegen/codegen.go`)
+
+In `genCallExpr()`, the big switch on `ident.Name` (starts around line 1828),
+add a case:
+
+```go
+case "MyFunc":
+    g.imports["os"] = ""  // if you need an import
+    g.write("os.Something(")
+    g.genArgList(c.Args)
+    g.write(")")
+    return
+```
+
+If you need a Go helper function, add a `needsMyFunc bool` field to the
+`Generator` struct (around line 30–74), set it in the case above, and emit
+the helper in the helpers block (around line 550–700) following the existing
+`if g.needsXxx { ... }` pattern.
+
+### 3. AST annotations (only for complex built-ins)
+
+If the checker needs to pass extra metadata to codegen (like `Flag` does with
+`FlagName`/`FlagGoType`), add fields to `CallExpr` in `pkg/ast/ast.go`.
+Simple built-ins that just map to a Go call don't need this.
+
+### 4. Tests (`pkg/driver/driver_test.go`, `testdata/`)
+
+- Add a success fixture: `testdata/myfunc.zn` with `fn main() { ... }`
+- Add a test entry in `driver_test.go` in the success test table with `contains` strings
+- Add an error fixture: `testdata/errors/myfunc_bad_arg.zn`
+- Add an error test entry with `errMsg` substring
+
+### 5. Docs and extras
+
+- `docs/functions.md` — add to the built-in table and add a detailed section with examples
+- `extras/vim/syntax/zenth.vim` — add to the `zenthBuiltin` keyword list
+- `extras/skill/SKILL.md` — add to the built-in table and add usage examples
+- `cmd/zenth/main.go` — bump patch version
+- `cmd/zenth/main_test.go` — update version string in `TestVersion`
+
+### Key patterns
+
+- Parser has no special cases for built-ins — they parse as regular `CallExpr` nodes
+- The checker's `c.funcs` map handles arg count/type validation for standard built-ins
+- Codegen's `g.imports` map manages Go import statements; set `g.imports["pkg"] = ""` as needed
+- Helper functions use `g.needsXxx` bools to emit only when used (avoids unused-code errors in generated Go)
+
 ## Coding Style & Naming Conventions
 
 Use idiomatic Go and keep files `gofmt`-formatted (tabs, standard imports).
