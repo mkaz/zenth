@@ -62,6 +62,7 @@ type Generator struct {
 	needsIsDigit        bool
 	needsPadLeft        bool
 	needsPadRight       bool
+	needsEnumerate      bool
 	needsInsert         bool
 	needsRemove         bool
 	needsExtend         bool
@@ -547,6 +548,14 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\tr := []rune(s)")
 		g.writeln("\tif hi < 0 { hi = len(r) }")
 		g.writeln("\treturn string(r[lo:hi])")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsEnumerate {
+		g.writeln("func zenth_enumerate[T any](s []T) [][]interface{} {")
+		g.writeln("\tr := make([][]interface{}, len(s))")
+		g.writeln("\tfor i, v := range s { r[i] = []interface{}{i, v} }")
+		g.writeln("\treturn r")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -2479,6 +2488,12 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.genExpr(c.Args[0])
 				g.write(")")
 				return
+			case "enumerate":
+				g.needsEnumerate = true
+				g.write("zenth_enumerate(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
 			case "map":
 				g.needsMap = true
 				g.write("zenth_map(")
@@ -3016,6 +3031,45 @@ func (g *Generator) genClosureExpr(c *ast.ClosureExpr) {
 	isVoid := c.GoReturn == "" || c.GoReturn == "interface{}" || c.GoReturn == "void"
 	if !isVoid {
 		g.write(" " + c.GoReturn)
+	}
+	// Tuple destructuring: multi-param closure on tuple array
+	if len(c.TupleDestructGoTypes) > 0 {
+		g.write(" {\n")
+		g.indent++
+		for i, p := range c.Params {
+			if p.Name == "_" {
+				continue
+			}
+			g.writeIndent()
+			g.writef("%s := zenth_td[%d].(%s)\n", p.Name, i, c.TupleDestructGoTypes[i])
+		}
+		// Suppress unused variable errors
+		for _, p := range c.Params {
+			if p.Name == "_" {
+				continue
+			}
+			g.writeIndent()
+			g.writef("_ = %s\n", p.Name)
+		}
+		if _, isBlock := c.Body.(*ast.Block); isBlock {
+			block := c.Body.(*ast.Block)
+			for _, stmt := range block.Stmts {
+				g.genNode(stmt)
+			}
+		} else if isVoid {
+			g.writeIndent()
+			g.genExpr(c.Body)
+			g.writeln("")
+		} else {
+			g.writeIndent()
+			g.write("return ")
+			g.genExpr(c.Body)
+			g.writeln("")
+		}
+		g.indent--
+		g.writeIndent()
+		g.write("}")
+		return
 	}
 	if _, isBlock := c.Body.(*ast.Block); isBlock {
 		g.write(" {\n")

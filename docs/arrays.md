@@ -272,6 +272,48 @@ Println(parts.join("-"));      // "2026-03-15"
 
 Only works on `Array(Str)`. Calling `.join()` on a non-string array is a compile-time error.
 
+## Enumerate
+
+Use `.enumerate()` to pair each element with its index, returning an `Array(Tuple(Int, T))`:
+
+```zenth
+let fruits = ["apple", "banana", "cherry"];
+let indexed = fruits.enumerate();
+for pair in indexed {
+    Println("{pair.0}: {pair.1}");
+}
+// 0: apple
+// 1: banana
+// 2: cherry
+```
+
+This is especially useful with `.filter()` and `.map()` when you need access to the original index during functional-style chaining. Closures with multiple parameters automatically destructure the tuple:
+
+```zenth
+let items = ["foo", "bar", "baz", "qux"];
+
+// Filter with index access
+let evens = items.enumerate().filter(fn(i, v) i % 2 == 0);
+for pair in evens {
+    Println("{pair.0}: {pair.1}");
+}
+// 0: foo
+// 2: baz
+
+// Map with index access
+let labeled = items.enumerate().map(fn(i, s) "{i}: {s}");
+// ["0: foo", "1: bar", "2: baz", "3: qux"]
+
+// Full pipeline: enumerate + filter + map
+let tasks = ["done", "active", "done", "active"];
+let active_ids = tasks.enumerate()
+    .filter(fn(i, t) t == "active")
+    .map(fn(i, t) i + 1);
+// [2, 4]  (1-based line numbers of active tasks)
+```
+
+When a closure passed to `.filter()` or `.map()` has the same number of parameters as the tuple elements, each parameter receives the corresponding tuple element (index, value). You can also use a single parameter and access `.0` / `.1` on the tuple.
+
 ## Transforming Arrays
 
 Use `.map()` to transform each element and `.filter()` to select elements:

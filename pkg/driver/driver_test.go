@@ -497,6 +497,15 @@ func TestBuildAndRun(t *testing.T) {
 			},
 		},
 		{
+			file: "enumerate.zn",
+			contains: []string{
+				"0: apple", "1: banana", "2: cherry",
+				"idx=2 val=30", "idx=3 val=40", "idx=4 val=50",
+				"0:a", "1:b", "2:c",
+				"pos=2 val=25", "pos=3 val=35", "pos=4 val=45",
+			},
+		},
+		{
 			file:     "file_write.zn",
 			contains: []string{"write=hello\n", "append=hello\nworld\n", "overwrite=replaced\n"},
 			cleanup:  []string{"_write_test.txt"},

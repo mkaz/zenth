@@ -1,0 +1,31 @@
+fn main() {
+    // Basic enumerate
+    let fruits = ["apple", "banana", "cherry"];
+    let indexed = fruits.enumerate();
+    for pair in indexed {
+        Println("{pair.0}: {pair.1}");
+    }
+
+    // Enumerate with filter using multi-param closure
+    let nums = [10, 20, 30, 40, 50];
+    let big = nums.enumerate().filter(fn(i, v) v > 25);
+    for pair in big {
+        Println("idx={pair.0} val={pair.1}");
+    }
+
+    // Enumerate with map using multi-param closure
+    let items = ["a", "b", "c"];
+    let labeled = items.enumerate().map(fn(i, s) "{i}:{s}");
+    for l in labeled {
+        Println(l);
+    }
+
+    // Chaining enumerate + filter + map
+    let data = [5, 15, 25, 35, 45];
+    let result = data.enumerate()
+        .filter(fn(i, v) v >= 20)
+        .map(fn(i, v) "pos={i} val={v}");
+    for r in result {
+        Println(r);
+    }
+}

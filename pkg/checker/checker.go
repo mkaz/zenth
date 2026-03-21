@@ -1251,12 +1251,28 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.SliceMethod = true
 				return sliceType.Elem
+			case "enumerate":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "enumerate() takes no arguments, got %d", len(e.Args))
+				}
+				e.SliceMethod = true
+				return &SliceType{Elem: &TupleType{Elems: []ZType{TypeInt, sliceType.Elem}}}
 			case "map":
 				if len(e.Args) != 1 {
 					c.errorf(e.Pos(), "map() takes exactly 1 argument, got %d", len(e.Args))
 					return &SliceType{Elem: TypeVoid}
 				}
 				if closure, ok := e.Args[0].(*ast.ClosureExpr); ok {
+					// Multi-param closure on tuple array: destructure
+					if tt, ok := sliceType.Elem.(*TupleType); ok && len(closure.Params) == len(tt.Elems) && len(closure.Params) > 1 {
+						closureType := c.checkClosureExprTuple(closure, tt)
+						ft, ok := closureType.(*FuncType)
+						if !ok {
+							return &SliceType{Elem: TypeVoid}
+						}
+						e.SliceMethod = true
+						return &SliceType{Elem: ft.Returns}
+					}
 					closureType := c.checkClosureExpr(closure, sliceType.Elem)
 					ft, ok := closureType.(*FuncType)
 					if !ok {
@@ -1284,6 +1300,17 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 					return sliceType
 				}
 				if closure, ok := e.Args[0].(*ast.ClosureExpr); ok {
+					// Multi-param closure on tuple array: destructure
+					if tt, ok := sliceType.Elem.(*TupleType); ok && len(closure.Params) == len(tt.Elems) && len(closure.Params) > 1 {
+						closureType := c.checkClosureExprTuple(closure, tt)
+						if ft, ok := closureType.(*FuncType); ok {
+							if !ft.Returns.Equals(TypeBool) {
+								c.errorf(e.Args[0].Pos(), "filter() closure must return Bool, got %s", ft.Returns)
+							}
+						}
+						e.SliceMethod = true
+						return sliceType
+					}
 					closureType := c.checkClosureExpr(closure, sliceType.Elem)
 					if ft, ok := closureType.(*FuncType); ok {
 						if !ft.Returns.Equals(TypeBool) {
@@ -2933,6 +2960,58 @@ func (c *Checker) checkClosureExpr(e *ast.ClosureExpr, expectedParamType ZType) 
 
 	e.GoParams = strings.Join(goParams, ", ")
 	e.GoReturn = goTypeName(retType)
+
+	return &FuncType{Params: paramTypes, Returns: retType}
+}
+
+// checkClosureExprTuple type-checks a multi-param closure where each param
+// corresponds to a tuple element. Sets TupleDestructGoTypes for codegen.
+func (c *Checker) checkClosureExprTuple(e *ast.ClosureExpr, tt *TupleType) ZType {
+	c.pushScope()
+	defer c.popScope()
+
+	var paramTypes []ZType
+	var goTypes []string
+
+	for i, p := range e.Params {
+		pType := tt.Elems[i]
+		if p.Type != nil {
+			declared := c.resolveTypeExpr(p.Type)
+			if !declared.Equals(pType) {
+				c.errorf(e.Pos(), "parameter '%s' type %s does not match tuple element type %s", p.Name, declared, pType)
+			}
+			pType = declared
+		}
+		paramTypes = append(paramTypes, pType)
+		c.scope.Define(&Symbol{Name: p.Name, Type: pType})
+		goTypes = append(goTypes, goTypeName(pType))
+	}
+
+	var retType ZType
+	if _, isBlock := e.Body.(*ast.Block); isBlock {
+		if e.ReturnType != nil {
+			retType = c.resolveTypeExpr(e.ReturnType)
+		} else {
+			retType = TypeVoid
+		}
+		prev := c.currentFunc
+		c.currentFunc = &FuncInfo{Name: "<closure>", Return: retType}
+		c.checkNode(e.Body)
+		c.currentFunc = prev
+	} else {
+		retType = c.checkNode(e.Body)
+		if e.ReturnType != nil {
+			declared := c.resolveTypeExpr(e.ReturnType)
+			if !declared.Equals(retType) {
+				c.errorf(e.Pos(), "closure return type mismatch: declared %s, body returns %s", declared, retType)
+			}
+			retType = declared
+		}
+	}
+
+	e.GoParams = "zenth_td []interface{}"
+	e.GoReturn = goTypeName(retType)
+	e.TupleDestructGoTypes = goTypes
 
 	return &FuncType{Params: paramTypes, Returns: retType}
 }

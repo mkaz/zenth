@@ -416,6 +416,13 @@ let words = ["hello", "world"];
 Println(words.join(" "));       // "hello world"
 Println(["a", "b"].join(","));  // "a,b"
 
+// Enumerate — pair each element with its index
+let fruits = ["apple", "banana", "cherry"];
+let indexed = fruits.enumerate();  // Array(Tuple(Int, Str))
+// Multi-param closures destructure tuples automatically:
+let labeled = fruits.enumerate().map(fn(i, s) "{i}: {s}");
+let evens = fruits.enumerate().filter(fn(i, s) i % 2 == 0);
+
 // Zip — combine parallel arrays into array of tuples
 let names = ["Alice", "Bob"];
 let scores = [95, 87];

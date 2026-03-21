@@ -583,12 +583,13 @@ func (s *InterpStringExpr) nodeMarker()    {}
 
 // ClosureExpr represents an anonymous function: fn(params) [-> type] expr|block
 type ClosureExpr struct {
-	TokenPos   token.Pos
-	Params     []Param
-	ReturnType *TypeExpr // nil = infer
-	Body       Node      // single expr or *Block
-	GoParams   string    // set by checker: "x int"
-	GoReturn   string    // set by checker: "int"
+	TokenPos             token.Pos
+	Params               []Param
+	ReturnType           *TypeExpr // nil = infer
+	Body                 Node      // single expr or *Block
+	GoParams             string    // set by checker: "x int"
+	GoReturn             string    // set by checker: "int"
+	TupleDestructGoTypes []string  // set by checker for multi-param closures on tuple arrays
 }
 
 func (c *ClosureExpr) Pos() token.Pos { return c.TokenPos }
