@@ -256,6 +256,18 @@ let p = Point(x=1.0, y=2.0);
 
 See [Objects](objects.md) for methods and `self`.
 
+### Function Types
+
+Function types describe the signature of a function value. Use them in parameter lists, variable declarations, and type aliases:
+
+```zenth
+Fn(Int) -> Int           // takes Int, returns Int
+Fn(Str, Int) -> Bool     // takes Str and Int, returns Bool
+Fn(Int)                  // takes Int, returns nothing
+```
+
+See [Functions](functions.md#function-types) for examples of higher-order functions and passing functions as values.
+
 ### Enums
 
 Enums define a type with a fixed set of named variants:

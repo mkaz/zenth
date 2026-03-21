@@ -64,6 +64,8 @@ INT_MIN                  // built-in: min Int value (-9223372036854775808)
 
 **Composite:** `Array(Int)`, `Tuple(Str, Int)`, `Hashmap(Str, Int)`, `Set(Str)`, `Set(Tuple(Int, Int))`, obj types
 
+**Function types:** `Fn(Int) -> Int`, `Fn(Str, Int) -> Bool`, `Fn(Int)` (void)
+
 **Type aliases:**
 ```zenth
 type Grid = Hashmap(Point, Int);
@@ -130,6 +132,31 @@ fn main() {
 ```
 
 `(Int,Int)` is shorthand for `-> Tuple(Int,Int)`. `return a, b;` is shorthand for `return Tuple(a, b);`.
+
+**Function types** — functions can be passed as arguments using `Fn(Types) -> ReturnType` syntax:
+
+```zenth
+fn apply(x: Int, f: Fn(Int) -> Int) -> Int {
+    return f(x);
+}
+
+fn double(x: Int) -> Int { return x * 2; }
+
+fn main() {
+    Println(apply(5, double));          // 10 (named function)
+    Println(apply(5, fn(x) x + 10));   // 15 (closure)
+
+    // Function-typed variables
+    let f: Fn(Int) -> Int = double;
+    Println(f(7));  // 14
+
+    // Named functions work with map/filter/reduce
+    let nums = [1, 2, 3];
+    let doubled = nums.map(double);       // [2, 4, 6]
+}
+```
+
+Function type syntax: `Fn(Int) -> Int`, `Fn(Str, Int) -> Bool`, `Fn(Int)` (void return).
 
 ### Strings
 

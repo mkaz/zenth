@@ -16,7 +16,7 @@ syn keyword zenthIdentifier   self
 
 " Built-in types
 syn keyword zenthType         Int Float Bool Str Byte
-syn keyword zenthType         Array Tuple Hashmap Set
+syn keyword zenthType         Array Tuple Hashmap Set Fn
 
 " Built-in functions
 syn keyword zenthBuiltin      Print Println Len Str Hashmap File Flag Env Exit Range Rangei Int Float Abs Min Max Clamp Round Floor Ceil Pow Sqrt Assert AssertEq Zip Tuple

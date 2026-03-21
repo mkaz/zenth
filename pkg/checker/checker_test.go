@@ -176,8 +176,8 @@ func TestEnumTypeString(t *testing.T) {
 
 func TestFuncTypeString(t *testing.T) {
 	f := &FuncType{Params: []ZType{TypeInt}, Returns: TypeStr}
-	if got := f.String(); got != "fn(...) -> Str" {
-		t.Errorf("FuncType.String() = %q, want %q", got, "fn(...) -> Str")
+	if got := f.String(); got != "Fn(...) -> Str" {
+		t.Errorf("FuncType.String() = %q, want %q", got, "Fn(...) -> Str")
 	}
 }
 

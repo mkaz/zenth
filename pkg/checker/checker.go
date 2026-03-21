@@ -502,6 +502,17 @@ func (c *Checker) resolveTypeExpr(t *ast.TypeExpr) ZType {
 	if t.IsSlice && len(t.Params) > 0 {
 		return &SliceType{Elem: c.resolveTypeExpr(t.Params[0])}
 	}
+	if t.IsFunc {
+		params := make([]ZType, 0, len(t.Params))
+		for _, p := range t.Params {
+			params = append(params, c.resolveTypeExpr(p))
+		}
+		var ret ZType = TypeVoid
+		if t.FuncReturn != nil {
+			ret = c.resolveTypeExpr(t.FuncReturn)
+		}
+		return &FuncType{Params: params, Returns: ret}
+	}
 	if t.IsTuple {
 		elems := make([]ZType, 0, len(t.Params))
 		for _, p := range t.Params {
@@ -1230,37 +1241,58 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 					c.errorf(e.Pos(), "map() takes exactly 1 argument, got %d", len(e.Args))
 					return &SliceType{Elem: TypeVoid}
 				}
-				closure, ok := e.Args[0].(*ast.ClosureExpr)
-				if !ok {
-					c.errorf(e.Args[0].Pos(), "map() argument must be a closure")
-					c.checkNode(e.Args[0])
-					return &SliceType{Elem: TypeVoid}
+				if closure, ok := e.Args[0].(*ast.ClosureExpr); ok {
+					closureType := c.checkClosureExpr(closure, sliceType.Elem)
+					ft, ok := closureType.(*FuncType)
+					if !ok {
+						return &SliceType{Elem: TypeVoid}
+					}
+					e.SliceMethod = true
+					return &SliceType{Elem: ft.Returns}
 				}
-				closureType := c.checkClosureExpr(closure, sliceType.Elem)
-				ft, ok := closureType.(*FuncType)
-				if !ok {
-					return &SliceType{Elem: TypeVoid}
+				// Accept any expression that resolves to a compatible FuncType
+				argType := c.checkNode(e.Args[0])
+				if ft, ok := argType.(*FuncType); ok {
+					if len(ft.Params) != 1 {
+						c.errorf(e.Args[0].Pos(), "map() function must take exactly 1 parameter, got %d", len(ft.Params))
+					} else if !ft.Params[0].Equals(sliceType.Elem) {
+						c.errorf(e.Args[0].Pos(), "map() function parameter type %s does not match element type %s", ft.Params[0], sliceType.Elem)
+					}
+					e.SliceMethod = true
+					return &SliceType{Elem: ft.Returns}
 				}
-				e.SliceMethod = true
-				return &SliceType{Elem: ft.Returns}
+				c.errorf(e.Args[0].Pos(), "map() argument must be a closure or function")
+				return &SliceType{Elem: TypeVoid}
 			case "filter":
 				if len(e.Args) != 1 {
 					c.errorf(e.Pos(), "filter() takes exactly 1 argument, got %d", len(e.Args))
 					return sliceType
 				}
-				closure, ok := e.Args[0].(*ast.ClosureExpr)
-				if !ok {
-					c.errorf(e.Args[0].Pos(), "filter() argument must be a closure")
-					c.checkNode(e.Args[0])
+				if closure, ok := e.Args[0].(*ast.ClosureExpr); ok {
+					closureType := c.checkClosureExpr(closure, sliceType.Elem)
+					if ft, ok := closureType.(*FuncType); ok {
+						if !ft.Returns.Equals(TypeBool) {
+							c.errorf(e.Args[0].Pos(), "filter() closure must return Bool, got %s", ft.Returns)
+						}
+					}
+					e.SliceMethod = true
 					return sliceType
 				}
-				closureType := c.checkClosureExpr(closure, sliceType.Elem)
-				if ft, ok := closureType.(*FuncType); ok {
-					if !ft.Returns.Equals(TypeBool) {
-						c.errorf(e.Args[0].Pos(), "filter() closure must return Bool, got %s", ft.Returns)
+				// Accept any expression that resolves to a compatible FuncType
+				argType := c.checkNode(e.Args[0])
+				if ft, ok := argType.(*FuncType); ok {
+					if len(ft.Params) != 1 {
+						c.errorf(e.Args[0].Pos(), "filter() function must take exactly 1 parameter, got %d", len(ft.Params))
+					} else if !ft.Params[0].Equals(sliceType.Elem) {
+						c.errorf(e.Args[0].Pos(), "filter() function parameter type %s does not match element type %s", ft.Params[0], sliceType.Elem)
 					}
+					if !ft.Returns.Equals(TypeBool) {
+						c.errorf(e.Args[0].Pos(), "filter() function must return Bool, got %s", ft.Returns)
+					}
+					e.SliceMethod = true
+					return sliceType
 				}
-				e.SliceMethod = true
+				c.errorf(e.Args[0].Pos(), "filter() argument must be a closure or function")
 				return sliceType
 			case "to_int":
 				if len(e.Args) != 0 {
@@ -1342,23 +1374,33 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 					c.errorf(e.Pos(), "reduce() takes 1 or 2 arguments (closure [, initial]), got %d", len(e.Args))
 					return TypeVoid
 				}
-				closure, ok := e.Args[0].(*ast.ClosureExpr)
-				if !ok {
-					c.errorf(e.Args[0].Pos(), "reduce() first argument must be a closure")
-					c.checkNode(e.Args[0])
-					return TypeVoid
-				}
-				if len(closure.Params) != 2 {
-					c.errorf(e.Args[0].Pos(), "reduce() closure must take exactly 2 parameters, got %d", len(closure.Params))
-					return TypeVoid
-				}
-				closureType := c.checkClosureExpr(closure, sliceType.Elem)
-				ft, ok := closureType.(*FuncType)
-				if !ok {
-					return TypeVoid
-				}
-				if !ft.Returns.Equals(sliceType.Elem) {
-					c.errorf(e.Args[0].Pos(), "reduce() closure must return %s, got %s", sliceType.Elem, ft.Returns)
+				if closure, ok := e.Args[0].(*ast.ClosureExpr); ok {
+					if len(closure.Params) != 2 {
+						c.errorf(e.Args[0].Pos(), "reduce() closure must take exactly 2 parameters, got %d", len(closure.Params))
+						return TypeVoid
+					}
+					closureType := c.checkClosureExpr(closure, sliceType.Elem)
+					ft, ok := closureType.(*FuncType)
+					if !ok {
+						return TypeVoid
+					}
+					if !ft.Returns.Equals(sliceType.Elem) {
+						c.errorf(e.Args[0].Pos(), "reduce() closure must return %s, got %s", sliceType.Elem, ft.Returns)
+					}
+				} else {
+					argType := c.checkNode(e.Args[0])
+					if ft, ok := argType.(*FuncType); ok {
+						if len(ft.Params) != 2 {
+							c.errorf(e.Args[0].Pos(), "reduce() function must take exactly 2 parameters, got %d", len(ft.Params))
+						}
+						if !ft.Returns.Equals(sliceType.Elem) {
+							c.errorf(e.Args[0].Pos(), "reduce() function must return %s, got %s", sliceType.Elem, ft.Returns)
+						}
+						e.ReduceReturnGoType = goTypeName(ft.Returns)
+					} else {
+						c.errorf(e.Args[0].Pos(), "reduce() first argument must be a closure or function")
+						return TypeVoid
+					}
 				}
 				if len(e.Args) == 2 {
 					initType := c.checkNode(e.Args[1])
@@ -1921,6 +1963,27 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 			}
 			return info.Return
 		}
+		// Check if identifier is a variable holding a function value
+		sym := c.scope.Lookup(ident.Name)
+		if sym != nil {
+			if ft, ok := sym.Type.(*FuncType); ok {
+				if len(e.Args) != len(ft.Params) {
+					c.errorf(e.Pos(), "%s() takes %d arguments, got %d", ident.Name, len(ft.Params), len(e.Args))
+				}
+				for i, arg := range e.Args {
+					var argType ZType
+					if i < len(ft.Params) {
+						argType = c.checkArgWithFuncType(arg, ft.Params[i])
+					} else {
+						argType = c.checkNode(arg)
+					}
+					if i < len(ft.Params) && !ft.Params[i].Equals(argType) {
+						c.errorf(arg.Pos(), "argument %d: expected %s, got %s", i+1, ft.Params[i], argType)
+					}
+				}
+				return ft.Returns
+			}
+		}
 		c.errorf(e.Pos(), "undefined function: %s", ident.Name)
 		return TypeVoid
 	}
@@ -2225,7 +2288,7 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 				c.checkNode(named.Value)
 				continue
 			}
-			valType := c.checkNode(named.Value)
+			valType := c.checkArgWithFuncType(named.Value, info.Params[idx])
 			if !info.Params[idx].Equals(valType) && valType != TypeNil {
 				c.errorf(named.Pos(), "argument '%s' to %s has type %s, expected %s", named.Name, info.Name, valType, info.Params[idx])
 			}
@@ -2242,7 +2305,7 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 			positionalIndex++
 			continue
 		}
-		valType := c.checkNode(arg)
+		valType := c.checkArgWithFuncType(arg, info.Params[positionalIndex])
 		if !info.Params[positionalIndex].Equals(valType) && valType != TypeNil {
 			c.errorf(arg.Pos(), "argument %d to %s has type %s, expected %s", positionalIndex+1, info.Name, valType, info.Params[positionalIndex])
 		}
@@ -2404,6 +2467,15 @@ func (c *Checker) checkIdentExpr(e *ast.IdentExpr) ZType {
 	sym := c.scope.Lookup(e.Name)
 	if sym != nil {
 		return sym.Type
+	}
+	// Function name used as a value (not a call) — return its FuncType
+	if info, ok := c.funcs[e.Name]; ok {
+		// Only allow user-defined functions (not built-ins or methods) as values
+		if info.Receiver == "" {
+			params := make([]ZType, len(info.Params))
+			copy(params, info.Params)
+			return &FuncType{Params: params, Returns: info.Return}
+		}
 	}
 	// Could be a struct name used as a type constructor
 	if _, ok := c.objs[e.Name]; ok {
@@ -2724,6 +2796,18 @@ func (c *Checker) checkObjConstructor(e *ast.CallExpr, name string) ZType {
 	return &ObjType{Name: info.Name, Fields: info.Fields}
 }
 
+// checkArgWithFuncType type-checks an argument, providing inference context
+// when the argument is a closure and the expected parameter type is a FuncType.
+func (c *Checker) checkArgWithFuncType(arg ast.Node, expectedType ZType) ZType {
+	if closure, ok := arg.(*ast.ClosureExpr); ok {
+		if ft, ok := expectedType.(*FuncType); ok && len(ft.Params) > 0 {
+			// Use the first param type from the FuncType for closure inference
+			return c.checkClosureExpr(closure, ft.Params[0])
+		}
+	}
+	return c.checkNode(arg)
+}
+
 func (c *Checker) checkFlagCall(e *ast.CallExpr) ZType {
 	if c.pendingFlagName == "" {
 		c.errorf(e.Pos(), "Flag() must be assigned to a variable (let x = Flag(default=...))")
@@ -2966,6 +3050,16 @@ func goTypeName(t ZType) string {
 		return "*" + ty.Name
 	case *EnumType:
 		return ty.Name
+	case *FuncType:
+		params := make([]string, len(ty.Params))
+		for i, p := range ty.Params {
+			params[i] = goTypeName(p)
+		}
+		ret := goTypeName(ty.Returns)
+		if ret == "" || ret == "void" {
+			return "func(" + strings.Join(params, ", ") + ")"
+		}
+		return "func(" + strings.Join(params, ", ") + ") " + ret
 	default:
 		return "interface{}"
 	}

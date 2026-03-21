@@ -254,6 +254,29 @@ func (p *Parser) parseTypeExpr() *ast.TypeExpr {
 		return &ast.TypeExpr{TokenPos: pos, Name: "Hashmap", IsHashmap: true, Params: []*ast.TypeExpr{key, val}}
 	}
 
+	// Function type: Fn(T1, T2) -> R
+	if p.peek() == token.Ident && p.cur().Literal == "Fn" && p.peekAt(1) == token.LParen {
+		p.advance() // consume Fn
+		p.expect(token.LParen)
+		var params []*ast.TypeExpr
+		if p.peek() != token.RParen {
+			for {
+				params = append(params, p.parseTypeExpr())
+				if p.peek() != token.Comma {
+					break
+				}
+				p.advance() // consume ,
+			}
+		}
+		p.expect(token.RParen)
+		var ret *ast.TypeExpr
+		if p.peek() == token.Arrow {
+			p.advance()
+			ret = p.parseTypeExpr()
+		}
+		return &ast.TypeExpr{TokenPos: pos, IsFunc: true, Params: params, FuncReturn: ret}
+	}
+
 	name := p.expect(token.Ident).Literal
 	return &ast.TypeExpr{TokenPos: pos, Name: name}
 }

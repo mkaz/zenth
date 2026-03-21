@@ -1,0 +1,11 @@
+fn apply(x: Int, f: Fn(Int) -> Int) -> Int {
+    return f(x);
+}
+
+fn greet(name: Str) -> Str {
+    return "hi " + name;
+}
+
+fn main() {
+    let result = apply(5, greet);
+}

@@ -453,6 +453,21 @@ func TestBuildAndRun(t *testing.T) {
 			contains: []string{"15", "16", "50."},
 		},
 		{
+			file: "func_type.zn",
+			contains: []string{
+				"apply double: 10",
+				"apply closure: 15",
+				"even count: 3",
+				"combine add: 7",
+				"var call: 14",
+				"map double: 2 4 6",
+				"filter even: 2 4 6",
+				"reduce add: 21",
+				"each: 10",
+				"each: 20",
+			},
+		},
+		{
 			file:     "file_write.zn",
 			contains: []string{"write=hello\n", "append=hello\nworld\n", "overwrite=replaced\n"},
 			cleanup:  []string{"_write_test.txt"},
@@ -695,6 +710,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/file_append_no_arg.zn",
 			errMsg: "append() takes exactly 1 argument",
+		},
+		{
+			file:   "errors/func_type_mismatch.zn",
+			errMsg: "expected Fn(...) -> Int",
 		},
 	}
 

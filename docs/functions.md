@@ -323,6 +323,93 @@ let processed = nums.map(fn(x: Int) -> Int {
 });
 ```
 
+## Function Types
+
+Functions can be passed as arguments to other functions using function type annotations. The syntax for a function type is `Fn(ParamTypes) -> ReturnType`:
+
+```zenth
+fn apply(x: Int, f: Fn(Int) -> Int) -> Int {
+    return f(x);
+}
+
+fn double(x: Int) -> Int {
+    return x * 2;
+}
+
+fn main() {
+    // Pass a named function
+    Println(apply(5, double));     // 10
+
+    // Pass a closure
+    Println(apply(5, fn(x) x + 10));  // 15
+}
+```
+
+### Function Type Syntax
+
+Function types use `Fn(ParamTypes) -> ReturnType`. Omit the `-> ReturnType` for void functions:
+
+```zenth
+Fn(Int) -> Int           // takes Int, returns Int
+Fn(Str, Int) -> Bool     // takes Str and Int, returns Bool
+Fn(Int)                  // takes Int, returns nothing (void)
+Fn() -> Str              // takes nothing, returns Str
+```
+
+Note: `Fn` (capitalized) is the type name, while `fn` (lowercase) is the keyword for declaring functions and closures.
+
+### Higher-Order Functions
+
+You can write your own functions that accept function parameters:
+
+```zenth
+fn count_matching(items: Array(Int), pred: Fn(Int) -> Bool) -> Int {
+    var count = 0;
+    for item in items {
+        if pred(item) {
+            count++;
+        }
+    }
+    return count;
+}
+
+fn is_even(x: Int) -> Bool {
+    return x % 2 == 0;
+}
+
+fn main() {
+    let nums = [1, 2, 3, 4, 5, 6];
+    Println(count_matching(nums, is_even));       // 3
+    Println(count_matching(nums, fn(x) x > 3));   // 3
+}
+```
+
+### Function-Typed Variables
+
+Variables can hold function values:
+
+```zenth
+let f: Fn(Int) -> Int = double;
+Println(f(7));    // 14
+```
+
+### Passing Functions to map/filter/reduce
+
+Named functions can be passed directly to `.map()`, `.filter()`, and `.reduce()`:
+
+```zenth
+fn double(x: Int) -> Int { return x * 2; }
+fn is_even(x: Int) -> Bool { return x % 2 == 0; }
+fn add(a: Int, b: Int) -> Int { return a + b; }
+
+fn main() {
+    let nums = [1, 2, 3, 4, 5];
+    let doubled = nums.map(double);        // [2, 4, 6, 8, 10]
+    let evens = nums.filter(is_even);      // [2, 4]
+    let total = nums.reduce(add, 0);       // 15
+}
+```
+
 ## Methods
 
 Functions can be defined inside objects to act as methods. See [Objects](objects.md) for details.

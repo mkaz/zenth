@@ -2544,6 +2544,8 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 					// Determine the Go element type from the closure return type
 					if closure, ok := c.Args[0].(*ast.ClosureExpr); ok && closure.GoReturn != "" {
 						g.write(closure.GoReturn)
+					} else if c.ReduceReturnGoType != "" {
+						g.write(c.ReduceReturnGoType)
 					} else {
 						g.write("int") // fallback
 					}
@@ -2937,7 +2939,8 @@ func (g *Generator) genClosureExpr(c *ast.ClosureExpr) {
 	g.write("func(")
 	g.write(c.GoParams)
 	g.write(")")
-	if c.GoReturn != "" && c.GoReturn != "interface{}" {
+	isVoid := c.GoReturn == "" || c.GoReturn == "interface{}" || c.GoReturn == "void"
+	if !isVoid {
 		g.write(" " + c.GoReturn)
 	}
 	if _, isBlock := c.Body.(*ast.Block); isBlock {
@@ -2950,6 +2953,10 @@ func (g *Generator) genClosureExpr(c *ast.ClosureExpr) {
 		g.indent--
 		g.writeIndent()
 		g.write("}")
+	} else if isVoid {
+		g.write(" { ")
+		g.genExpr(c.Body)
+		g.write(" }")
 	} else {
 		g.write(" { return ")
 		g.genExpr(c.Body)
@@ -3089,8 +3096,19 @@ func genTypeExprResolved(t *ast.TypeExpr, aliases map[string]*ast.TypeExpr) stri
 	if t == nil {
 		return ""
 	}
+	if t.IsFunc {
+		params := make([]string, len(t.Params))
+		for i, p := range t.Params {
+			params[i] = genTypeExprResolved(p, aliases)
+		}
+		ret := ""
+		if t.FuncReturn != nil {
+			ret = " " + genTypeExprResolved(t.FuncReturn, aliases)
+		}
+		return "func(" + strings.Join(params, ", ") + ")" + ret
+	}
 	// Resolve alias: plain name with no params/flags
-	if !t.IsSlice && !t.IsHashmap && !t.IsTuple && !t.IsArray && len(t.Params) == 0 {
+	if !t.IsSlice && !t.IsHashmap && !t.IsTuple && !t.IsArray && !t.IsFunc && len(t.Params) == 0 {
 		if alias, ok := aliases[t.Name]; ok {
 			return genTypeExprResolved(alias, aliases)
 		}

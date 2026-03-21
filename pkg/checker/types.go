@@ -188,7 +188,7 @@ type FuncType struct {
 }
 
 func (f *FuncType) String() string {
-	return fmt.Sprintf("fn(...) -> %s", f.Returns)
+	return fmt.Sprintf("Fn(...) -> %s", f.Returns)
 }
 func (f *FuncType) Equals(other ZType) bool {
 	o, ok := other.(*FuncType)

@@ -1,0 +1,78 @@
+// Test function-type parameters
+
+fn double(x: Int) -> Int {
+    return x * 2;
+}
+
+fn is_even(x: Int) -> Bool {
+    return x % 2 == 0;
+}
+
+fn add(a: Int, b: Int) -> Int {
+    return a + b;
+}
+
+// Higher-order function: accepts a function parameter
+fn apply(x: Int, f: Fn(Int) -> Int) -> Int {
+    return f(x);
+}
+
+// Function that takes a predicate
+fn count_matching(items: Array(Int), pred: Fn(Int) -> Bool) -> Int {
+    var count = 0;
+    for item in items {
+        if pred(item) {
+            count++;
+        }
+    }
+    return count;
+}
+
+// Function that returns nothing, accepts fn param
+fn apply_to_each(items: Array(Int), action: Fn(Int)) {
+    for item in items {
+        action(item);
+    }
+}
+
+// Two-parameter function type
+fn combine(a: Int, b: Int, op: Fn(Int, Int) -> Int) -> Int {
+    return op(a, b);
+}
+
+fn main() {
+    // Pass named function to higher-order function
+    let result = apply(5, double);
+    Println("apply double: {result}");
+
+    // Pass closure to higher-order function
+    let result2 = apply(5, fn(x) x + 10);
+    Println("apply closure: {result2}");
+
+    // Predicate function
+    let nums = [1, 2, 3, 4, 5, 6];
+    let even_count = count_matching(nums, is_even);
+    Println("even count: {even_count}");
+
+    // Two-param function type
+    let sum = combine(3, 4, add);
+    Println("combine add: {sum}");
+
+    // Variable holding a function
+    let f: Fn(Int) -> Int = double;
+    Println("var call: {f(7)}");
+
+    // Pass named functions to map/filter
+    let doubled = nums.map(double);
+    Println("map double: {doubled[0]} {doubled[1]} {doubled[2]}");
+
+    let evens = nums.filter(is_even);
+    Println("filter even: {evens[0]} {evens[1]} {evens[2]}");
+
+    // Pass named function to reduce
+    let total = nums.reduce(add, 0);
+    Println("reduce add: {total}");
+
+    // Void function type
+    apply_to_each([10, 20], fn(x) Println("each: {x}"));
+}

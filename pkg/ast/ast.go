@@ -129,7 +129,9 @@ type TypeExpr struct {
 	IsSet      bool        // set(T)
 	IsTuple    bool        // tuple(T1, T2, ...)
 	IsArray    bool        // [N]T
+	IsFunc     bool        // fn(T1, T2) -> R
 	ArrayLen   int         // for fixed arrays
+	FuncReturn *TypeExpr   // return type for function types (nil means void)
 	ParamNames []string    // for named tuple types: tuple(key: str, value: int)
 }
 
@@ -441,6 +443,7 @@ type CallExpr struct {
 	LenArgIsRange          bool     // set by checker when len() is called on a range object
 	ZipCall                bool     // set by checker for zip() calls
 	ZipElemGoTypes         []string // set by checker: Go types of each input array's elements
+	ReduceReturnGoType     string   // set by checker: Go return type for reduce() when arg is not a closure
 }
 
 func (c *CallExpr) Pos() token.Pos { return c.TokenPos }
