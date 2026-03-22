@@ -3023,9 +3023,10 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 		}
 	}
 
-	// Cross-module obj constructor: utils.Point(x=1.0, y=2.0) -> utils.Point{X: 1.0, Y: 2.0}
+	// Cross-module obj constructor: utils.Point(x=1.0, y=2.0) -> &utils.Point{X: 1.0, Y: 2.0}
 	if c.LocalObjModule != "" {
 		if field, ok := c.Callee.(*ast.FieldExpr); ok {
+			g.write("&")
 			g.genExpr(field.Object)
 			g.write("." + exportName(field.Field) + "{")
 			first := true

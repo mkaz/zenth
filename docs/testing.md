@@ -99,6 +99,51 @@ tests/strings_test.zn
 
 The exit code is `0` if all tests pass, `1` if any test fails.
 
+## Testing with Module Imports
+
+Test files can import local modules just like regular programs. Use `../` to navigate from the `tests/` directory to your source modules:
+
+```
+project/
+  src/
+    task.zn          ← module with Task obj and parse_task fn
+  tests/
+    task_test.zn     ← imports ../src/task
+```
+
+```zenth
+// src/task.zn
+obj Task {
+    name: Str;
+    state: Str;
+}
+
+fn parse_task(line: Str) -> Task {
+    return Task(name=line, state="todo");
+}
+```
+
+```zenth
+// tests/task_test.zn
+import "../src/task";
+
+fn test_parse_task() {
+    let t = task.parse_task("buy milk");
+    AssertEq(t.name, "buy milk");
+    AssertEq(t.state, "todo");
+}
+
+fn test_construct_task() {
+    let t = task.Task(name="clean", state="done");
+    AssertEq(t.name, "clean");
+    AssertEq(t.state, "done");
+}
+```
+
+Module imports in test files support all the same features as in regular programs: function calls, object constructors with named arguments, method calls, and qualified type annotations like `Array(task.Task)`.
+
+**Important:** Import paths must start with `./` or `../` to be recognized as local modules. Writing `import "src/task"` without the prefix will produce an error.
+
 ## Conventions
 
 - Test files: `*_test.zn` in a `tests/` directory

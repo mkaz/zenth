@@ -1006,6 +1006,27 @@ fn test_strings() {
 
 Both assertions are available in all Zenth programs, not just test files.
 
+### Testing with Module Imports
+
+Test files can import local modules using `../` paths:
+
+```zenth
+// tests/task_test.zn
+import "../src/task";
+
+fn test_parse_task() {
+    let t = task.parse_task("buy milk");
+    AssertEq(t.name, "buy milk");
+}
+
+fn test_construct() {
+    let t = task.Task(name="clean", state="done");
+    AssertEq(t.state, "done");
+}
+```
+
+All module features work in tests: function calls, object constructors with named arguments, method calls, and qualified type annotations. Import paths must start with `./` or `../`.
+
 ### Conventions
 
 - Test files: `*_test.zn` in a `tests/` directory

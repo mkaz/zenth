@@ -806,6 +806,10 @@ func TestCompileErrors(t *testing.T) {
 			file:   "errors/date_today_args.zn",
 			errMsg: "Date.today() takes no arguments",
 		},
+		{
+			file:   "errors/import_missing_prefix.zn",
+			errMsg: "missing './' prefix",
+		},
 	}
 
 	for _, tt := range tests {

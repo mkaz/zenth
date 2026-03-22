@@ -140,7 +140,38 @@ func runTestFile(file string, verbose bool) TestResult {
 		return result
 	}
 
-	ch := checker.New()
+	sourceDir := filepath.Dir(file)
+
+	// Resolve local imports: set GoPackagePath and collect module entries
+	var modules []moduleEntry
+	for _, stmt := range prog.Stmts {
+		imp, ok := stmt.(*ast.ImportDecl)
+		if !ok || !imp.IsLocal {
+			continue
+		}
+		rel := strings.TrimPrefix(imp.Path, "./")
+		rel = strings.TrimPrefix(rel, "../")
+		goRelPath := filepath.ToSlash(rel)
+		imp.GoPackagePath = "zenth_output/" + goRelPath
+
+		modName := imp.Alias
+		if modName == "" {
+			modName = filepath.Base(rel)
+		}
+
+		znFiles, err := checker.ResolveModuleFiles(sourceDir, imp.Path)
+		if err != nil {
+			result.Error = fmt.Sprintf("cannot resolve module %s: %v", imp.Path, err)
+			return result
+		}
+		modules = append(modules, moduleEntry{
+			name:      modName,
+			goRelPath: goRelPath,
+			znFiles:   znFiles,
+		})
+	}
+
+	ch := checker.NewWithDir(sourceDir)
 	if err := ch.Check(prog); err != nil {
 		result.Error = fmt.Sprintf("%v", err)
 		return result
@@ -169,6 +200,25 @@ func runTestFile(file string, verbose bool) TestResult {
 	if err := os.WriteFile(filepath.Join(tmpDir, "main.go"), []byte(goSrc), 0644); err != nil {
 		result.Error = fmt.Sprintf("cannot write main.go: %v", err)
 		return result
+	}
+
+	// Build and write each local module as a Go package
+	for _, mod := range modules {
+		modGoSrc, err := buildModuleGoSrc(mod, sourceDir)
+		if err != nil {
+			result.Error = fmt.Sprintf("building module %s: %v", mod.name, err)
+			return result
+		}
+		modDir := filepath.Join(tmpDir, filepath.FromSlash(mod.goRelPath))
+		if err := os.MkdirAll(modDir, 0755); err != nil {
+			result.Error = fmt.Sprintf("cannot create module dir: %v", err)
+			return result
+		}
+		modFile := filepath.Join(modDir, mod.name+".go")
+		if err := os.WriteFile(modFile, []byte(modGoSrc), 0644); err != nil {
+			result.Error = fmt.Sprintf("cannot write module file: %v", err)
+			return result
+		}
 	}
 
 	tmpBin := filepath.Join(tmpDir, "testbin")

@@ -304,6 +304,13 @@ func (c *Checker) registerImport(imp *ast.ImportDecl) {
 		c.loadLocalModule(imp)
 		return
 	}
+	// Catch likely mistakes: paths like "src/task" or "lib/utils" that look local
+	// but are missing the "./" prefix. Go external imports (import_go) use domain
+	// paths like "github.com/..." so we skip those.
+	if !imp.IsGoExternal && strings.Contains(imp.Path, "/") && !strings.Contains(imp.Path, ".") {
+		c.errorf(imp.Pos(), "import path %q looks like a local module but is missing './' prefix (use './%s' instead)", imp.Path, imp.Path)
+		return
+	}
 	if imp.Alias != "" {
 		c.modules[imp.Alias] = true
 		return

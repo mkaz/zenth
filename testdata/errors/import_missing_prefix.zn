@@ -1,0 +1,5 @@
+import "src/task";
+
+fn main() {
+    Println("should not compile");
+}
