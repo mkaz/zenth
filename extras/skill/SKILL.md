@@ -724,6 +724,31 @@ fn main() {
 
 Module objects are constructed with `module.ObjName(field=value)` syntax and their methods work normally after construction.
 
+**Module-internal function calls:** Functions within a module can call other functions in the same module:
+
+```zenth
+// mathutils.zn
+fn add(a: Int, b: Int) -> Int { return a + b; }
+
+fn sum_and_double(a: Int, b: Int) -> Int {
+    return add(a, b) * 2;  // calls add within the same module
+}
+```
+
+**Qualified types:** Use `module.Type` syntax to refer to types from imported modules in type annotations and generics:
+
+```zenth
+import "./items";
+
+fn process(data: Array(items.Item)) {
+    for item in data {
+        Println(item.name);
+    }
+}
+```
+
+Qualified types work in all type positions: function parameters, variable annotations, and generic type arguments (`Array(mod.Type)`, `Tuple(Int, mod.Type)`, etc.).
+
 ### Built-in Functions
 
 | Function | Description |

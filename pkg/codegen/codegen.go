@@ -3063,6 +3063,18 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 		args = g.arrangeCallArgs(c.Args, decl)
 	}
 
+	// In module packages, internal function calls need capitalized names
+	// to match the exported function declarations.
+	if g.PackageName != "" && g.PackageName != "main" {
+		if ident, ok := c.Callee.(*ast.IdentExpr); ok {
+			g.write(exportName(ident.Name))
+			g.write("(")
+			g.genArgList(args)
+			g.write(")")
+			return
+		}
+	}
+
 	g.genExpr(c.Callee)
 	g.write("(")
 	g.genArgList(args)
@@ -3436,7 +3448,7 @@ func genTypeExprResolved(t *ast.TypeExpr, aliases map[string]*ast.TypeExpr) stri
 	if t.IsSlice && len(t.Params) > 0 {
 		return "[]" + genTypeExprResolved(t.Params[0], aliases)
 	}
-	return mapTypeName(t.Name)
+	return mapTypeNameQualified(t)
 }
 
 func mapTypeName(name string) string {
@@ -3457,6 +3469,13 @@ func mapTypeName(name string) string {
 		// User-defined obj types are always pointers
 		return "*" + name
 	}
+}
+
+func mapTypeNameQualified(t *ast.TypeExpr) string {
+	if t.Module != "" {
+		return "*" + t.Module + "." + exportName(t.Name)
+	}
+	return mapTypeName(t.Name)
 }
 
 func exportName(name string) string {

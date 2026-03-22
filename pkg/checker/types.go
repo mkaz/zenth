@@ -42,6 +42,7 @@ var (
 // ObjType represents a user-defined obj type.
 type ObjType struct {
 	Name   string
+	Module string // module qualifier for types from imported modules
 	Fields map[string]ZType
 }
 

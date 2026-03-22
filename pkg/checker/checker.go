@@ -518,6 +518,21 @@ func (c *Checker) resolveTypeExpr(t *ast.TypeExpr) ZType {
 		}
 		return &TupleType{Elems: elems, Names: names}
 	}
+	// Qualified type: module.Type (e.g., task.Task)
+	if t.Module != "" {
+		if mi, ok := c.localModules[t.Module]; ok {
+			if oi, ok := mi.Objs[t.Name]; ok {
+				return &ObjType{Name: oi.Name, Module: t.Module, Fields: oi.Fields}
+			}
+			if ei, ok := mi.Enums[t.Name]; ok {
+				return &EnumType{Name: ei.Name, Variants: ei.Variants}
+			}
+			c.errorf(t.Pos(), "module %s has no type %s", t.Module, t.Name)
+			return TypeVoid
+		}
+		c.errorf(t.Pos(), "unknown module: %s", t.Module)
+		return TypeVoid
+	}
 	if bt := LookupBuiltinType(t.Name); bt != nil {
 		return bt
 	}
@@ -2183,18 +2198,36 @@ func (c *Checker) checkLocalModuleCall(e *ast.CallExpr, mi *ModuleInfo, moduleNa
 		for _, arg := range e.Args {
 			c.checkNode(arg)
 		}
-		return &ObjType{Name: name, Fields: oi.Fields}
+		return &ObjType{Name: name, Module: moduleName, Fields: oi.Fields}
 	}
 	// Function call: utils.add(1, 2)
 	if fi, ok := mi.Funcs[name]; ok {
 		c.checkArgs(e, fi)
-		return fi.Return
+		return c.qualifyModuleType(fi.Return, moduleName)
 	}
 	c.errorf(e.Pos(), "module '%s' has no function or type '%s'", moduleName, name)
 	for _, arg := range e.Args {
 		c.checkNode(arg)
 	}
 	return TypeVoid
+}
+
+// qualifyModuleType adds module qualification to ObjTypes returned from module functions.
+// This ensures that types like Item returned from items.make_item() carry the module name
+// so codegen can produce qualified Go types like *items.Item.
+func (c *Checker) qualifyModuleType(t ZType, moduleName string) ZType {
+	switch ty := t.(type) {
+	case *ObjType:
+		if ty.Module == "" {
+			return &ObjType{Name: ty.Name, Module: moduleName, Fields: ty.Fields}
+		}
+	case *SliceType:
+		qualified := c.qualifyModuleType(ty.Elem, moduleName)
+		if qualified != ty.Elem {
+			return &SliceType{Elem: qualified}
+		}
+	}
+	return t
 }
 
 func isNumericBuiltin(name string) bool {
@@ -3281,6 +3314,9 @@ func goTypeName(t ZType) string {
 	case *TupleType:
 		return "[]interface{}"
 	case *ObjType:
+		if ty.Module != "" {
+			return "*" + ty.Module + "." + strings.ToUpper(ty.Name[:1]) + ty.Name[1:]
+		}
 		return "*" + ty.Name
 	case *EnumType:
 		return ty.Name

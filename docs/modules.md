@@ -173,3 +173,72 @@ fn main() {
 | Alias | `import "math" as m;` | `import "./utils" as u;` |
 
 Both use the same `module.function()` call syntax.
+
+## Module-Internal Function Calls
+
+Functions within a module can call other functions defined in the same module. This allows you to build composable modules where functions delegate to each other:
+
+```zenth
+// mathutils.zn
+fn add(a: Int, b: Int) -> Int {
+    return a + b;
+}
+
+fn multiply(a: Int, b: Int) -> Int {
+    return a * b;
+}
+
+// sum_and_double calls add and multiply within the same module
+fn sum_and_double(a: Int, b: Int) -> Int {
+    let s = add(a, b);
+    return multiply(s, 2);
+}
+```
+
+```zenth
+// main.zn
+import "./mathutils";
+
+fn main() {
+    Println(Str(mathutils.sum_and_double(5, 3)));  // "16"
+}
+```
+
+## Qualified Types
+
+When you need to refer to a type defined in a module, use `module.Type` syntax. This works in type annotations, function parameters, and generic type positions like `Array()` and `Tuple()`:
+
+```zenth
+// items.zn
+obj Item {
+    name: Str;
+    value: Int;
+}
+
+fn make_item(name: Str, value: Int) -> Item {
+    return Item(name=name, value=value);
+}
+```
+
+```zenth
+// main.zn
+import "./items";
+
+fn print_items(data: Array(items.Item)) {
+    for item in data {
+        Println("{item.name}: {Str(item.value)}");
+    }
+}
+
+fn main() {
+    let a = items.make_item("apple", 3);
+    let b = items.make_item("banana", 5);
+    let list: Array(items.Item) = [a, b];
+    print_items(list);
+}
+```
+
+Qualified types work anywhere a type is expected:
+- Function parameters: `fn process(item: task.Task) { ... }`
+- Variable annotations: `let items: Array(task.Task) = [];`
+- Generic positions: `Array(items.Item)`, `Tuple(Int, task.Task)`, `Hashmap(Str, task.Task)`

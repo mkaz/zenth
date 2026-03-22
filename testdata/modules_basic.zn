@@ -9,4 +9,8 @@ fn main() {
 
     let biggest = mathutils.max_of(10, 20);
     Println(Str(biggest));
+
+    // Test module-internal function calls (sum_and_double calls add and multiply)
+    let doubled = mathutils.sum_and_double(5, 3);
+    Println(Str(doubled));
 }

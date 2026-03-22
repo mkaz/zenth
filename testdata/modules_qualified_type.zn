@@ -1,0 +1,15 @@
+import "./testmods/items";
+
+fn print_items(data: Array(items.Item)) {
+    for item in data {
+        Println("{item.name}: {Str(item.value)}");
+    }
+}
+
+fn main() {
+    let a = items.make_item("apple", 3);
+    let b = items.make_item("banana", 5);
+    let list: Array(items.Item) = [a, b];
+    print_items(list);
+    Println(Str(Len(list)));
+}

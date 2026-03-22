@@ -1,0 +1,10 @@
+// items module - obj type for testing qualified types
+
+obj Item {
+    name: Str;
+    value: Int;
+}
+
+fn make_item(name: Str, value: Int) -> Item {
+    return Item(name=name, value=value);
+}

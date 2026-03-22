@@ -278,6 +278,12 @@ func (p *Parser) parseTypeExpr() *ast.TypeExpr {
 	}
 
 	name := p.expect(token.Ident).Literal
+	// Qualified type: module.Type (e.g., task.Task)
+	if p.peek() == token.Dot && p.peekAt(1) == token.Ident {
+		p.advance() // consume .
+		typeName := p.expect(token.Ident).Literal
+		return &ast.TypeExpr{TokenPos: pos, Name: typeName, Module: name}
+	}
 	return &ast.TypeExpr{TokenPos: pos, Name: name}
 }
 

@@ -442,7 +442,7 @@ func TestBuildAndRun(t *testing.T) {
 		},
 		{
 			file:     "modules_basic.zn",
-			contains: []string{"7", "42", "20"},
+			contains: []string{"7", "42", "20", "16"},
 		},
 		{
 			file:     "modules_alias.zn",
@@ -451,6 +451,10 @@ func TestBuildAndRun(t *testing.T) {
 		{
 			file:     "modules_dir.zn",
 			contains: []string{"15", "16", "50."},
+		},
+		{
+			file:     "modules_qualified_type.zn",
+			contains: []string{"apple: 3", "banana: 5", "2"},
 		},
 		{
 			file: "func_type.zn",

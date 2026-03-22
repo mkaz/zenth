@@ -123,6 +123,7 @@ func (i *ImportDecl) nodeMarker()    {}
 type TypeExpr struct {
 	TokenPos   token.Pos
 	Name       string      // "int", "str", "bool", etc. or a user type name
+	Module     string      // module qualifier for qualified types (e.g., "task" in task.Task)
 	Params     []*TypeExpr // for parametric types like hashmap[K]V, array(T), tuple(T1, T2)
 	IsSlice    bool        // array(T)
 	IsHashmap  bool        // hashmap[K]V

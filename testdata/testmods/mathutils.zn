@@ -15,4 +15,10 @@ fn max_of(a: Int, b: Int) -> Int {
     return b;
 }
 
+// Internal call: sum_and_double calls add (another function in the same module)
+fn sum_and_double(a: Int, b: Int) -> Int {
+    let s = add(a, b);
+    return multiply(s, 2);
+}
+
 const pi = 3.14159;
