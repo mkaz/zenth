@@ -101,6 +101,15 @@ func New() *Generator {
 	}
 }
 
+// ExternalDeps returns external Go module paths required by the generated code.
+func (g *Generator) ExternalDeps() []string {
+	var deps []string
+	if g.needsInput {
+		deps = append(deps, "golang.org/x/term")
+	}
+	return deps
+}
+
 // Generate produces Go source code from a Zenth AST.
 func (g *Generator) Generate(prog *ast.Program) string {
 	// First pass: collect objects, functions, and imports
@@ -737,11 +746,73 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("")
 	}
 	if g.needsInput {
-		g.writeln("func zenth_input(prompt string) string {")
-		g.writeln("\tfmt.Print(prompt)")
-		g.writeln("\treader := bufio.NewReader(os.Stdin)")
-		g.writeln("\tline, _ := reader.ReadString('\\n')")
-		g.writeln("\treturn strings.TrimRight(line, \"\\r\\n\")")
+		g.writeln("func zenth_input(initial string) string {")
+		g.writeln("\tfd := int(os.Stdin.Fd())")
+		g.writeln("\toldState, err := term.MakeRaw(fd)")
+		g.writeln("\tif err != nil {")
+		g.writeln("\t\tfmt.Print(initial)")
+		g.writeln("\t\treturn initial")
+		g.writeln("\t}")
+		g.writeln("\tdefer term.Restore(fd, oldState)")
+		g.writeln("\tbuf := []rune(initial)")
+		g.writeln("\tcursor := len(buf)")
+		g.writeln("\t// Print initial content")
+		g.writeln("\tfmt.Print(string(buf))")
+		g.writeln("\tvar b [1]byte")
+		g.writeln("\tfor {")
+		g.writeln("\t\tos.Stdin.Read(b[:])")
+		g.writeln("\t\tswitch {")
+		g.writeln("\t\tcase b[0] == 13 || b[0] == 10: // Enter")
+		g.writeln("\t\t\tfmt.Print(\"\\r\\n\")")
+		g.writeln("\t\t\treturn string(buf)")
+		g.writeln("\t\tcase b[0] == 3: // Ctrl-C")
+		g.writeln("\t\t\tfmt.Print(\"\\r\\n\")")
+		g.writeln("\t\t\tos.Exit(1)")
+		g.writeln("\t\tcase b[0] == 127 || b[0] == 8: // Backspace")
+		g.writeln("\t\t\tif cursor > 0 {")
+		g.writeln("\t\t\t\tbuf = append(buf[:cursor-1], buf[cursor:]...)")
+		g.writeln("\t\t\t\tcursor--")
+		g.writeln("\t\t\t}")
+		g.writeln("\t\tcase b[0] == 1: // Ctrl-A (Home)")
+		g.writeln("\t\t\tcursor = 0")
+		g.writeln("\t\tcase b[0] == 5: // Ctrl-E (End)")
+		g.writeln("\t\t\tcursor = len(buf)")
+		g.writeln("\t\tcase b[0] == 21: // Ctrl-U (clear line)")
+		g.writeln("\t\t\tbuf = buf[:0]")
+		g.writeln("\t\t\tcursor = 0")
+		g.writeln("\t\tcase b[0] == 27: // Escape sequence")
+		g.writeln("\t\t\tvar seq [2]byte")
+		g.writeln("\t\t\tos.Stdin.Read(seq[:1])")
+		g.writeln("\t\t\tif seq[0] == '[' {")
+		g.writeln("\t\t\t\tos.Stdin.Read(seq[1:])")
+		g.writeln("\t\t\t\tswitch seq[1] {")
+		g.writeln("\t\t\t\tcase 'D': // Left")
+		g.writeln("\t\t\t\t\tif cursor > 0 { cursor-- }")
+		g.writeln("\t\t\t\tcase 'C': // Right")
+		g.writeln("\t\t\t\t\tif cursor < len(buf) { cursor++ }")
+		g.writeln("\t\t\t\tcase 'H': // Home")
+		g.writeln("\t\t\t\t\tcursor = 0")
+		g.writeln("\t\t\t\tcase 'F': // End")
+		g.writeln("\t\t\t\t\tcursor = len(buf)")
+		g.writeln("\t\t\t\tcase '3': // Delete")
+		g.writeln("\t\t\t\t\tos.Stdin.Read(seq[:1]) // consume '~'")
+		g.writeln("\t\t\t\t\tif cursor < len(buf) {")
+		g.writeln("\t\t\t\t\t\tbuf = append(buf[:cursor], buf[cursor+1:]...)")
+		g.writeln("\t\t\t\t\t}")
+		g.writeln("\t\t\t\t}")
+		g.writeln("\t\t\t}")
+		g.writeln("\t\tdefault:")
+		g.writeln("\t\t\tif b[0] >= 32 && b[0] < 127 {")
+		g.writeln("\t\t\t\tbuf = append(buf[:cursor], append([]rune{rune(b[0])}, buf[cursor:]...)...)")
+		g.writeln("\t\t\t\tcursor++")
+		g.writeln("\t\t\t}")
+		g.writeln("\t\t}")
+		g.writeln("\t\t// Redraw line")
+		g.writeln("\t\tfmt.Print(\"\\r\\033[K\" + string(buf))")
+		g.writeln("\t\tif cursor < len(buf) {")
+		g.writeln("\t\t\tfmt.Printf(\"\\033[%dD\", len(buf)-cursor)")
+		g.writeln("\t\t}")
+		g.writeln("\t}")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -2426,10 +2497,9 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			return
 		case "Input":
 			g.needsInput = true
-			g.imports["bufio"] = ""
 			g.imports["os"] = ""
 			g.imports["fmt"] = ""
-			g.imports["strings"] = ""
+			g.imports["golang.org/x/term"] = ""
 			g.write("zenth_input(")
 			g.genArgList(c.Args)
 			g.write(")")

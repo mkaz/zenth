@@ -599,16 +599,16 @@ func TestInput(t *testing.T) {
 		t.Fatalf("build failed: %v", err)
 	}
 
-	// Run with piped stdin
+	// When stdin is not a terminal, Input() falls back to returning the
+	// initial text unmodified. So "Enter your name: " is the value.
 	cmd := exec.Command(tmpFile.Name())
-	cmd.Stdin = strings.NewReader("World\n")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		t.Fatalf("run failed: %v\noutput: %s", err, out)
 	}
 
 	output := string(out)
-	if !strings.Contains(output, "Enter your name: Hello, World!") {
+	if !strings.Contains(output, "Hello, Enter your name: !") {
 		t.Errorf("unexpected output: %s", output)
 	}
 }

@@ -160,7 +160,7 @@ Zenth provides several built-in functions that are always available:
 | `Date.today()` | Get today's date as a `Date` object |
 | `Date.from(str[, fmt])` | Parse date from string (default format: `%Y-%m-%d`) |
 | `File(path)` | Build a file value for file methods |
-| `Input(prompt)` | Display prompt and read a line from stdin (returns `Str`) |
+| `Input(text)` | Display editable pre-filled text and return the result (returns `Str`) |
 | `Exit([code])` | Exit the program (`0` when omitted) |
 | `Assert(cond)` / `AssertEq(got, expected)` | Built-in test/assertion helpers |
 
@@ -310,26 +310,28 @@ With one argument, `Env(name)` returns the value of the environment variable, or
 
 ## User Input
 
-The `Input()` built-in displays a prompt and reads a line of text from standard input. It returns the entered text as a `Str` with the trailing newline removed.
+The `Input()` built-in displays editable pre-filled text in the terminal and returns the final text after the user presses Enter. The user can move the cursor with arrow keys, edit the text with backspace/delete, and use Ctrl-A/Ctrl-E for Home/End.
 
 ```zenth
 fn main() {
-    let name = Input("Enter your name: ");
+    let name = Input("World");
     Println("Hello, {name}!");
 }
 ```
 
+The text `World` appears pre-filled and editable. The user can accept it as-is by pressing Enter, or modify it first:
+
 ```
-Enter your name: Alice
-Hello, Alice!
+World          <- user sees this, cursor at end, can edit
+Hello, World!  <- output if accepted unchanged
 ```
 
-Use `Input()` for interactive programs that need user input:
+Use `Input()` for interactive programs where you want to suggest a default value the user can tweak:
 
 ```zenth
 fn main() {
-    let city = Input("City: ");
-    let country = Input("Country: ");
+    let city = Input("New York");
+    let country = Input("US");
     Println("{city}, {country}");
 }
 ```
@@ -338,7 +340,7 @@ You can use the result in any expression that expects a `Str`:
 
 ```zenth
 fn main() {
-    let age = Int(Input("Enter your age: "));
+    let age = Int(Input("25"));
     if age >= 18 {
         Println("You are an adult.");
     } else {
@@ -346,6 +348,21 @@ fn main() {
     }
 }
 ```
+
+### Keyboard shortcuts
+
+| Key | Action |
+|-----|--------|
+| Enter | Accept text |
+| Left/Right arrows | Move cursor |
+| Backspace | Delete character before cursor |
+| Delete | Delete character at cursor |
+| Ctrl-A / Home | Move to start |
+| Ctrl-E / End | Move to end |
+| Ctrl-U | Clear entire line |
+| Ctrl-C | Cancel (exit program) |
+
+When stdin is not a terminal (e.g. piped input), `Input()` falls back to returning the initial text unchanged.
 
 ## Naming Rules
 

@@ -112,6 +112,9 @@ func Build(opts Options) error {
 	gen := codegen.New()
 	goSrc := gen.Generate(prog)
 
+	// Collect external deps needed by codegen helpers
+	goExternalPaths = append(goExternalPaths, gen.ExternalDeps()...)
+
 	if opts.EmitGo {
 		fmt.Print(goSrc)
 		return nil
