@@ -581,6 +581,38 @@ func TestBuildAndRun(t *testing.T) {
 	}
 }
 
+func TestInput(t *testing.T) {
+	input := filepath.Join("..", "..", "testdata", "input.zn")
+	if _, err := os.Stat(input); err != nil {
+		t.Skipf("testdata not found: %s", input)
+	}
+
+	tmpFile, err := os.CreateTemp("", "zenth-test-*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tmpFile.Close()
+	defer os.Remove(tmpFile.Name())
+
+	err = Build(Options{Input: input, Output: tmpFile.Name()})
+	if err != nil {
+		t.Fatalf("build failed: %v", err)
+	}
+
+	// Run with piped stdin
+	cmd := exec.Command(tmpFile.Name())
+	cmd.Stdin = strings.NewReader("World\n")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("run failed: %v\noutput: %s", err, out)
+	}
+
+	output := string(out)
+	if !strings.Contains(output, "Enter your name: Hello, World!") {
+		t.Errorf("unexpected output: %s", output)
+	}
+}
+
 func TestCompileErrors(t *testing.T) {
 	tests := []struct {
 		file   string
@@ -644,6 +676,10 @@ func TestCompileErrors(t *testing.T) {
 		},
 		{
 			file:   "errors/env_bad_arg.zn",
+			errMsg: "expected Str",
+		},
+		{
+			file:   "errors/input_bad_arg.zn",
 			errMsg: "expected Str",
 		},
 		{

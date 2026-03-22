@@ -73,6 +73,7 @@ type Generator struct {
 	enums               map[string]*ast.EnumDecl
 	tupleStructs        map[string][]string // struct name -> field Go types
 	needsEnvDefault     bool
+	needsInput          bool
 	needsFlag           bool
 	needsDateFormat     bool
 	needsDateFrom       bool
@@ -735,6 +736,15 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("}")
 		g.writeln("")
 	}
+	if g.needsInput {
+		g.writeln("func zenth_input(prompt string) string {")
+		g.writeln("\tfmt.Print(prompt)")
+		g.writeln("\treader := bufio.NewReader(os.Stdin)")
+		g.writeln("\tline, _ := reader.ReadString('\\n')")
+		g.writeln("\treturn strings.TrimRight(line, \"\\r\\n\")")
+		g.writeln("}")
+		g.writeln("")
+	}
 	if g.needsEnvDefault {
 		g.writeln("func zenth_env_default(key, def string) string {")
 		g.writeln("\tif v := os.Getenv(key); v != \"\" {")
@@ -892,7 +902,7 @@ func mapImportPath(zenthPath string) string {
 	case "strings", "str":
 		return "strings"
 	case "io":
-		return "os" // map to os for file I/O
+		return "io"
 	default:
 		return zenthPath
 	}
@@ -2413,6 +2423,16 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.genArgList(c.Args)
 				g.write(")")
 			}
+			return
+		case "Input":
+			g.needsInput = true
+			g.imports["bufio"] = ""
+			g.imports["os"] = ""
+			g.imports["fmt"] = ""
+			g.imports["strings"] = ""
+			g.write("zenth_input(")
+			g.genArgList(c.Args)
+			g.write(")")
 			return
 		}
 	}

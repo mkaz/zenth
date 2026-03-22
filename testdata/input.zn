@@ -1,0 +1,4 @@
+fn main() {
+    let name = Input("Enter your name: ");
+    Println("Hello, {name}!");
+}

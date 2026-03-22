@@ -779,6 +779,7 @@ Qualified types work in all type positions: function parameters, variable annota
 | `Tuple(...)` | Create Tuple (positional or named) |
 | `File(path)` | Create file handle |
 | `Env(name)` / `Env(name, default)` | Read environment variable (returns Str; default when unset) |
+| `Input(prompt)` | Display prompt and read a line from stdin (returns Str) |
 | `Args.flag(default=val)` | Command-line flag (name inferred from variable) |
 | `Args.args()` | Get remaining positional arguments as `Array(Str)` |
 | `Date.today()` | Get today's date as a Date object |
@@ -872,6 +873,15 @@ Run with: `./program --debug --count=10 --msg="hello" file1.txt file2.txt`
 ```zenth
 let home = Env("HOME");           // returns Str, empty if unset
 let editor = Env("EDITOR", "vim"); // returns "vim" if EDITOR is unset
+```
+
+### User Input
+
+```zenth
+let name = Input("Enter your name: ");  // displays prompt, reads line from stdin
+Println("Hello, {name}!");
+
+let age = Int(Input("Enter your age: ")); // convert input to Int
 ```
 
 ### Multi-Variable Assignment

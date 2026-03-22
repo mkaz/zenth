@@ -160,6 +160,7 @@ Zenth provides several built-in functions that are always available:
 | `Date.today()` | Get today's date as a `Date` object |
 | `Date.from(str[, fmt])` | Parse date from string (default format: `%Y-%m-%d`) |
 | `File(path)` | Build a file value for file methods |
+| `Input(prompt)` | Display prompt and read a line from stdin (returns `Str`) |
 | `Exit([code])` | Exit the program (`0` when omitted) |
 | `Assert(cond)` / `AssertEq(got, expected)` | Built-in test/assertion helpers |
 
@@ -306,6 +307,45 @@ fn main() {
 ```
 
 With one argument, `Env(name)` returns the value of the environment variable, or an empty string `""` if it is not set. With two arguments, `Env(name, default)` returns the default value when the variable is unset or empty.
+
+## User Input
+
+The `Input()` built-in displays a prompt and reads a line of text from standard input. It returns the entered text as a `Str` with the trailing newline removed.
+
+```zenth
+fn main() {
+    let name = Input("Enter your name: ");
+    Println("Hello, {name}!");
+}
+```
+
+```
+Enter your name: Alice
+Hello, Alice!
+```
+
+Use `Input()` for interactive programs that need user input:
+
+```zenth
+fn main() {
+    let city = Input("City: ");
+    let country = Input("Country: ");
+    Println("{city}, {country}");
+}
+```
+
+You can use the result in any expression that expects a `Str`:
+
+```zenth
+fn main() {
+    let age = Int(Input("Enter your age: "));
+    if age >= 18 {
+        Println("You are an adult.");
+    } else {
+        Println("You are a minor.");
+    }
+}
+```
 
 ## Naming Rules
 

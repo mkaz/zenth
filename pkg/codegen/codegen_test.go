@@ -68,6 +68,13 @@ func TestImportAlias(t *testing.T) {
 	assertContains(t, out, `"strings"`)
 }
 
+func TestMapImportPathIO(t *testing.T) {
+	got := mapImportPath("io")
+	if got != "io" {
+		t.Fatalf("mapImportPath(\"io\") = %q, want %q", got, "io")
+	}
+}
+
 // ---------- Function Declarations ----------
 
 func TestFnMain(t *testing.T) {

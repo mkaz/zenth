@@ -811,3 +811,25 @@ func TestNewCheckerKnownModules(t *testing.T) {
 		}
 	}
 }
+
+func TestConversionBuiltinNoDuplicateArgErrors(t *testing.T) {
+	src := `
+import "strings";
+
+fn main() {
+    let parts = strings.split("a,b", ",");
+    Println(Str(Len(parts)));
+}`
+	err := check(src)
+	if err == nil {
+		t.Fatal("expected type error, got nil")
+	}
+	msg := err.Error()
+	want := "argument 1 to len has type void"
+	if !strings.Contains(msg, want) {
+		t.Fatalf("expected error containing %q, got: %v", want, err)
+	}
+	if got := strings.Count(msg, want); got != 1 {
+		t.Fatalf("expected error to appear once, got %d occurrences\n%s", got, msg)
+	}
+}

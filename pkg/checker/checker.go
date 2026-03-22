@@ -144,7 +144,11 @@ func New() *Checker {
 		Return:      TypeStr,
 		NumRequired: 1,
 	}
-
+	c.funcs["Input"] = &FuncInfo{
+		Name:   "Input",
+		Params: []ZType{TypeStr},
+		Return: TypeStr,
+	}
 
 	// Register built-in constants
 	global.Define(&Symbol{Name: "INT_MAX", Type: TypeInt, IsConst: true})
@@ -2423,20 +2427,30 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 	}
 	// Conversion builtins accept any single arg (Int() also accepts 2 for base)
 	if info.Name == "Int" || info.Name == "Float" || info.Name == "Str" {
+		namedValues := make([]ast.Node, 0, len(e.Args))
 		for _, arg := range e.Args {
 			if named, ok := arg.(*ast.NamedArgExpr); ok {
 				c.errorf(named.Pos(), "named arguments are not supported for %s()", info.Name)
-				c.checkNode(named.Value)
+				namedValues = append(namedValues, named.Value)
 				continue
 			}
-			c.checkNode(arg)
 		}
 		if info.Name == "Int" && len(e.Args) == 2 {
-			// int(str, base) form
+			// Int(str, base) form
+			for _, v := range namedValues {
+				c.checkNode(v)
+			}
 			return
 		}
 		if len(e.Args) != 1 {
 			c.errorf(e.Pos(), "%s() expects exactly 1 argument, got %d", info.Name, len(e.Args))
+			for _, arg := range e.Args {
+				if named, ok := arg.(*ast.NamedArgExpr); ok {
+					c.checkNode(named.Value)
+					continue
+				}
+				c.checkNode(arg)
+			}
 		}
 		return
 	}
