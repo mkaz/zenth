@@ -192,7 +192,7 @@ func runTestFile(file string, verbose bool) TestResult {
 	}
 	defer os.RemoveAll(tmpDir)
 
-	goMod := "module zenth_output\n\ngo 1.21\n"
+	goMod := "module zenth_output\n\ngo 1.26\n"
 	if err := os.WriteFile(filepath.Join(tmpDir, "go.mod"), []byte(goMod), 0644); err != nil {
 		result.Error = fmt.Sprintf("cannot write go.mod: %v", err)
 		return result

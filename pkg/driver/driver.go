@@ -128,7 +128,7 @@ func Build(opts Options) error {
 	defer os.RemoveAll(tmpDir)
 
 	// Write go.mod
-	goMod := "module zenth_output\n\ngo 1.21\n"
+	goMod := "module zenth_output\n\ngo 1.26\n"
 	if err := os.WriteFile(filepath.Join(tmpDir, "go.mod"), []byte(goMod), 0644); err != nil {
 		return fmt.Errorf("cannot write go.mod: %w", err)
 	}
