@@ -87,3 +87,19 @@ fn test_tuple() {
     AssertEq(t.0, "hello");
     AssertEq(t.1, 42);
 }
+
+fn test_set_from_array() {
+    let words = ["a", "b", "a", "c"];
+    let uniq = Set(words);
+    AssertEq(Len(uniq), 3);
+    Assert(uniq.exists("a"));
+    Assert(!uniq.exists("z"));
+}
+
+fn test_set_from_tuple_array() {
+    let dots = [Tuple(1, 2), Tuple(1, 2), Tuple(2, 3)];
+    let uniq = Set(dots);
+    AssertEq(Len(uniq), 2);
+    Assert(uniq.exists(Tuple(1, 2)));
+    Assert(uniq.exists(Tuple(2, 3)));
+}

@@ -435,6 +435,7 @@ type CallExpr struct {
 	HashmapTupleFieldTypes []string // set by checker: Go types of tuple fields for hashmap(tuple) conversion
 	HashmapMethod          string   // set by checker: "keys" or "values" for hashmap methods
 	SetCtor                bool     // set by checker for set(T) constructor
+	SetFromArray           bool     // set by checker for Set(arrayExpr) conversion
 	SetElemGoType          string   // concrete Go element type for set constructor
 	SetMethod              string   // set by checker: "add", "exists", "remove" for set methods
 	SetTupleStruct         string   // set by checker: struct name for set(tuple(...)) operations

@@ -2496,6 +2496,24 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				if c.SetTupleStruct != "" {
 					g.tupleStructs[c.SetTupleStruct] = c.SetTupleFieldTypes
 				}
+				if c.SetFromArray {
+					tc := g.tempCounter
+					g.tempCounter++
+					g.writef("func() map[%s]struct{} { ", c.SetElemGoType)
+					g.writef("_set%d := make(map[%s]struct{}); ", tc, c.SetElemGoType)
+					g.writef("for _, _item%d := range ", tc)
+					g.genExpr(c.Args[0])
+					g.write(" { ")
+					g.writef("_set%d[", tc)
+					if c.SetTupleStruct != "" {
+						g.writef("zenth_to_%s(_item%d)", c.SetTupleStruct, tc)
+					} else {
+						g.writef("_item%d", tc)
+					}
+					g.write("] = struct{}{} }; ")
+					g.writef("return _set%d }()", tc)
+					return
+				}
 				g.write("make(map[")
 				g.write(c.SetElemGoType)
 				g.write("]struct{})")

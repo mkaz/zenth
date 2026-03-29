@@ -47,4 +47,16 @@ fn main() {
     flags.add("verbose");
     flags.add("debug");
     Println(Len(flags));
+
+    // Array -> set conversion
+    let letters = ["a", "b", "a"];
+    let unique = Set(letters);
+    Println("letters=" + Str(Len(unique)));
+    if unique.exists("a") {
+        Println("has a");
+    }
+
+    let nums2 = [1, 2, 2, 3, 1];
+    let uniqueNums: Set(Int) = Set(nums2);
+    Println("nums2=" + Str(Len(uniqueNums)));
 }

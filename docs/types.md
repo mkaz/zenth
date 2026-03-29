@@ -222,6 +222,14 @@ Println(Len(visited));       // 1
 
 Sets support `Int`, `Str`, `Bool`, and other comparable types as elements.
 
+You can also convert an array into a set with `Set(arrayExpr)`. Duplicate elements are removed:
+
+```zenth
+let letters = ["a", "b", "a"];
+let unique = Set(letters);
+Println(Len(unique));  // 2
+```
+
 #### Sets of Tuples
 
 Sets can hold tuples, enabling composite keys without string round-tripping:

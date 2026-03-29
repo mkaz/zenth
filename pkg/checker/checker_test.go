@@ -348,6 +348,35 @@ func TestLookupBuiltinType(t *testing.T) {
 	}
 }
 
+func TestSetFromArrayCheck(t *testing.T) {
+	src := `
+		fn main() {
+			let words = ["a", "b", "a"];
+			let uniq = Set(words);
+			Assert(uniq.exists("a"));
+		}
+	`
+	if err := check(src); err != nil {
+		t.Fatalf("check failed: %v", err)
+	}
+}
+
+func TestSetFromArrayRejectsNonArray(t *testing.T) {
+	src := `
+		fn main() {
+			let n = 1;
+			let uniq = Set(n);
+		}
+	`
+	err := check(src)
+	if err == nil {
+		t.Fatal("expected check to fail")
+	}
+	if !strings.Contains(err.Error(), "set() expects a type or an array") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
 // IsNumeric, IsInteger, IsFloat
 
 func TestIsNumeric(t *testing.T) {

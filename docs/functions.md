@@ -152,7 +152,7 @@ Zenth provides several built-in functions that are always available:
 | `Range(start, end[, step])` | Build an exclusive range object |
 | `Rangei(start, end[, step])` | Build an inclusive range object |
 | `Hashmap(K, V[, default=val])` | Build an empty hashmap (optional default value) |
-| `Set(T)` | Build an empty set |
+| `Set(T)` / `Set(items)` | Build an empty set or convert an array to a set |
 | `Tuple(a, b, ...)` | Build a tuple value |
 | `Zip(a, b, ...)` | Combine two or more arrays into an array of tuples |
 | `Env(name)` / `Env(name, default)` | Read an environment variable (returns `Str`; default used when unset) |

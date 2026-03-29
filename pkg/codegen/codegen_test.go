@@ -260,6 +260,14 @@ func TestBinaryMul(t *testing.T) {
 	assertContains(t, out, "4 * 5")
 }
 
+func TestSetFromArrayCodegen(t *testing.T) {
+	src := `fn main() { let words = ["a", "b", "a"]; let uniq = Set(words); Println(Str(Len(uniq))); }`
+	out := generate(t, src)
+	assertContains(t, out, "func() map[string]struct{}")
+	assertContains(t, out, "for _, _item")
+	assertContains(t, out, "= struct{}{}")
+}
+
 func TestUnaryNeg(t *testing.T) {
 	src := `fn main() { let x = -5; Println(Str(x)); }`
 	out := generate(t, src)

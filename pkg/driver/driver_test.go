@@ -277,6 +277,9 @@ func TestBuildAndRun(t *testing.T) {
 				"3",
 				"found start",
 				"unknown not found",
+				"letters=2",
+				"has a",
+				"nums2=3",
 				"6",
 			},
 		},
@@ -327,6 +330,7 @@ func TestBuildAndRun(t *testing.T) {
 				"after_remove=3",
 				"length=3",
 				"pairs=2",
+				"from_array=2",
 			},
 		},
 		{

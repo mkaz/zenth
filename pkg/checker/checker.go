@@ -2874,17 +2874,34 @@ func (c *Checker) checkHashmapConstructor(e *ast.CallExpr) ZType {
 
 func (c *Checker) checkSetConstructor(e *ast.CallExpr) ZType {
 	if len(e.Args) != 1 {
-		c.errorf(e.Pos(), "set() expects exactly 1 type argument, got %d", len(e.Args))
+		c.errorf(e.Pos(), "set() expects exactly 1 argument, got %d", len(e.Args))
 		return &SetType{Elem: TypeVoid}
 	}
 
-	elemType := c.resolveTypeRefArg(e.Args[0])
-	if elemType == nil {
-		elemType = TypeVoid
+	if c.isTypeRefArg(e.Args[0]) {
+		elemType := c.resolveTypeRefArg(e.Args[0])
+		if elemType == nil {
+			elemType = TypeVoid
+		}
+		return c.annotateSetCall(e, elemType)
 	}
 
-	e.SetCtor = true
+	argType := c.checkNode(e.Args[0])
+	sliceType, ok := argType.(*SliceType)
+	if !ok {
+		c.errorf(e.Args[0].Pos(), "set() expects a type or an array, got %s", argType)
+		return &SetType{Elem: TypeVoid}
+	}
+	if !isComparableType(sliceType.Elem) && !sliceType.Elem.Equals(TypeVoid) {
+		c.errorf(e.Args[0].Pos(), "set() array conversion requires comparable element type, got %s", sliceType.Elem)
+	}
 
+	e.SetFromArray = true
+	return c.annotateSetCall(e, sliceType.Elem)
+}
+
+func (c *Checker) annotateSetCall(e *ast.CallExpr, elemType ZType) ZType {
+	e.SetCtor = true
 	// Handle set(tuple(...)) with struct representation
 	if tt, ok := elemType.(*TupleType); ok {
 		if !isComparableType(tt) {
@@ -2901,6 +2918,61 @@ func (c *Checker) checkSetConstructor(e *ast.CallExpr) ZType {
 
 	e.SetElemGoType = goTypeName(elemType)
 	return &SetType{Elem: elemType}
+}
+
+func (c *Checker) isTypeRefArg(arg ast.Node) bool {
+	switch n := arg.(type) {
+	case *ast.IdentExpr:
+		if LookupBuiltinType(n.Name) != nil {
+			return true
+		}
+		if _, ok := c.objs[n.Name]; ok {
+			return true
+		}
+		if _, ok := c.enums[n.Name]; ok {
+			return true
+		}
+		if _, ok := c.typeAliases[n.Name]; ok {
+			return true
+		}
+		return false
+	case *ast.FieldExpr:
+		ident, ok := n.Object.(*ast.IdentExpr)
+		if !ok {
+			return false
+		}
+		mi, ok := c.localModules[ident.Name]
+		if !ok {
+			return false
+		}
+		if _, ok := mi.Objs[n.Field]; ok {
+			return true
+		}
+		if _, ok := mi.Enums[n.Field]; ok {
+			return true
+		}
+		return false
+	case *ast.CallExpr:
+		callee, ok := n.Callee.(*ast.IdentExpr)
+		if !ok {
+			return false
+		}
+		switch callee.Name {
+		case "Array", "Hashmap", "Tuple", "Set":
+			return true
+		default:
+			return false
+		}
+	case *ast.TupleLitExpr:
+		for _, elem := range n.Elements {
+			if !c.isTypeRefArg(elem) {
+				return false
+			}
+		}
+		return true
+	default:
+		return false
+	}
 }
 
 func (c *Checker) resolveTypeRefArg(arg ast.Node) ZType {
