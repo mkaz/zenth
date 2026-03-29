@@ -355,4 +355,24 @@ This is equivalent to `"ff".to_int(16)` but reads more naturally as a conversion
 | `\|\|` | Logical OR |
 | `!`  | Logical NOT |
 
+### Bitwise
+
+| Operator | Description |
+|----------|-------------|
+| `&` | Bitwise AND |
+| `\|` | Bitwise OR |
+
+Bitwise operators require `Int` operands on both sides. They are useful for flag manipulation, masking, and low-level integer operations.
+
+```zenth
+let a = 0b1100;   // 12
+let b = 0b1010;   // 10
+
+let and_result = a & b;   // 0b1000 = 8
+let or_result  = a | b;   // 0b1110 = 14
+
+Println(Str(and_result));  // 8
+Println(Str(or_result));   // 14
+```
+
 Arithmetic operators require matching numeric types on both sides. The `+` operator also works for string concatenation when both sides are `Str`.

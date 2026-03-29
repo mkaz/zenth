@@ -868,6 +868,8 @@ func (p *Parser) precedence(t token.Type) int {
 		return 5
 	case token.Star, token.Slash, token.Percent:
 		return 6
+	case token.BitAnd, token.BitOr:
+		return 7
 	default:
 		return 0
 	}

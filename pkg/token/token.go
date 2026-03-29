@@ -86,6 +86,8 @@ const (
 	MinusAssign // -=
 	StarAssign  // *=
 	SlashAssign // /=
+	BitAnd      // &
+	BitOr       // |
 )
 
 var typeNames = map[Type]string{
@@ -154,6 +156,8 @@ var typeNames = map[Type]string{
 	MinusAssign: "-=",
 	StarAssign:  "*=",
 	SlashAssign: "/=",
+	BitAnd:      "&",
+	BitOr:       "|",
 }
 
 func (t Type) String() string {

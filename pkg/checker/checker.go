@@ -1188,6 +1188,12 @@ func (c *Checker) checkBinaryExpr(e *ast.BinaryExpr) ZType {
 			c.errorf(e.Pos(), "logical operators require Bool operands, got %s and %s", left, right)
 		}
 		return TypeBool
+
+	case token.BitAnd, token.BitOr:
+		if !left.Equals(TypeInt) || !right.Equals(TypeInt) {
+			c.errorf(e.Pos(), "bitwise operators require Int operands, got %s and %s", left, right)
+		}
+		return TypeInt
 	}
 
 	return TypeVoid

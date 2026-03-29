@@ -1064,6 +1064,22 @@ All module features work in tests: function calls, object constructors with name
 - Helper functions (without `test_` prefix) can be defined in test files
 - Exit code is `0` if all tests pass, `1` if any fail
 
+### Bitwise Operators
+
+Bitwise operators work on `Int` operands only:
+
+| Operator | Description |
+|----------|-------------|
+| `&` | Bitwise AND |
+| `\|` | Bitwise OR |
+
+```zenth
+let flags = 0b1100;
+let mask  = 0b1010;
+Println(Str(flags & mask));  // 8  (0b1000)
+Println(Str(flags | mask));  // 14 (0b1110)
+```
+
 ## Important Notes
 
 - Every program needs a `fn main() { ... }` entry point (except test files)

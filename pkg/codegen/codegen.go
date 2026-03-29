@@ -3610,6 +3610,10 @@ func goOp(op token.Type) string {
 		return "||"
 	case token.Not:
 		return "!"
+	case token.BitAnd:
+		return "&"
+	case token.BitOr:
+		return "|"
 	default:
 		return "?"
 	}

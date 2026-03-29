@@ -422,14 +422,14 @@ func (l *Lexer) readOperator(pos token.Pos) {
 			l.advance()
 			l.emit(token.And, "&&", pos)
 		} else {
-			l.error(pos, fmt.Sprintf("unexpected character: &"))
+			l.emit(token.BitAnd, "&", pos)
 		}
 	case '|':
 		if next == '|' {
 			l.advance()
 			l.emit(token.Or, "||", pos)
 		} else {
-			l.error(pos, fmt.Sprintf("unexpected character: |"))
+			l.emit(token.BitOr, "|", pos)
 		}
 	case '(':
 		l.emit(token.LParen, "(", pos)
