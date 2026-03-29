@@ -31,7 +31,16 @@ Println("There are {count} items");  // There are 42 items
 You can call methods and access fields inside `{}`:
 
 ```zenth
-let r = Rectangle{ width: 5.0, height: 10.0 };
+obj Rectangle {
+    width: Float;
+    height: Float;
+
+    fn area() -> Float {
+        return self.width * self.height;
+    }
+}
+
+let r = Rectangle(width=5.0, height=10.0);
 Println("Area: {r.area()}");  // Area: 50
 ```
 

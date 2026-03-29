@@ -148,7 +148,7 @@ Ranges can also be stored in variables and reused across multiple checks. `Len()
 ```zenth
 let r = Range(0, 100, 3);
 Println(Len(r));           // 34
-Println(r.contains(99));   // false (99 is not a multiple of 3 from 0... but bounds check: 99 < 100 → true)
+Println(r.contains(99));   // true (bounds check only; 99 is within [0, 100))
 ```
 
 Note: `.contains()` performs a bounds check only. For `Range(0, 10, 3)`, `.contains(5)` returns `true` because 5 is within the bounds `[0, 10)`, not because 5 is in the sequence `[0, 3, 6, 9]`.

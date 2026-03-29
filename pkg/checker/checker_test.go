@@ -372,7 +372,7 @@ func TestSetFromArrayRejectsNonArray(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected check to fail")
 	}
-	if !strings.Contains(err.Error(), "set() expects a type or an array") {
+	if !strings.Contains(err.Error(), "Set() expects a type or an array") {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
@@ -718,6 +718,26 @@ func TestCheckerErrors(t *testing.T) {
 			"has type Str, expected Int",
 		},
 		{
+			"len diagnostic uses builtin casing",
+			`fn main() { Len(42); }`,
+			"argument 1 to Len has type Int",
+		},
+		{
+			"zip diagnostic uses builtin casing",
+			`fn main() { let z = Zip([1]); }`,
+			"Zip() requires at least 2 arguments",
+		},
+		{
+			"hashmap diagnostic uses builtin casing",
+			`fn main() { let m = Hashmap(Int); }`,
+			"Hashmap() expects exactly 2 type arguments",
+		},
+		{
+			"set diagnostic uses builtin casing",
+			`fn main() { let s = Set(1, 2); }`,
+			"Set() expects exactly 1 argument",
+		},
+		{
 			"enum bad variant",
 			`enum Color { Red; Green; Blue; } let c = Color.Yellow;`,
 			"has no variant 'Yellow'",
@@ -856,7 +876,7 @@ fn main() {
 		t.Fatal("expected type error, got nil")
 	}
 	msg := err.Error()
-	want := "argument 1 to len has type void"
+	want := "argument 1 to Len has type void"
 	if !strings.Contains(msg, want) {
 		t.Fatalf("expected error containing %q, got: %v", want, err)
 	}

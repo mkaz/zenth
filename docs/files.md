@@ -113,7 +113,7 @@ second line
 ```zenth
 let out = File("results.txt");
 out.write("");  // start fresh
-for i in Range(5) {
+for i in Range(0, 5) {
     out.append("result {i}\n");
 }
 ```

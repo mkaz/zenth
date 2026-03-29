@@ -57,7 +57,7 @@ assert_eq failed at tests/math_test.zn:8
        got: 4
 ```
 
-`assert_eq` uses the `==` operator, so both values must be the same comparable type.
+`AssertEq` uses the `==` operator, so both values must be the same comparable type.
 
 ## Running Tests
 
@@ -149,7 +149,7 @@ Module imports in test files support all the same features as in regular program
 - Test files: `*_test.zn` in a `tests/` directory
 - Test functions: `fn test_*()` with no parameters and no return type
 - One `tests/` directory at the project root is the default location
-- Use `assert` for boolean conditions, `assert_eq` for value comparison
+- Use `Assert` for boolean conditions, `AssertEq` for value comparison
 - Helper functions (without the `test_` prefix) can be defined in test files and called from test functions
 
 ## Example: Testing an Object
@@ -167,12 +167,12 @@ obj Rectangle {
 }
 
 fn test_area() {
-    let r = Rectangle{ width: 3.0, height: 4.0 };
+    let r = Rectangle(width=3.0, height=4.0);
     AssertEq(r.area(), 12.0);
 }
 
 fn test_zero_area() {
-    let r = Rectangle{ width: 0.0, height: 100.0 };
+    let r = Rectangle(width=0.0, height=100.0);
     AssertEq(r.area(), 0.0);
 }
 ```

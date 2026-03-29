@@ -2522,7 +2522,7 @@ func (c *Checker) checkArgs(e *ast.CallExpr, info *FuncInfo) {
 		} else if _, ok := argType.(*SliceType); !ok && !argType.Equals(TypeStr) {
 			if _, ok := argType.(*HashmapType); !ok {
 				if _, ok := argType.(*SetType); !ok {
-					c.errorf(e.Args[0].Pos(), "argument 1 to len has type %s, expected Str, slice, hashmap, set, or range", argType)
+					c.errorf(e.Args[0].Pos(), "argument 1 to Len has type %s, expected Str, slice, hashmap, set, or range", argType)
 				}
 			}
 		}
@@ -2814,7 +2814,7 @@ func (c *Checker) checkTupleLit(e *ast.TupleLitExpr) ZType {
 
 func (c *Checker) checkZipCall(e *ast.CallExpr) ZType {
 	if len(e.Args) < 2 {
-		c.errorf(e.Pos(), "zip() requires at least 2 arguments, got %d", len(e.Args))
+		c.errorf(e.Pos(), "Zip() requires at least 2 arguments, got %d", len(e.Args))
 		return &SliceType{Elem: TypeVoid}
 	}
 	var elemTypes []ZType
@@ -2823,7 +2823,7 @@ func (c *Checker) checkZipCall(e *ast.CallExpr) ZType {
 		argType := c.checkNode(arg)
 		st, ok := argType.(*SliceType)
 		if !ok {
-			c.errorf(arg.Pos(), "zip() arguments must be arrays, got %s", argType)
+			c.errorf(arg.Pos(), "Zip() arguments must be arrays, got %s", argType)
 			return &SliceType{Elem: TypeVoid}
 		}
 		elemTypes = append(elemTypes, st.Elem)
@@ -2844,7 +2844,7 @@ func (c *Checker) checkHashmapConstructor(e *ast.CallExpr) ZType {
 			if na.Name == "default" {
 				defaultExpr = na.Value
 			} else {
-				c.errorf(na.Pos(), "hashmap() unknown named argument '%s'", na.Name)
+				c.errorf(na.Pos(), "Hashmap() unknown named argument '%s'", na.Name)
 			}
 		} else {
 			posArgs = append(posArgs, arg)
@@ -2852,7 +2852,7 @@ func (c *Checker) checkHashmapConstructor(e *ast.CallExpr) ZType {
 	}
 
 	if len(posArgs) != 2 {
-		c.errorf(e.Pos(), "hashmap() expects exactly 2 type arguments, got %d", len(posArgs))
+		c.errorf(e.Pos(), "Hashmap() expects exactly 2 type arguments, got %d", len(posArgs))
 		return &HashmapType{Key: TypeVoid, Value: TypeVoid}
 	}
 
@@ -2896,7 +2896,7 @@ func (c *Checker) checkHashmapConstructor(e *ast.CallExpr) ZType {
 
 func (c *Checker) checkSetConstructor(e *ast.CallExpr) ZType {
 	if len(e.Args) != 1 {
-		c.errorf(e.Pos(), "set() expects exactly 1 argument, got %d", len(e.Args))
+		c.errorf(e.Pos(), "Set() expects exactly 1 argument, got %d", len(e.Args))
 		return &SetType{Elem: TypeVoid}
 	}
 
@@ -2911,11 +2911,11 @@ func (c *Checker) checkSetConstructor(e *ast.CallExpr) ZType {
 	argType := c.checkNode(e.Args[0])
 	sliceType, ok := argType.(*SliceType)
 	if !ok {
-		c.errorf(e.Args[0].Pos(), "set() expects a type or an array, got %s", argType)
+		c.errorf(e.Args[0].Pos(), "Set() expects a type or an array, got %s", argType)
 		return &SetType{Elem: TypeVoid}
 	}
 	if !isComparableType(sliceType.Elem) && !sliceType.Elem.Equals(TypeVoid) {
-		c.errorf(e.Args[0].Pos(), "set() array conversion requires comparable element type, got %s", sliceType.Elem)
+		c.errorf(e.Args[0].Pos(), "Set() array conversion requires comparable element type, got %s", sliceType.Elem)
 	}
 
 	e.SetFromArray = true
@@ -2927,7 +2927,7 @@ func (c *Checker) annotateSetCall(e *ast.CallExpr, elemType ZType) ZType {
 	// Handle set(tuple(...)) with struct representation
 	if tt, ok := elemType.(*TupleType); ok {
 		if !isComparableType(tt) {
-			c.errorf(e.Pos(), "set(tuple(...)) requires all tuple elements to be comparable types")
+			c.errorf(e.Pos(), "Set(Tuple(...)) requires all tuple elements to be comparable types")
 			e.SetElemGoType = "interface{}"
 			return &SetType{Elem: elemType}
 		}
@@ -3018,7 +3018,7 @@ func (c *Checker) resolveTypeRefArg(arg ast.Node) ZType {
 			switch callee.Name {
 			case "Array":
 				if len(call.Args) != 1 {
-					c.errorf(arg.Pos(), "array() type expects exactly 1 argument, got %d", len(call.Args))
+					c.errorf(arg.Pos(), "Array() type expects exactly 1 argument, got %d", len(call.Args))
 					return nil
 				}
 				elem := c.resolveTypeRefArg(call.Args[0])
@@ -3035,7 +3035,7 @@ func (c *Checker) resolveTypeRefArg(arg ast.Node) ZType {
 					}
 				}
 				if len(posArgs) != 2 {
-					c.errorf(arg.Pos(), "hashmap() type expects exactly 2 type arguments, got %d", len(posArgs))
+					c.errorf(arg.Pos(), "Hashmap() type expects exactly 2 type arguments, got %d", len(posArgs))
 					return nil
 				}
 				keyType := c.resolveTypeRefArg(posArgs[0])
@@ -3056,7 +3056,7 @@ func (c *Checker) resolveTypeRefArg(arg ast.Node) ZType {
 				return &TupleType{Elems: elems}
 			case "Set":
 				if len(call.Args) != 1 {
-					c.errorf(arg.Pos(), "set() type expects exactly 1 argument, got %d", len(call.Args))
+					c.errorf(arg.Pos(), "Set() type expects exactly 1 argument, got %d", len(call.Args))
 					return nil
 				}
 				elem := c.resolveTypeRefArg(call.Args[0])

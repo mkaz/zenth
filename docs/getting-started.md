@@ -4,7 +4,7 @@
 
 Zenth compiles to native binaries through Go, so you need:
 
-- [Go](https://go.dev/dl/) 1.21 or later
+- [Go](https://go.dev/dl/) 1.26 or later
 - [just](https://github.com/casey/just) command runner (optional, for convenience)
 
 ## Installation

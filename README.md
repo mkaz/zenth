@@ -26,14 +26,14 @@ fn main() {
 
 ```zenth
 obj Circle {
-    radius: f64;
+    radius: Float;
 
-    fn area() -> f64 {
+    fn area() -> Float {
         return 3.14159 * self.radius * self.radius;
     }
 }
 
-fn fizzbuzz(n: int) -> str {
+fn fizzbuzz(n: Int) -> Str {
     return if n % 15 == 0 { "FizzBuzz" }
       else if n % 3 == 0  { "Fizz" }
       else if n % 5 == 0  { "Buzz" }
@@ -91,10 +91,17 @@ See the [docs/](docs/README.md) for the full language reference:
 - [Functions](docs/functions.md)
 - [Strings](docs/strings.md)
 - [Control Flow](docs/control-flow.md)
+- [Enums](docs/enums.md)
 - [Objects](docs/objects.md)
 - [Arrays](docs/arrays.md)
+- [Tuples](docs/tuples.md)
+- [Hashmaps](docs/hashmaps.md)
+- [Sets](docs/sets.md)
+- [Dates](docs/dates.md)
 - [Files](docs/files.md)
 - [Imports](docs/imports.md)
+- [Modules](docs/modules.md)
+- [Testing](docs/testing.md)
 
 ## Editor support
 

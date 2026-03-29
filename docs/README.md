@@ -22,6 +22,8 @@ fn main() {
 - [Arrays](arrays.md) -- Dynamic arrays
 - [Tuples](tuples.md) -- Fixed-size mixed-type values
 - [Hashmaps](hashmaps.md) -- Key-value collections
+- [Sets](sets.md) -- Unordered collections of unique values
+- [Dates](dates.md) -- Calendar dates, parsing, and formatting
 - [Files](files.md) -- Reading files and file paths
 - [Imports](imports.md) -- Using standard library modules
 - [Modules](modules.md) -- Splitting programs across multiple files
