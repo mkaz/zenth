@@ -1,0 +1,16 @@
+obj Point {
+    x: Int;
+    y: Int;
+}
+
+fn build() -> Hashmap(Point, Int) {
+    var cells = Hashmap(Point, Int, default=0);
+    cells[Point(x=1, y=2)] = 42;
+    return cells;
+}
+
+fn main() {
+    let cells = build();
+    let pt = Point(x=1, y=2);
+    Println("value=" + Str(cells[pt]));
+}

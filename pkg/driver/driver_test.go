@@ -228,6 +228,10 @@ func TestBuildAndRun(t *testing.T) {
 			contains: []string{"val=#", "len=1"},
 		},
 		{
+			file:     "hashmap_obj_key_return.zn",
+			contains: []string{"value=42"},
+		},
+		{
 			file:     "hashmap_default.zn",
 			contains: []string{"foo=3", "bar=0", "baz=42", "len=2", "x=2"},
 		},

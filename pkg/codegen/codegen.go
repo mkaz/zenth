@@ -3700,7 +3700,11 @@ func genTypeExprResolved(t *ast.TypeExpr, aliases map[string]*ast.TypeExpr) stri
 		}
 	}
 	if t.IsHashmap && len(t.Params) == 2 {
-		return "map[" + genTypeExprResolved(t.Params[0], aliases) + "]" + genTypeExprResolved(t.Params[1], aliases)
+		keyType := genTypeExprResolved(t.Params[0], aliases)
+		if !t.Params[0].IsSlice && !t.Params[0].IsHashmap && !t.Params[0].IsTuple && !t.Params[0].IsArray && !t.Params[0].IsFunc && len(t.Params[0].Params) == 0 {
+			keyType = strings.TrimPrefix(keyType, "*")
+		}
+		return "map[" + keyType + "]" + genTypeExprResolved(t.Params[1], aliases)
 	}
 	if t.IsSet && len(t.Params) > 0 {
 		param := t.Params[0]
