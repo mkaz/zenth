@@ -677,6 +677,35 @@ func (c *Checker) checkNode(node ast.Node) ZType {
 	}
 }
 
+func (c *Checker) checkSortedArgs(e *ast.CallExpr) {
+	if len(e.Args) > 1 {
+		c.errorf(e.Pos(), "sorted() takes 0 or 1 arguments, got %d", len(e.Args))
+		return
+	}
+	if len(e.Args) == 0 {
+		return
+	}
+
+	arg := e.Args[0]
+	value := arg
+	if named, ok := arg.(*ast.NamedArgExpr); ok {
+		if named.Name != "order" {
+			c.errorf(named.Pos(), "sorted() has no parameter named '%s'", named.Name)
+		}
+		value = named.Value
+	}
+
+	c.checkNode(value)
+	strLit, ok := value.(*ast.StringLitExpr)
+	if !ok {
+		c.errorf(value.Pos(), "sorted() argument must be a string literal (\"asc\" or \"desc\")")
+		return
+	}
+	if strLit.Value != "asc" && strLit.Value != "desc" {
+		c.errorf(value.Pos(), "sorted() argument must be \"asc\" or \"desc\", got %q", strLit.Value)
+	}
+}
+
 func (c *Checker) checkFnDecl(f *ast.FnDecl) ZType {
 	prev := c.currentFunc
 	info := c.funcs[f.Name]
@@ -1527,18 +1556,7 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				e.SliceMethod = true
 				return sliceType.Elem
 			case "sorted":
-				if len(e.Args) > 1 {
-					c.errorf(e.Pos(), "sorted() takes 0 or 1 arguments, got %d", len(e.Args))
-				}
-				if len(e.Args) == 1 {
-					c.checkNode(e.Args[0])
-					strLit, ok := e.Args[0].(*ast.StringLitExpr)
-					if !ok {
-						c.errorf(e.Args[0].Pos(), "sorted() argument must be a string literal (\"asc\" or \"desc\")")
-					} else if strLit.Value != "asc" && strLit.Value != "desc" {
-						c.errorf(e.Args[0].Pos(), "sorted() argument must be \"asc\" or \"desc\", got %q", strLit.Value)
-					}
-				}
+				c.checkSortedArgs(e)
 				if !IsNumeric(sliceType.Elem) && !sliceType.Elem.Equals(TypeStr) {
 					c.errorf(e.Pos(), "sorted() requires a numeric or string array, got %s", objType)
 				}
@@ -2006,6 +2024,10 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 					}
 				}
 				e.StringMethod = field.Field
+				return TypeStr
+			case "sorted":
+				c.checkSortedArgs(e)
+				e.StringMethod = "sorted"
 				return TypeStr
 			}
 		}

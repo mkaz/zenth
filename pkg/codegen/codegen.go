@@ -59,6 +59,7 @@ type Generator struct {
 	needsSliceSum       bool
 	needsSliceSorted    bool
 	needsSliceReduce    bool
+	needsStringSorted   bool
 	needsIsDigit        bool
 	needsPadLeft        bool
 	needsPadRight       bool
@@ -914,6 +915,18 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("}")
 		g.writeln("")
 	}
+	if g.needsStringSorted {
+		g.writeln("func zenth_string_sorted(s string, desc bool) string {")
+		g.writeln("\tr := []rune(s)")
+		g.writeln("\tif desc {")
+		g.writeln("\t\tsort.Slice(r, func(i, j int) bool { return r[i] > r[j] })")
+		g.writeln("\t} else {")
+		g.writeln("\t\tsort.Slice(r, func(i, j int) bool { return r[i] < r[j] })")
+		g.writeln("\t}")
+		g.writeln("\treturn string(r)")
+		g.writeln("}")
+		g.writeln("")
+	}
 	if g.needsSliceReduce {
 		g.writeln("func zenth_slice_reduce[T any](s []T, f func(T, T) T, hasInit bool, init T) T {")
 		g.writeln("\tif !hasInit {")
@@ -1001,6 +1014,18 @@ func mapImportPath(zenthPath string) string {
 	default:
 		return zenthPath
 	}
+}
+
+func sortedDescArg(args []ast.Node) bool {
+	if len(args) == 0 {
+		return false
+	}
+	value := args[0]
+	if named, ok := value.(*ast.NamedArgExpr); ok {
+		value = named.Value
+	}
+	strLit, ok := value.(*ast.StringLitExpr)
+	return ok && strLit.Value == "desc"
 }
 
 func (g *Generator) write(s string) {
@@ -2928,12 +2953,7 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			case "sorted":
 				g.needsSliceSorted = true
 				g.imports["sort"] = ""
-				desc := false
-				if len(c.Args) == 1 {
-					if strLit, ok := c.Args[0].(*ast.StringLitExpr); ok && strLit.Value == "desc" {
-						desc = true
-					}
-				}
+				desc := sortedDescArg(c.Args)
 				g.write("zenth_slice_sorted(")
 				g.genExpr(field.Object)
 				if desc {
@@ -3206,6 +3226,18 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.write(", ")
 				g.genExpr(c.Args[0])
 				g.write(")")
+				return
+			case "sorted":
+				g.needsStringSorted = true
+				g.imports["sort"] = ""
+				desc := sortedDescArg(c.Args)
+				g.write("zenth_string_sorted(")
+				g.genExpr(field.Object)
+				if desc {
+					g.write(", true)")
+				} else {
+					g.write(", false)")
+				}
 				return
 			case "to_base":
 				g.needsToBase = true

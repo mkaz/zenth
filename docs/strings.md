@@ -238,6 +238,15 @@ Println("a-b-a".replace("a", "x"));    // x-b-x
 Println("a-b-a".replace("a", "x", 1)); // x-b-a
 ```
 
+Use `.sorted()` to return a new string with its characters sorted. By default it sorts ascending; pass `"desc"` or `order="desc"` to reverse the order:
+
+```zenth
+let s = "dbca";
+Println(s.sorted());              // abcd
+Println(s.sorted("desc"));        // dcba
+Println(s.sorted(order="desc"));  // dcba
+```
+
 ## Splitting Strings
 
 Use the `.split()` method to divide a string into an array of substrings (`Array(Str)`). 

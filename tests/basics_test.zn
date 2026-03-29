@@ -51,6 +51,14 @@ fn test_string_methods() {
     AssertEq("a-b-a".replace("a", "x"), "x-b-x");
 }
 
+fn test_string_sorted() {
+    let s = "dbca";
+    AssertEq(s.sorted(), "abcd");
+    AssertEq(s.sorted("asc"), "abcd");
+    AssertEq(s.sorted("desc"), "dcba");
+    AssertEq(s.sorted(order="desc"), "dcba");
+}
+
 fn test_if_expression() {
     let x = 10;
     let label = if x > 5 { "big" } else { "small" };

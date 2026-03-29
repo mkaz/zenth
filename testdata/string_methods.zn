@@ -9,4 +9,6 @@ fn main() {
     Println("count=" + Str("banana".count("na")));
     Println("repall=" + "a-b-a".replace("a", "x"));
     Println("repn=" + "a-b-a".replace("a", "x", 1));
+    Println("sorted=" + "dbca".sorted());
+    Println("sorted_desc=" + "dbca".sorted(order="desc"));
 }
