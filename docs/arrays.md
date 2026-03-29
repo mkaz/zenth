@@ -105,6 +105,16 @@ let email = fields.get(1, "");
 let role = fields.get(2, "member");  // default to "member" if missing
 ```
 
+Use `.last()` to read the final element directly:
+
+```zenth
+let vals = [10, 20, 30];
+Println(vals.last());   // 30
+
+let empty: Array(Int) = [];
+Println(empty.last());  // 0 (zero value for element type)
+```
+
 ## Modifying Arrays
 
 Zenth provides methods to append, prepend, and remove elements from an array. The array must be assigned to a mutable `var` to use these methods.

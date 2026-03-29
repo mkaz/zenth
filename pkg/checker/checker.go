@@ -149,6 +149,16 @@ func New() *Checker {
 		Params: []ZType{TypeStr},
 		Return: TypeStr,
 	}
+	c.funcs["Ord"] = &FuncInfo{
+		Name:   "Ord",
+		Params: []ZType{TypeStr},
+		Return: TypeInt,
+	}
+	c.funcs["Chr"] = &FuncInfo{
+		Name:   "Chr",
+		Params: []ZType{TypeInt},
+		Return: TypeStr,
+	}
 
 	// Register built-in constants
 	global.Define(&Symbol{Name: "INT_MAX", Type: TypeInt, IsConst: true})
@@ -1335,6 +1345,12 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.SliceMethod = true
 				return TypeInt
+			case "last":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "last() takes no arguments, got %d", len(e.Args))
+				}
+				e.SliceMethod = true
+				return sliceType.Elem
 			case "exists":
 				if len(e.Args) != 1 {
 					c.errorf(e.Pos(), "exists() takes exactly 1 argument, got %d", len(e.Args))
@@ -2002,6 +2018,12 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.StringMethod = "to_base"
 				return TypeStr
+			case "sign":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "sign() takes no arguments, got %d", len(e.Args))
+				}
+				e.StringMethod = "sign"
+				return TypeInt
 			}
 		}
 
@@ -2638,6 +2660,7 @@ func (c *Checker) checkIndexExpr(e *ast.IndexExpr) ZType {
 		}
 		return t.Elem
 	case *HashmapType:
+		e.HashmapIndex = true
 		if !t.Key.Equals(idxType) {
 			c.errorf(e.Pos(), "hashmap key type mismatch: expected %s, got %s", t.Key, idxType)
 		}

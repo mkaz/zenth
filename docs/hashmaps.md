@@ -44,6 +44,20 @@ Println(counts["missing"]);      // prints "0"
 
 When you access a missing key, the default is returned instead of Go's zero value. Compound assignments (`+=`, `-=`, `++`, etc.) on missing keys initialize from the default first.
 
+Defaults work with any value type:
+
+```zenth
+var names = Hashmap(Str,Str, default="");
+Println(names["missing"]);   // ""
+```
+
+For array defaults, use an explicitly typed empty array value:
+
+```zenth
+let empty: Array(Int) = [];
+var groups = Hashmap(Str, Array(Int), default=empty);
+```
+
 ## Iterating
 
 Use `for` to iterate over a hashmap:
@@ -92,6 +106,30 @@ for v in vals {
     Println(v);
 }
 ```
+
+Because hashmaps are unordered, sort keys when you need deterministic iteration:
+
+```zenth
+for k in m.keys().sorted() {
+    Println(k);
+}
+```
+
+## Hashmaps with Array Values
+
+Nested generic types like `Hashmap(Str, Array(Str))` are supported:
+
+```zenth
+var recipes = Hashmap(Str, Array(Str));
+recipes["cake"] = ["flour", "eggs"];
+recipes["cake"].add("sugar");
+
+for item in recipes["cake"] {
+    Println(item);
+}
+```
+
+Mutating array values through indexing works directly (`.add`, `.push`, `.insert`, `.remove`, `.extend`).
 
 ## Object Keys
 

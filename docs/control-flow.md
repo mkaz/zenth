@@ -115,6 +115,11 @@ for i in Rangei(1, 5) {
 for i in Range(0, 10, 2) {
     Println(i);       // 0 2 4 6 8
 }
+
+// Reverse iteration with a negative step
+for i in Range(5, -1, -1) {
+    Println(i);       // 5 4 3 2 1 0
+}
 ```
 
 `Range()` and `Rangei()` return a **range object**, not an array. Range objects are lightweight and iterable. They also support an O(1) `.contains()` method for bounds checking:

@@ -1,0 +1,14 @@
+fn main() {
+    Println("ordA=" + Str(Ord("A")));
+    Println("chr65=" + Chr(65));
+
+    Println("sign(-9)=" + Str((-9).sign()));
+    Println("sign(0)=" + Str((0).sign()));
+    Println("sign(7)=" + Str((7).sign()));
+
+    let nums = [10, 20, 30];
+    Println("last=" + Str(nums.last()));
+
+    let empty: Array(Int) = [];
+    Println("empty_last=" + Str(empty.last()));
+}

@@ -19,7 +19,7 @@ syn keyword zenthType         Int Float Bool Str Byte Date
 syn keyword zenthType         Array Tuple Hashmap Set Fn
 
 " Built-in functions
-syn keyword zenthBuiltin      Print Println Len Str Hashmap File Args Env Exit Range Rangei Int Float Abs Min Max Clamp Round Floor Ceil Pow Sqrt Assert AssertEq Zip Tuple Date Input
+syn keyword zenthBuiltin      Print Println Len Str Hashmap File Args Env Exit Range Rangei Int Float Ord Chr Abs Min Max Clamp Round Floor Ceil Pow Sqrt Assert AssertEq Zip Tuple Date Input
 
 " Operators
 syn match zenthOperator       /[+\-*/%=<>!&|^~]/

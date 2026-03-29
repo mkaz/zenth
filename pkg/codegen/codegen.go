@@ -68,6 +68,8 @@ type Generator struct {
 	needsExtend         bool
 	needsRepeat         bool
 	needsGet            bool
+	needsLast           bool
+	needsSignInt        bool
 	needsAssert         bool
 	needsAssertEq       bool
 	enums               map[string]*ast.EnumDecl
@@ -283,6 +285,28 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("func zenth_get[T any](s []T, i int, def T) T {")
 		g.writeln("\tif i >= 0 && i < len(s) { return s[i] }")
 		g.writeln("\treturn def")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsLast {
+		g.writeln("func zenth_last[T any](s []T) T {")
+		g.writeln("\tif len(s) == 0 {")
+		g.writeln("\t\tvar zero T")
+		g.writeln("\t\treturn zero")
+		g.writeln("\t}")
+		g.writeln("\treturn s[len(s)-1]")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsSignInt {
+		g.writeln("func zenth_sign_int(n int) int {")
+		g.writeln("\tif n < 0 {")
+		g.writeln("\t\treturn -1")
+		g.writeln("\t}")
+		g.writeln("\tif n > 0 {")
+		g.writeln("\t\treturn 1")
+		g.writeln("\t}")
+		g.writeln("\treturn 0")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -2504,6 +2528,16 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			g.genArgList(c.Args)
 			g.write(")")
 			return
+		case "Ord":
+			g.write("int([]rune(")
+			g.genExpr(c.Args[0])
+			g.write(")[0])")
+			return
+		case "Chr":
+			g.write("string(rune(")
+			g.genExpr(c.Args[0])
+			g.write("))")
+			return
 		}
 	}
 
@@ -2659,22 +2693,60 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				return
 			case "add":
 				g.needsAdd = true
-				g.write("zenth_add(&")
-				g.genExpr(field.Object)
-				g.write(", ")
-				g.genExpr(c.Args[0])
-				g.write(")")
+				if idx, ok := field.Object.(*ast.IndexExpr); ok && idx.HashmapIndex {
+					tc := g.tempCounter
+					g.tempCounter++
+					g.write("func() { ")
+					g.writef("__zhm%d := ", tc)
+					g.genExpr(idx.Object)
+					g.write("; ")
+					g.writef("__zkey%d := ", tc)
+					g.genHashmapKeyExpr(idx)
+					g.write("; ")
+					g.writef("__zval%d := __zhm%d[__zkey%d]; ", tc, tc, tc)
+					g.writef("zenth_add(&__zval%d, ", tc)
+					g.genExpr(c.Args[0])
+					g.writef("); __zhm%d[__zkey%d] = __zval%d }()", tc, tc, tc)
+				} else {
+					g.write("zenth_add(&")
+					g.genExpr(field.Object)
+					g.write(", ")
+					g.genExpr(c.Args[0])
+					g.write(")")
+				}
 				return
 			case "push":
 				g.needsPush = true
-				g.write("zenth_push(&")
-				g.genExpr(field.Object)
-				g.write(", ")
-				g.genExpr(c.Args[0])
-				g.write(")")
+				if idx, ok := field.Object.(*ast.IndexExpr); ok && idx.HashmapIndex {
+					tc := g.tempCounter
+					g.tempCounter++
+					g.write("func() { ")
+					g.writef("__zhm%d := ", tc)
+					g.genExpr(idx.Object)
+					g.write("; ")
+					g.writef("__zkey%d := ", tc)
+					g.genHashmapKeyExpr(idx)
+					g.write("; ")
+					g.writef("__zval%d := __zhm%d[__zkey%d]; ", tc, tc, tc)
+					g.writef("zenth_push(&__zval%d, ", tc)
+					g.genExpr(c.Args[0])
+					g.writef("); __zhm%d[__zkey%d] = __zval%d }()", tc, tc, tc)
+				} else {
+					g.write("zenth_push(&")
+					g.genExpr(field.Object)
+					g.write(", ")
+					g.genExpr(c.Args[0])
+					g.write(")")
+				}
 				return
 			case "length":
 				g.write("len(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "last":
+				g.needsLast = true
+				g.write("zenth_last(")
 				g.genExpr(field.Object)
 				g.write(")")
 				return
@@ -2879,21 +2951,55 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				return
 			case "insert":
 				g.needsInsert = true
-				g.write("zenth_insert(&")
-				g.genExpr(field.Object)
-				g.write(", ")
-				g.genExpr(c.Args[0])
-				g.write(", ")
-				g.genExpr(c.Args[1])
-				g.write(")")
+				if idx, ok := field.Object.(*ast.IndexExpr); ok && idx.HashmapIndex {
+					tc := g.tempCounter
+					g.tempCounter++
+					g.write("func() { ")
+					g.writef("__zhm%d := ", tc)
+					g.genExpr(idx.Object)
+					g.write("; ")
+					g.writef("__zkey%d := ", tc)
+					g.genHashmapKeyExpr(idx)
+					g.write("; ")
+					g.writef("__zval%d := __zhm%d[__zkey%d]; ", tc, tc, tc)
+					g.writef("zenth_insert(&__zval%d, ", tc)
+					g.genExpr(c.Args[0])
+					g.write(", ")
+					g.genExpr(c.Args[1])
+					g.writef("); __zhm%d[__zkey%d] = __zval%d }()", tc, tc, tc)
+				} else {
+					g.write("zenth_insert(&")
+					g.genExpr(field.Object)
+					g.write(", ")
+					g.genExpr(c.Args[0])
+					g.write(", ")
+					g.genExpr(c.Args[1])
+					g.write(")")
+				}
 				return
 			case "remove":
 				g.needsRemove = true
-				g.write("zenth_remove(&")
-				g.genExpr(field.Object)
-				g.write(", ")
-				g.genExpr(c.Args[0])
-				g.write(")")
+				if idx, ok := field.Object.(*ast.IndexExpr); ok && idx.HashmapIndex {
+					tc := g.tempCounter
+					g.tempCounter++
+					g.write("func() { ")
+					g.writef("__zhm%d := ", tc)
+					g.genExpr(idx.Object)
+					g.write("; ")
+					g.writef("__zkey%d := ", tc)
+					g.genHashmapKeyExpr(idx)
+					g.write("; ")
+					g.writef("__zval%d := __zhm%d[__zkey%d]; ", tc, tc, tc)
+					g.writef("zenth_remove(&__zval%d, ", tc)
+					g.genExpr(c.Args[0])
+					g.writef("); __zhm%d[__zkey%d] = __zval%d }()", tc, tc, tc)
+				} else {
+					g.write("zenth_remove(&")
+					g.genExpr(field.Object)
+					g.write(", ")
+					g.genExpr(c.Args[0])
+					g.write(")")
+				}
 				return
 			case "repeat":
 				g.needsRepeat = true
@@ -2905,11 +3011,27 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				return
 			case "extend":
 				g.needsExtend = true
-				g.write("zenth_extend(&")
-				g.genExpr(field.Object)
-				g.write(", ")
-				g.genExpr(c.Args[0])
-				g.write(")")
+				if idx, ok := field.Object.(*ast.IndexExpr); ok && idx.HashmapIndex {
+					tc := g.tempCounter
+					g.tempCounter++
+					g.write("func() { ")
+					g.writef("__zhm%d := ", tc)
+					g.genExpr(idx.Object)
+					g.write("; ")
+					g.writef("__zkey%d := ", tc)
+					g.genHashmapKeyExpr(idx)
+					g.write("; ")
+					g.writef("__zval%d := __zhm%d[__zkey%d]; ", tc, tc, tc)
+					g.writef("zenth_extend(&__zval%d, ", tc)
+					g.genExpr(c.Args[0])
+					g.writef("); __zhm%d[__zkey%d] = __zval%d }()", tc, tc, tc)
+				} else {
+					g.write("zenth_extend(&")
+					g.genExpr(field.Object)
+					g.write(", ")
+					g.genExpr(c.Args[0])
+					g.write(")")
+				}
 				return
 			case "join":
 				g.imports["strings"] = ""
@@ -3073,6 +3195,12 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 				g.genExpr(field.Object)
 				g.write("), ")
 				g.genExpr(c.Args[0])
+				g.write(")")
+				return
+			case "sign":
+				g.needsSignInt = true
+				g.write("zenth_sign_int(")
+				g.genExpr(field.Object)
 				g.write(")")
 				return
 			case "is_digit":

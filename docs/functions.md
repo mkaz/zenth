@@ -143,6 +143,7 @@ Zenth provides several built-in functions that are always available:
 | `Str(x)` | Convert any value to its string representation |
 | `Int(x)` / `Int(Str, base)` | Convert to `Int` (optional base for string input) |
 | `Float(x)` | Convert to `Float` |
+| `Ord(Str)` / `Chr(Int)` | Convert between character and Unicode codepoint |
 | `Abs(x)` | Absolute value for `Int` or `Float` |
 | `Min(a, b, ...)` / `Max(a, b, ...)` | Minimum / maximum for two or more `Int` or `Float` values (all args must be the same type) |
 | `Clamp(x, lo, hi)` | Clamp `x` between `lo` and `hi` (`Int` or `Float`) |
@@ -177,6 +178,15 @@ fn main() {
     Println("hex=" + Str(hex));
     Println("pi=" + Str(pi));
     Println("ratio=" + Str(ratio));
+}
+```
+
+Character/codepoint helpers:
+
+```zenth
+fn main() {
+    Println(Ord("A"));     // 65
+    Println(Chr(66));      // "B"
 }
 ```
 

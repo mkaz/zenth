@@ -462,6 +462,7 @@ type IndexExpr struct {
 	Object                 Node
 	Index                  Node
 	StrIndex               bool     // set by checker when indexing a string
+	HashmapIndex           bool     // set by checker when indexing a hashmap
 	HashmapObjKey          bool     // set by checker when indexing a hashmap with obj keys
 	HashmapTupleStruct     string   // set by checker: struct name for hashmap(tuple(...), V) indexing
 	HashmapTupleFieldTypes []string // set by checker: Go types for hashmap(tuple) conversion

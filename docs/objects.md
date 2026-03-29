@@ -41,6 +41,17 @@ let a2 = Account(balance=100);                // override one
 let a3 = Account(interest=5.0, balance=1000); // override multiple
 ```
 
+Defaults can use constructor expressions, including hashmap defaults:
+
+```zenth
+obj VM {
+    mem: Hashmap(Int, Int) = Hashmap(Int, Int, default=0);
+}
+
+let vm = VM();
+Println(Str(vm.mem[42]));  // 0
+```
+
 ## Accessing Fields
 
 Use dot notation:

@@ -539,6 +539,25 @@ func TestBuildAndRun(t *testing.T) {
 				"str:",
 			},
 		},
+		{
+			file: "ord_chr_sign_last.zn",
+			contains: []string{
+				"ordA=65",
+				"chr65=A",
+				"sign(-9)=-1",
+				"sign(0)=0",
+				"sign(7)=1",
+				"last=30",
+				"empty_last=0",
+			},
+		},
+		{
+			file: "hashmap_array_mutate.zn",
+			contains: []string{
+				"a=4,9,2,3,7,8",
+				"tuple=x-y",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -845,6 +864,22 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/import_missing_prefix.zn",
 			errMsg: "missing './' prefix",
+		},
+		{
+			file:   "errors/ord_bad_arg.zn",
+			errMsg: "argument 1 to Ord has type Int, expected Str",
+		},
+		{
+			file:   "errors/chr_bad_arg.zn",
+			errMsg: "argument 1 to Chr has type Str, expected Int",
+		},
+		{
+			file:   "errors/last_bad_args.zn",
+			errMsg: "last() takes no arguments, got 1",
+		},
+		{
+			file:   "errors/sign_bad_args.zn",
+			errMsg: "sign() takes no arguments, got 1",
 		},
 	}
 

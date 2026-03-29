@@ -1,0 +1,15 @@
+fn main() {
+    var groups = Hashmap(Str, Array(Int));
+    groups["a"] = [1, 2];
+    groups["a"].add(3);
+    groups["a"].insert(1, 9);
+    groups["a"].remove(0);
+    groups["a"].extend([7, 8]);
+    groups["a"].push(4);
+    Println("a=" + groups["a"].to_str().join(","));
+
+    var by_pos = Hashmap(Tuple(Int,Int), Array(Str));
+    by_pos[Tuple(1, 2)] = ["x"];
+    by_pos[Tuple(1, 2)].add("y");
+    Println("tuple=" + by_pos[Tuple(1, 2)].join("-"));
+}

@@ -217,6 +217,9 @@ Len("hello")                 // 5
 "ff".to_int(16)              // 255 (with base)
 "5".is_digit()               // true (single char is a decimal digit 0-9)
 "a".is_digit()               // false
+(-9).sign()                  // -1
+(0).sign()                   // 0
+(7).sign()                   // 1
 ```
 
 **String indexing and slicing:**
@@ -336,6 +339,11 @@ for i in Range(0, 5) {
     Println(i);  // 0 1 2 3 4
 }
 
+// Negative step for reverse iteration
+for i in Range(5, -1, -1) {
+    Println(i);  // 5 4 3 2 1 0
+}
+
 // Named ranges for reusable bounds checking
 let xrange = Rangei(0, 100);
 let yrange = Rangei(0, 50);
@@ -376,6 +384,7 @@ let pattern = [1, 2].repeat(6);  // [1, 2, 1, 2, 1, 2]
 // Safe indexing with default
 let val = numbers.get(0, 0);     // returns numbers[0] or 0 if out of bounds
 let x = numbers.get(99, -1);    // returns -1 (index out of bounds)
+let last = numbers.last();       // final element (zero value if empty)
 
 // Containment
 if numbers.exists(3) {
@@ -507,6 +516,15 @@ Println(Len(scores));
 // Default values (like Python's defaultdict)
 var counts = Hashmap(Str,Int, default=0);
 counts["x"] += 1;  // no KeyError, starts from 0
+
+// Defaults are generic, not Int-only
+var names = Hashmap(Str,Str, default="");
+Println(names["missing"]);  // ""
+
+// Nested generics are supported
+var recipe_in = Hashmap(Str, Array(Str));
+recipe_in["cake"] = ["flour", "eggs"];
+recipe_in["cake"].add("sugar");  // direct mutation through hashmap index
 
 // Iteration
 for key, val in scores {
@@ -760,6 +778,8 @@ Qualified types work in all type positions: function parameters, variable annota
 | `Int(x)` | Convert string or float to Int |
 | `Int(Str, base)` | Convert string to Int with base (2, 8, 16, etc.) |
 | `Float(x)` | Convert to Float |
+| `Ord(Str)` | Unicode codepoint of first character |
+| `Chr(Int)` | String containing the given codepoint |
 | `Abs(x)` | Absolute value (Int or float) |
 | `Min(a, b, ...)` | Minimum of two or more values (all must be same type: Int or Float) |
 | `Max(a, b, ...)` | Maximum of two or more values (all must be same type: Int or Float) |
