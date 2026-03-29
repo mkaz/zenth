@@ -293,6 +293,40 @@ Fn(Int)                  // takes Int, returns nothing
 
 See [Functions](functions.md#function-types) for examples of higher-order functions and passing functions as values.
 
+### Type Aliases
+
+Type aliases let you give a reusable name to any type expression:
+
+```zenth
+type Points = Array(Point);
+type Point = Tuple(x: Int, y: Int);
+type AdjList = Hashmap(Str, Array(Str));
+type Predicate = Fn(Int) -> Bool;
+```
+
+Use the alias anywhere you would normally write the underlying type:
+
+```zenth
+type Ints = Array(Int);
+type Point = Tuple(x: Int, y: Int);
+
+fn sum(nums: Ints) -> Int {
+    var total = 0;
+    for n in nums {
+        total += n;
+    }
+    return total;
+}
+
+let values: Ints = [10, 20, 30];
+let origin: Point = Tuple(x=0, y=0);
+
+Println(sum(values));
+Println("{origin.x}, {origin.y}");
+```
+
+Aliases do not create a new runtime type; they are shorthand for an existing type. The aliased type must still be a valid type expression.
+
 ### Enums
 
 Enums define a type with a fixed set of named variants:
