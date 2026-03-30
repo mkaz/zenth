@@ -11,7 +11,9 @@ clean:
     rm -f zenth
 
 docs:
+    git submodule update --init --recursive site/themes/hugo-book
     hugo -s site -D
 
 docs-serve:
-    hugo server -s site -D
+    git submodule update --init --recursive site/themes/hugo-book
+    hugo server -s site -D --baseURL http://localhost:1313/ --appendPort=false

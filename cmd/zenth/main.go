@@ -7,7 +7,7 @@ import (
 	"github.com/mkaz/zenth/pkg/driver"
 )
 
-const version = "0.8.0"
+const version = "0.8.5"
 
 func main() {
 	if len(os.Args) < 2 {
