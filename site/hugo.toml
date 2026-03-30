@@ -1,0 +1,23 @@
+baseURL = "https://mkaz.github.io/zenth/"
+languageCode = "en-us"
+title = "Zenth Programming Language"
+theme = "hugo-book"
+disableKinds = ["taxonomy", "term"]
+
+[params]
+  BookToC = true
+  BookSection = "/"
+  BookLogo = "images/zenth-enso-trans.png"
+  BookSearch = true
+  BookPortableLinks = true
+  BookRepo = "https://github.com/mkaz/zenth"
+  BookEditLink = "{{ .Site.Params.BookRepo }}/edit/trunk/site/{{ .Path }}"
+
+[markup]
+  [markup.highlight]
+    noClasses = false
+
+[[menu.after]]
+  name = "GitHub"
+  url = "https://github.com/mkaz/zenth"
+  weight = 1

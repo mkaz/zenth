@@ -1,4 +1,6 @@
 # Ignore binary
 /zenth
+/site/public/
+/site/.hugo_build.lock
 
 plan-*.md

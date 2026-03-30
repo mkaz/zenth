@@ -83,25 +83,7 @@ zenth build hello.zn
 
 ## Documentation
 
-See the [docs/](docs/README.md) for the full language reference:
-
-- [Getting Started](docs/getting-started.md)
-- [Variables](docs/variables.md)
-- [Types](docs/types.md)
-- [Functions](docs/functions.md)
-- [Strings](docs/strings.md)
-- [Control Flow](docs/control-flow.md)
-- [Enums](docs/enums.md)
-- [Objects](docs/objects.md)
-- [Arrays](docs/arrays.md)
-- [Tuples](docs/tuples.md)
-- [Hashmaps](docs/hashmaps.md)
-- [Sets](docs/sets.md)
-- [Dates](docs/dates.md)
-- [Files](docs/files.md)
-- [Imports](docs/imports.md)
-- [Modules](docs/modules.md)
-- [Testing](docs/testing.md)
+Full documentation is available at **[mkaz.github.io/zenth](https://mkaz.github.io/zenth/)** — including tutorials, how-to guides, language reference, and design explanation.
 
 ## Editor support
 
