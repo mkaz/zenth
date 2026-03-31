@@ -55,12 +55,85 @@ Transpilation also means Zenth can lean on Go's standard library for basic opera
 
 ## Borrow the best ideas
 
-Zenth does not try to introduce entirely new concepts. Instead, it takes patterns that have worked well elsewhere and puts them under a more consistent syntax:
+Zenth does not try to introduce entirely new concepts. Instead, it takes patterns that have worked well elsewhere and puts them under a more consistent syntax.
 
-- `if`/`else` as expressions (from Rust)
-- `match` for both statements and values (from Rust and Kotlin)
-- A single `for` keyword for every loop style (from Go)
-- String interpolation with `{variable}` (from Python f-strings, simplified)
-- Named and default function arguments (from Python)
+### If/else as expressions (from Rust)
+
+Assign directly from a conditional instead of declaring a variable and setting it in each branch.
+
+```zenth
+let label = if x > 5 { "big" } else { "small" };
+```
+
+### Match for both statements and values (from Rust and Kotlin)
+
+Use `match` as a statement for control flow or as an expression to produce a value.
+
+```zenth
+let label = match status {
+    200 => "OK",
+    404 => "Not Found",
+    _ => "Unknown",
+};
+```
+
+### A single for keyword for every loop style (from Go)
+
+One keyword covers counting, iteration, while-style, and infinite loops.
+
+```zenth
+for var i = 0; i < 10; i++ { Println(Str(i)); }
+for item in items { Println(item); }
+for running { process(); }
+```
+
+### String interpolation (from Python f-strings, simplified)
+
+Embed variables and expressions directly in strings with `{}`.
+
+```zenth
+let name = "World";
+Println("Hello, {name}!");
+Println("{a} + {b} = {a + b}");
+```
+
+### Named and default function arguments (from Python)
+
+Give parameters default values and call functions with named arguments in any order.
+
+```zenth
+fn greet(name: Str = "World") {
+    Println("Hello, {name}!");
+}
+greet();
+greet(name="Alice");
+```
+
+### Enums (from Rust and Python)
+
+First-class enum types replace Go's untyped `iota` constants with something the compiler can check.
+
+```zenth
+enum Color { Red; Green; Blue; }
+enum HexColor { Red = "#FF0000"; Green = "#00FF00"; Blue = "#0000FF"; }
+
+let c = Color.Red;
+let hex = match c {
+    Color.Red => "red",
+    Color.Green => "green",
+    Color.Blue => "blue",
+};
+```
+
+### Functional array methods (from Python, Rust, and JavaScript)
+
+Chain `map`, `filter`, and `reduce` on arrays instead of writing manual loops.
+
+```zenth
+let nums = [1, 2, 3, 4, 5];
+let doubled = nums.map(fn(x) x * 2);
+let evens = nums.filter(fn(x) x % 2 == 0);
+let total = nums.reduce(fn(a, b) a + b, 0);
+```
 
 The goal is a language that feels familiar enough to start quickly, while still being consistent enough to stay readable as programs grow.
