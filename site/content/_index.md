@@ -9,7 +9,7 @@ A compiled programming language that blends Go's type discipline with Python's s
 
 Zenth transpiles to Go and compiles to native binaries, giving you Go's performance, garbage collection, and cross-compilation while writing in a syntax designed for readability.
 
-```
+```zenth
 fn main() {
     let name = "World";
     Println("Hello, {name}!");
@@ -21,7 +21,7 @@ fn main() {
 }
 ```
 
-```
+```zenth
 obj Circle {
     radius: Float;
 

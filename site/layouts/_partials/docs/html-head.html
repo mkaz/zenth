@@ -6,9 +6,8 @@ https://github.com/alex-shpak/hugo-book
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="{{ or .Description .Summary | plainify | htmlUnescape }}">
-<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f4f6f3">
-<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0d1117">
-<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f4f6f3">
+<meta name="color-scheme" content="light">
 
 {{- with .Page.Params.BookHref -}}
   <meta http-equiv="Refresh" content="0; url='{{ . }}'" />
@@ -29,6 +28,8 @@ https://github.com/alex-shpak/hugo-book
 {{- end -}}
 
 <link rel="stylesheet" href="{{ "zenth-docs.css" | relURL }}">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script defer src="{{ "prism-zenth.js" | relURL }}"></script>
 
 {{- if default true .Site.Params.BookSearch -}}
   {{- $searchJSFile := printf "%s.search.js" .Language.Lang }}

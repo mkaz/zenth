@@ -5,7 +5,7 @@ theme = "hugo-book"
 disableKinds = ["taxonomy", "term"]
 
 [params]
-  BookToC = true
+  BookToC = false
   BookSection = "/"
   BookLogo = "images/zenth-enso-trans.png"
   BookSearch = true

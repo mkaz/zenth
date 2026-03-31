@@ -9,38 +9,18 @@
   --accent: #2d6a4f;
   --accent-hover: #1b4332;
   --accent-soft: rgba(45, 106, 79, 0.10);
-  --code-bg: #0e1b13;
-  --code-text: #d4e7d0;
-  --code-border: rgba(45, 106, 79, 0.18);
+  --code-bg: #f0f5ee;
+  --code-text: #1a2e1a;
+  --code-border: rgba(45, 106, 79, 0.22);
   --shadow: 0 1px 3px rgba(26, 46, 26, 0.06);
   --radius: 8px;
-  --menu-width: 18rem;
+  --menu-width: 20rem;
   --toc-width: 16rem;
   --content-width: 52rem;
   --grid-color: rgba(45, 106, 79, 0.06);
   --grid-strong: rgba(45, 106, 79, 0.12);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0d1117;
-    --surface: #131a21;
-    --surface-muted: #1a2332;
-    --border: #253342;
-    --border-strong: #35516a;
-    --text: #d0dde8;
-    --text-muted: #7a9bb0;
-    --accent: #52b788;
-    --accent-hover: #74c69d;
-    --accent-soft: rgba(82, 183, 136, 0.10);
-    --code-bg: #080d11;
-    --code-text: #b8d4c8;
-    --code-border: rgba(82, 183, 136, 0.2);
-    --shadow: none;
-    --grid-color: rgba(82, 183, 136, 0.04);
-    --grid-strong: rgba(82, 183, 136, 0.08);
-  }
-}
 
 * {
   box-sizing: border-box;
@@ -179,7 +159,7 @@ input.toggle {
 }
 
 .container {
-  width: min(100%, 96rem);
+  width: min(100%, 86rem);
   margin: 0 auto;
   display: flex;
   gap: 1.5rem;
@@ -372,22 +352,12 @@ input[type="search"] {
 }
 
 .book-toc {
-  width: min(var(--toc-width), 100%);
-  font-size: 0.9rem;
+  display: none;
 }
 
-.book-toc nav > ul,
-.book-toc ul {
-  padding-inline-start: 1rem;
-}
-
-.book-toc a {
-  color: var(--text-muted);
-}
-
-.book-toc a:hover,
-.book-toc a:focus {
-  color: var(--accent);
+a.anchor {
+  margin-right: 0.4em;
+  text-decoration: none;
 }
 
 .markdown h1,
@@ -445,6 +415,23 @@ input[type="search"] {
 .book-menu-overlay {
   display: none;
 }
+
+/* Prism syntax highlighting */
+code[class*="language-"],
+pre[class*="language-"] {
+  text-shadow: none;
+}
+
+.token.comment { color: #7a8a72; font-style: italic; }
+.token.string { color: #1a8a2e; }
+.token.keyword { color: #0550ae; font-weight: 600; }
+.token.builtin { color: #8730b8; }
+.token.type { color: #8730b8; }
+.token.constant { color: #b35000; }
+.token.self { color: #b35000; }
+.token.number { color: #b35000; }
+.token.operator { color: #24574a; }
+.token.punctuation { color: #57705a; }
 
 @media (max-width: 72rem) {
   .book-toc {
