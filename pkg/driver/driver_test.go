@@ -207,6 +207,15 @@ func TestBuildAndRun(t *testing.T) {
 			},
 		},
 		{
+			file: "stats.zn",
+			contains: []string{
+				"total_i=40", "mean_i=5", "median_i=4.5", "stdev_i=2",
+				"total_f=40", "mean_f=5", "median_f=4.5", "stdev_f=2",
+				"median_even=4", "median_odd=3",
+				"mean_single=42", "stdev_single=0",
+			},
+		},
+		{
 			file:     "named_args_func.zn",
 			contains: []string{"1,2,3", "5,6,7"},
 		},
@@ -795,6 +804,10 @@ func TestCompileErrors(t *testing.T) {
 		{
 			file:   "errors/sum_non_numeric.zn",
 			errMsg: "sum() requires a numeric array",
+		},
+		{
+			file:   "errors/stats_non_numeric.zn",
+			errMsg: "mean() requires a numeric array",
 		},
 		{
 			file:   "errors/sorted_non_sortable.zn",

@@ -168,6 +168,10 @@ Zenth provides several built-in functions that are always available:
 | `Erf(x)` / `Erfc(x)` | Error function and complementary error function |
 | `Gamma(x)` / `Lgamma(x)` | Gamma function and natural log of Gamma |
 | `Range(start, end[, step])` | Build an exclusive range object |
+| Array `.total()` | Sum of all elements (same type as array) |
+| Array `.mean()` | Arithmetic mean (returns `Float`) |
+| Array `.median()` | Median value (returns `Float`) |
+| Array `.stdev()` | Population standard deviation (returns `Float`) |
 | `Rangei(start, end[, step])` | Build an inclusive range object |
 | `Hashmap(K, V[, default=val])` | Build an empty hashmap (optional default value) |
 | `Set(T)` / `Set(items)` | Build an empty set or convert an array to a set |
@@ -316,6 +320,38 @@ fn main() {
 | `Signbit(x)` | True if x is negative (`Float` argument) |
 | `Erf(x)` / `Erfc(x)` | Error function and complement |
 | `Gamma(x)` / `Lgamma(x)` | Gamma and log-Gamma |
+
+## Statistics
+
+Numeric arrays (`Array(Int)` and `Array(Float)`) have four statistics methods. They do not modify the original array.
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `.total()` | same as element type | Sum of all elements |
+| `.mean()` | `Float` | Arithmetic mean |
+| `.median()` | `Float` | Median (sorts a copy, handles even and odd length) |
+| `.stdev()` | `Float` | Population standard deviation |
+
+```zenth
+fn main() {
+    let scores = [72, 85, 91, 68, 79, 95, 88];
+
+    Println("total: " + Str(scores.total()));   // 578
+    Println("mean:  " + Str(scores.mean()));    // ~82.57
+    Println("median:" + Str(scores.median()));  // 85
+    Println("stdev: " + Str(scores.stdev()));   // ~9.05
+}
+```
+
+Float arrays work the same way:
+
+```zenth
+fn main() {
+    let temps = [36.6, 37.1, 36.9, 38.2, 37.0];
+    Println("mean temp: " + Str(temps.mean()));
+    Println("stdev:     " + Str(temps.stdev()));
+}
+```
 
 ## Zip
 

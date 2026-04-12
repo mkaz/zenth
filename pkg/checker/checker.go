@@ -1555,6 +1555,42 @@ func (c *Checker) checkCallExpr(e *ast.CallExpr) ZType {
 				}
 				e.SliceMethod = true
 				return sliceType.Elem
+			case "total":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "total() takes no arguments, got %d", len(e.Args))
+				}
+				if !IsNumeric(sliceType.Elem) {
+					c.errorf(e.Pos(), "total() requires a numeric array, got %s", objType)
+				}
+				e.SliceMethod = true
+				return sliceType.Elem
+			case "mean":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "mean() takes no arguments, got %d", len(e.Args))
+				}
+				if !IsNumeric(sliceType.Elem) {
+					c.errorf(e.Pos(), "mean() requires a numeric array, got %s", objType)
+				}
+				e.SliceMethod = true
+				return TypeFloat
+			case "median":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "median() takes no arguments, got %d", len(e.Args))
+				}
+				if !IsNumeric(sliceType.Elem) {
+					c.errorf(e.Pos(), "median() requires a numeric array, got %s", objType)
+				}
+				e.SliceMethod = true
+				return TypeFloat
+			case "stdev":
+				if len(e.Args) != 0 {
+					c.errorf(e.Pos(), "stdev() takes no arguments, got %d", len(e.Args))
+				}
+				if !IsNumeric(sliceType.Elem) {
+					c.errorf(e.Pos(), "stdev() requires a numeric array, got %s", objType)
+				}
+				e.SliceMethod = true
+				return TypeFloat
 			case "sorted":
 				c.checkSortedArgs(e)
 				if !IsNumeric(sliceType.Elem) && !sliceType.Elem.Equals(TypeStr) {

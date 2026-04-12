@@ -57,6 +57,10 @@ type Generator struct {
 	needsSliceMax       bool
 	needsSliceMin       bool
 	needsSliceSum       bool
+	needsSliceTotal     bool
+	needsSliceMean      bool
+	needsSliceMedian    bool
+	needsSliceStdev     bool
 	needsSliceSorted    bool
 	needsSliceReduce    bool
 	needsStringSorted   bool
@@ -759,6 +763,47 @@ func (g *Generator) Generate(prog *ast.Program) string {
 		g.writeln("\tvar total T")
 		g.writeln("\tfor _, v := range s { total += v }")
 		g.writeln("\treturn total")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsSliceTotal {
+		g.writeln("func zenth_slice_total[T interface{ ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 }](s []T) T {")
+		g.writeln("\tvar acc T")
+		g.writeln("\tfor _, v := range s { acc += v }")
+		g.writeln("\treturn acc")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsSliceMean {
+		g.writeln("func zenth_slice_mean[T interface{ ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 }](s []T) float64 {")
+		g.writeln("\tif len(s) == 0 { panic(\"mean() called on empty array\") }")
+		g.writeln("\tvar sum float64")
+		g.writeln("\tfor _, v := range s { sum += float64(v) }")
+		g.writeln("\treturn sum / float64(len(s))")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsSliceMedian {
+		g.writeln("func zenth_slice_median[T interface{ ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 }](s []T) float64 {")
+		g.writeln("\tif len(s) == 0 { panic(\"median() called on empty array\") }")
+		g.writeln("\tcp := make([]T, len(s))")
+		g.writeln("\tcopy(cp, s)")
+		g.writeln("\tsort.Slice(cp, func(i, j int) bool { return cp[i] < cp[j] })")
+		g.writeln("\tn := len(cp)")
+		g.writeln("\tif n%2 == 0 { return (float64(cp[n/2-1]) + float64(cp[n/2])) / 2.0 }")
+		g.writeln("\treturn float64(cp[n/2])")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsSliceStdev {
+		g.writeln("func zenth_slice_stdev[T interface{ ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 }](s []T) float64 {")
+		g.writeln("\tif len(s) == 0 { panic(\"stdev() called on empty array\") }")
+		g.writeln("\tvar sum float64")
+		g.writeln("\tfor _, v := range s { sum += float64(v) }")
+		g.writeln("\tmean := sum / float64(len(s))")
+		g.writeln("\tvar variance float64")
+		g.writeln("\tfor _, v := range s { d := float64(v) - mean; variance += d * d }")
+		g.writeln("\treturn math.Sqrt(variance / float64(len(s)))")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -3017,6 +3062,32 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 			case "sum":
 				g.needsSliceSum = true
 				g.write("zenth_slice_sum(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "total":
+				g.needsSliceTotal = true
+				g.write("zenth_slice_total(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "mean":
+				g.needsSliceMean = true
+				g.write("zenth_slice_mean(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "median":
+				g.needsSliceMedian = true
+				g.imports["sort"] = ""
+				g.write("zenth_slice_median(")
+				g.genExpr(field.Object)
+				g.write(")")
+				return
+			case "stdev":
+				g.needsSliceStdev = true
+				g.imports["math"] = ""
+				g.write("zenth_slice_stdev(")
 				g.genExpr(field.Object)
 				g.write(")")
 				return

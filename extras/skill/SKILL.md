@@ -810,6 +810,10 @@ Qualified types work in all type positions: function parameters, variable annota
 | `Signbit(x)` | True if x is negative (`Float` argument, returns `Bool`) |
 | `Erf(x)` / `Erfc(x)` | Error function / complement |
 | `Gamma(x)` / `Lgamma(x)` | Gamma and log-Gamma |
+| Array `.total()` | Sum of all elements (same type as array) |
+| Array `.mean()` | Arithmetic mean (returns `Float`) |
+| Array `.median()` | Median value (returns `Float`) |
+| Array `.stdev()` | Population standard deviation (returns `Float`) |
 | `Range(start, end)` | Exclusive range object |
 | `Range(start, end, step)` | Exclusive range object with step |
 | `Rangei(start, end)` | Inclusive range object |
