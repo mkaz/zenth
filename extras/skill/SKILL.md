@@ -784,11 +784,32 @@ Qualified types work in all type positions: function parameters, variable annota
 | `Min(a, b, ...)` | Minimum of two or more values (all must be same type: Int or Float) |
 | `Max(a, b, ...)` | Maximum of two or more values (all must be same type: Int or Float) |
 | `Clamp(x, lo, hi)` | Clamp value to range |
-| `Round(x)` | Round float to nearest Int |
+| `Round(x)` | Round float to nearest integer |
 | `Floor(x)` | Floor of float |
 | `Ceil(x)` | Ceiling of float |
+| `Trunc(x)` | Truncate toward zero |
 | `Pow(base, exp)` | Exponentiation |
+| `Pow10(n)` | 10^n (`Int` argument, returns `Float`) |
 | `Sqrt(x)` | Square root |
+| `Cbrt(x)` | Cube root |
+| `Hypot(x, y)` | sqrt(x^2 + y^2) |
+| `Sin(x)` / `Cos(x)` / `Tan(x)` | Trig functions (radians) |
+| `Asin(x)` / `Acos(x)` / `Atan(x)` | Inverse trig |
+| `Atan2(y, x)` | Two-argument arctangent |
+| `Sinh(x)` / `Cosh(x)` / `Tanh(x)` | Hyperbolic trig |
+| `Asinh(x)` / `Acosh(x)` / `Atanh(x)` | Inverse hyperbolic |
+| `Log(x)` / `Log2(x)` / `Log10(x)` / `Log1p(x)` | Logarithms |
+| `Exp(x)` / `Exp2(x)` / `Expm1(x)` | Exponentials |
+| `Mod(x, y)` / `Remainder(x, y)` | Float modulo / IEEE remainder |
+| `Dim(x, y)` | max(x-y, 0) |
+| `Copysign(x, y)` | x with sign of y |
+| `NaN()` | IEEE 754 not-a-number |
+| `Inf(sign)` | Infinity; sign is `Int` (1 or -1) |
+| `IsNaN(x)` | True if x is NaN (`Float` argument, returns `Bool`) |
+| `IsInf(x, sign)` | True if x is infinity in given direction (sign `Int`: 1, -1, or 0) |
+| `Signbit(x)` | True if x is negative (`Float` argument, returns `Bool`) |
+| `Erf(x)` / `Erfc(x)` | Error function / complement |
+| `Gamma(x)` / `Lgamma(x)` | Gamma and log-Gamma |
 | `Range(start, end)` | Exclusive range object |
 | `Range(start, end, step)` | Exclusive range object with step |
 | `Rangei(start, end)` | Inclusive range object |

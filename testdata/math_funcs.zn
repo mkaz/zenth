@@ -1,0 +1,54 @@
+fn main() {
+    // trig
+    Println("sin=" + Str(Sin(0.0)));
+    Println("cos=" + Str(Cos(0.0)));
+    Println("tan=" + Str(Tan(0.0)));
+
+    // inverse trig
+    Println("asin=" + Str(Asin(0.0)));
+    Println("acos=" + Str(Acos(1.0)));
+    Println("atan=" + Str(Atan(0.0)));
+    Println("atan2=" + Str(Atan2(0.0, 1.0)));
+
+    // hyperbolic
+    Println("sinh=" + Str(Sinh(0.0)));
+    Println("cosh=" + Str(Cosh(0.0)));
+    Println("tanh=" + Str(Tanh(0.0)));
+
+    // inverse hyperbolic
+    Println("asinh=" + Str(Asinh(0.0)));
+    Println("acosh=" + Str(Acosh(1.0)));
+    Println("atanh=" + Str(Atanh(0.0)));
+
+    // log and exp
+    Println("log=" + Str(Log(1.0)));
+    Println("log2=" + Str(Log2(8.0)));
+    Println("log10=" + Str(Log10(100.0)));
+    Println("log1p=" + Str(Log1p(0.0)));
+    Println("exp=" + Str(Exp(0.0)));
+    Println("exp2=" + Str(Exp2(3.0)));
+    Println("expm1=" + Str(Expm1(0.0)));
+
+    // roots and rounding
+    Println("cbrt=" + Str(Cbrt(27.0)));
+    Println("trunc=" + Str(Trunc(3.9)));
+
+    // two-arg
+    Println("hypot=" + Str(Hypot(3.0, 4.0)));
+    Println("mod=" + Str(Mod(10.0, 3.0)));
+    Println("dim=" + Str(Dim(5.0, 3.0)));
+    Println("copysign=" + Str(Copysign(3.0, -1.0)));
+    Println("remainder=" + Str(Remainder(10.0, 3.0)));
+
+    // special values
+    Println("nan=" + Str(IsNaN(NaN())));
+    Println("inf=" + Str(IsInf(Inf(1), 1)));
+    Println("signbit=" + Str(Signbit(-1.0)));
+    Println("pow10=" + Str(Pow10(3)));
+
+    // error and gamma
+    Println("erf=" + Str(Erf(0.0)));
+    Println("erfc=" + Str(Erfc(0.0)));
+    Println("gamma=" + Str(Gamma(1.0)));
+    Println("lgamma=" + Str(Lgamma(1.0)));
+}

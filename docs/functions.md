@@ -147,8 +147,26 @@ Zenth provides several built-in functions that are always available:
 | `Abs(x)` | Absolute value for `Int` or `Float` |
 | `Min(a, b, ...)` / `Max(a, b, ...)` | Minimum / maximum for two or more `Int` or `Float` values (all args must be the same type) |
 | `Clamp(x, lo, hi)` | Clamp `x` between `lo` and `hi` (`Int` or `Float`) |
-| `Round(x)` / `Floor(x)` / `Ceil(x)` | Floating-point rounding helpers (return `Float`) |
-| `Pow(x, y)` / `Sqrt(x)` | Power and square root (return `Float`) |
+| `Round(x)` / `Floor(x)` / `Ceil(x)` / `Trunc(x)` | Floating-point rounding (return `Float`) |
+| `Pow(x, y)` / `Sqrt(x)` / `Cbrt(x)` | Power, square root, cube root (return `Float`) |
+| `Pow10(n)` | 10 raised to the power `n` (`Int` argument, returns `Float`) |
+| `Sin(x)` / `Cos(x)` / `Tan(x)` | Trigonometric functions (radians, return `Float`) |
+| `Asin(x)` / `Acos(x)` / `Atan(x)` | Inverse trig functions (return `Float`) |
+| `Atan2(y, x)` | Two-argument arctangent (return `Float`) |
+| `Sinh(x)` / `Cosh(x)` / `Tanh(x)` | Hyperbolic functions (return `Float`) |
+| `Asinh(x)` / `Acosh(x)` / `Atanh(x)` | Inverse hyperbolic functions (return `Float`) |
+| `Log(x)` / `Log2(x)` / `Log10(x)` / `Log1p(x)` | Logarithms: natural, base-2, base-10, ln(1+x) |
+| `Exp(x)` / `Exp2(x)` / `Expm1(x)` | Exponentials: e^x, 2^x, e^x-1 |
+| `Hypot(x, y)` | Euclidean distance sqrt(x^2+y^2) |
+| `Mod(x, y)` / `Remainder(x, y)` | Floating-point modulo / IEEE remainder |
+| `Dim(x, y)` | max(x-y, 0) |
+| `Copysign(x, y)` | Return `x` with the sign of `y` |
+| `IsNaN(x)` / `IsInf(x, sign)` | Test for NaN or infinity (`Float` argument, `sign` is `Int`: 1, -1, or 0 for either) |
+| `NaN()` | Return IEEE 754 not-a-number |
+| `Inf(sign)` | Return positive or negative infinity (`sign` is `Int`: 1 or -1) |
+| `Signbit(x)` | Return `true` if `x` is negative (returns `Bool`) |
+| `Erf(x)` / `Erfc(x)` | Error function and complementary error function |
+| `Gamma(x)` / `Lgamma(x)` | Gamma function and natural log of Gamma |
 | `Range(start, end[, step])` | Build an exclusive range object |
 | `Rangei(start, end[, step])` | Build an inclusive range object |
 | `Hashmap(K, V[, default=val])` | Build an empty hashmap (optional default value) |
@@ -201,6 +219,103 @@ fn main() {
     Println(Str(Abs(-5)));  // prints "5"
 }
 ```
+
+## Math Functions
+
+Zenth exposes all of Go's `math` package as built-in functions. No import is needed.
+
+All math functions accept `Int` or `Float` unless noted otherwise and return `Float`.
+
+### Trigonometry
+
+```zenth
+fn main() {
+    let angle = 3.14159 / 2.0;  // pi/2
+    Println(Sin(angle));   // ~1
+    Println(Cos(0.0));     // 1
+    Println(Tan(0.0));     // 0
+    Println(Atan2(1.0, 1.0));  // pi/4
+}
+```
+
+### Logarithms and Exponentials
+
+```zenth
+fn main() {
+    Println(Log(1.0));     // 0 (natural log)
+    Println(Log2(8.0));    // 3
+    Println(Log10(100.0)); // 2
+    Println(Exp(1.0));     // ~2.718 (e)
+    Println(Exp2(3.0));    // 8
+    Println(Pow10(3));     // 1000
+}
+```
+
+### Roots
+
+```zenth
+fn main() {
+    Println(Sqrt(9.0));   // 3
+    Println(Cbrt(27.0));  // 3
+    Println(Hypot(3.0, 4.0));  // 5
+}
+```
+
+### Rounding
+
+```zenth
+fn main() {
+    Println(Floor(3.9));  // 3
+    Println(Ceil(3.1));   // 4
+    Println(Round(3.5));  // 4
+    Println(Trunc(3.9));  // 3 (toward zero)
+}
+```
+
+### Special Values
+
+```zenth
+fn main() {
+    let n = NaN();
+    Println(IsNaN(n));          // true
+    let pos = Inf(1);
+    Println(IsInf(pos, 1));     // true
+    Println(Signbit(-1.0));     // true
+    Println(Copysign(3.0, -1.0)); // -3
+}
+```
+
+### All Math Built-ins
+
+| Function | Description |
+|----------|-------------|
+| `Sin(x)` / `Cos(x)` / `Tan(x)` | Trig (radians) |
+| `Asin(x)` / `Acos(x)` / `Atan(x)` | Inverse trig |
+| `Atan2(y, x)` | Two-argument arctangent |
+| `Sinh(x)` / `Cosh(x)` / `Tanh(x)` | Hyperbolic trig |
+| `Asinh(x)` / `Acosh(x)` / `Atanh(x)` | Inverse hyperbolic |
+| `Log(x)` | Natural logarithm |
+| `Log2(x)` / `Log10(x)` | Base-2 and base-10 log |
+| `Log1p(x)` | Natural log of 1+x (accurate for small x) |
+| `Exp(x)` | e raised to x |
+| `Exp2(x)` | 2 raised to x |
+| `Expm1(x)` | e^x - 1 (accurate for small x) |
+| `Pow10(n)` | 10^n (`Int` argument) |
+| `Sqrt(x)` / `Cbrt(x)` | Square and cube root |
+| `Hypot(x, y)` | sqrt(x^2 + y^2) |
+| `Floor(x)` / `Ceil(x)` / `Round(x)` / `Trunc(x)` | Rounding |
+| `Mod(x, y)` | Floating-point remainder (same sign as x) |
+| `Remainder(x, y)` | IEEE 754 remainder |
+| `Dim(x, y)` | max(x-y, 0) |
+| `Copysign(x, y)` | `x` with sign of `y` |
+| `Abs(x)` | Absolute value (`Int` or `Float`) |
+| `NaN()` | IEEE 754 not-a-number value |
+| `Inf(sign)` | Infinity; sign is `Int` (1 or -1) |
+| `IsNaN(x)` | True if x is NaN (`Float` argument) |
+| `IsInf(x, sign)` | True if x is infinity in given direction (sign: 1, -1, or 0 for either) |
+| `Signbit(x)` | True if x is negative (`Float` argument) |
+| `Erf(x)` / `Erfc(x)` | Error function and complement |
+| `Gamma(x)` / `Lgamma(x)` | Gamma and log-Gamma |
 
 ## Zip
 

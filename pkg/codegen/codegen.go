@@ -82,6 +82,7 @@ type Generator struct {
 	needsDateFrom       bool
 	needsDateAdd        bool
 	needsDateSub        bool
+	needsLgamma         bool
 	flagDecls           []flagDecl
 	tempCounter         int
 }
@@ -688,6 +689,13 @@ func (g *Generator) Generate(prog *ast.Program) string {
 	if g.needsClampF64 {
 		g.writeln("func zenth_clamp_f64(x, lo, hi float64) float64 {")
 		g.writeln("\treturn math.Max(lo, math.Min(x, hi))")
+		g.writeln("}")
+		g.writeln("")
+	}
+	if g.needsLgamma {
+		g.writeln("func zenth_lgamma(x float64) float64 {")
+		g.writeln("\tv, _ := math.Lgamma(x)")
+		g.writeln("\treturn v")
 		g.writeln("}")
 		g.writeln("")
 	}
@@ -2497,6 +2505,68 @@ func (g *Generator) genCallExpr(c *ast.CallExpr) {
 		case "Sqrt":
 			g.imports["math"] = ""
 			g.write("math.Sqrt(float64(")
+			g.genExpr(c.Args[0])
+			g.write("))")
+			return
+		case "Sin", "Cos", "Tan", "Asin", "Acos", "Atan",
+			"Sinh", "Cosh", "Tanh", "Asinh", "Acosh", "Atanh",
+			"Log", "Log2", "Log10", "Log1p",
+			"Exp", "Exp2", "Expm1",
+			"Cbrt", "Trunc",
+			"Erf", "Erfc", "Gamma":
+			g.imports["math"] = ""
+			g.write("math.")
+			g.write(ident.Name)
+			g.write("(float64(")
+			g.genExpr(c.Args[0])
+			g.write("))")
+			return
+		case "Lgamma":
+			g.imports["math"] = ""
+			g.needsLgamma = true
+			g.write("zenth_lgamma(float64(")
+			g.genExpr(c.Args[0])
+			g.write("))")
+			return
+		case "IsNaN", "Signbit":
+			g.imports["math"] = ""
+			g.write("math.")
+			g.write(ident.Name)
+			g.write("(")
+			g.genExpr(c.Args[0])
+			g.write(")")
+			return
+		case "Atan2", "Hypot", "Mod", "Dim", "Remainder", "Copysign":
+			g.imports["math"] = ""
+			g.write("math.")
+			g.write(ident.Name)
+			g.write("(float64(")
+			g.genExpr(c.Args[0])
+			g.write("), float64(")
+			g.genExpr(c.Args[1])
+			g.write("))")
+			return
+		case "NaN":
+			g.imports["math"] = ""
+			g.write("math.NaN()")
+			return
+		case "Inf":
+			g.imports["math"] = ""
+			g.write("math.Inf(int(")
+			g.genExpr(c.Args[0])
+			g.write("))")
+			return
+		case "IsInf":
+			g.imports["math"] = ""
+			g.write("math.IsInf(")
+			g.genExpr(c.Args[0])
+			g.write(", int(")
+			g.genExpr(c.Args[1])
+			g.write("))")
+			return
+		case "Pow10":
+			g.imports["math"] = ""
+			g.write("math.Pow10(int(")
 			g.genExpr(c.Args[0])
 			g.write("))")
 			return

@@ -192,6 +192,21 @@ func TestBuildAndRun(t *testing.T) {
 			},
 		},
 		{
+			file: "math_funcs.zn",
+			contains: []string{
+				"sin=0", "cos=1", "tan=0",
+				"asin=0", "acos=0", "atan=0", "atan2=0",
+				"sinh=0", "cosh=1", "tanh=0",
+				"asinh=0", "acosh=0", "atanh=0",
+				"log=0", "log2=3", "log10=2", "log1p=0",
+				"exp=1", "exp2=8", "expm1=0",
+				"cbrt=3", "trunc=3",
+				"hypot=5", "mod=1", "dim=2", "copysign=-3", "remainder=1",
+				"nan=true", "inf=true", "signbit=true", "pow10=1000",
+				"erf=0", "erfc=1", "gamma=1", "lgamma=0",
+			},
+		},
+		{
 			file:     "named_args_func.zn",
 			contains: []string{"1,2,3", "5,6,7"},
 		},

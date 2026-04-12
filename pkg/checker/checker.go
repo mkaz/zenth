@@ -2293,7 +2293,16 @@ func (c *Checker) qualifyModuleType(t ZType, moduleName string) ZType {
 
 func isNumericBuiltin(name string) bool {
 	switch name {
-	case "Abs", "Min", "Max", "Clamp", "Round", "Floor", "Ceil", "Pow", "Sqrt":
+	case "Abs", "Min", "Max", "Clamp", "Round", "Floor", "Ceil", "Pow", "Sqrt",
+		"Sin", "Cos", "Tan", "Asin", "Acos", "Atan",
+		"Sinh", "Cosh", "Tanh", "Asinh", "Acosh", "Atanh",
+		"Log", "Log2", "Log10", "Log1p",
+		"Exp", "Exp2", "Expm1",
+		"Cbrt", "Trunc",
+		"Erf", "Erfc", "Gamma", "Lgamma",
+		"IsNaN", "Signbit",
+		"Atan2", "Hypot", "Mod", "Dim", "Remainder", "Copysign",
+		"NaN", "Pow10", "Inf", "IsInf":
 		return true
 	default:
 		return false
@@ -2429,6 +2438,116 @@ func (c *Checker) checkNumericBuiltinCall(e *ast.CallExpr, name string) ZType {
 			c.errorf(args[1].Pos(), "Pow() argument 2 must be Int or Float, got %s", t2)
 		}
 		e.NumericMethod = "pow"
+		return TypeFloat
+	case "Sin", "Cos", "Tan", "Asin", "Acos", "Atan",
+		"Sinh", "Cosh", "Tanh", "Asinh", "Acosh", "Atanh",
+		"Log", "Log2", "Log10", "Log1p",
+		"Exp", "Exp2", "Expm1",
+		"Cbrt", "Trunc",
+		"Erf", "Erfc", "Gamma", "Lgamma":
+		if len(args) != 1 {
+			c.errorf(e.Pos(), "%s() takes exactly 1 argument, got %d", name, len(args))
+			for _, arg := range args {
+				c.checkNode(arg)
+			}
+			return TypeVoid
+		}
+		t := c.checkNode(args[0])
+		if !isBasicNumberType(t) {
+			c.errorf(args[0].Pos(), "%s() argument must be Int or Float, got %s", name, t)
+			return TypeVoid
+		}
+		e.NumericMethod = strings.ToLower(name)
+		return TypeFloat
+	case "IsNaN", "Signbit":
+		if len(args) != 1 {
+			c.errorf(e.Pos(), "%s() takes exactly 1 argument, got %d", name, len(args))
+			for _, arg := range args {
+				c.checkNode(arg)
+			}
+			return TypeVoid
+		}
+		t := c.checkNode(args[0])
+		if !t.Equals(TypeFloat) {
+			c.errorf(args[0].Pos(), "%s() argument must be Float, got %s", name, t)
+			return TypeVoid
+		}
+		e.NumericMethod = strings.ToLower(name)
+		return TypeBool
+	case "Atan2", "Hypot", "Mod", "Dim", "Remainder", "Copysign":
+		if len(args) != 2 {
+			c.errorf(e.Pos(), "%s() takes exactly 2 arguments, got %d", name, len(args))
+			for _, arg := range args {
+				c.checkNode(arg)
+			}
+			return TypeVoid
+		}
+		t1 := c.checkNode(args[0])
+		t2 := c.checkNode(args[1])
+		if !isBasicNumberType(t1) {
+			c.errorf(args[0].Pos(), "%s() argument 1 must be Int or Float, got %s", name, t1)
+		}
+		if !isBasicNumberType(t2) {
+			c.errorf(args[1].Pos(), "%s() argument 2 must be Int or Float, got %s", name, t2)
+		}
+		e.NumericMethod = strings.ToLower(name)
+		return TypeFloat
+	case "NaN":
+		if len(args) != 0 {
+			c.errorf(e.Pos(), "NaN() takes no arguments, got %d", len(args))
+			for _, arg := range args {
+				c.checkNode(arg)
+			}
+		}
+		e.NumericMethod = "nan"
+		return TypeFloat
+	case "Inf":
+		if len(args) != 1 {
+			c.errorf(e.Pos(), "Inf() takes exactly 1 argument (sign), got %d", len(args))
+			for _, arg := range args {
+				c.checkNode(arg)
+			}
+			return TypeVoid
+		}
+		t := c.checkNode(args[0])
+		if !t.Equals(TypeInt) {
+			c.errorf(args[0].Pos(), "Inf() argument must be Int (sign: 1 or -1), got %s", t)
+			return TypeVoid
+		}
+		e.NumericMethod = "inf"
+		return TypeFloat
+	case "IsInf":
+		if len(args) != 2 {
+			c.errorf(e.Pos(), "IsInf() takes exactly 2 arguments, got %d", len(args))
+			for _, arg := range args {
+				c.checkNode(arg)
+			}
+			return TypeVoid
+		}
+		t1 := c.checkNode(args[0])
+		t2 := c.checkNode(args[1])
+		if !t1.Equals(TypeFloat) {
+			c.errorf(args[0].Pos(), "IsInf() argument 1 must be Float, got %s", t1)
+		}
+		if !t2.Equals(TypeInt) {
+			c.errorf(args[1].Pos(), "IsInf() argument 2 must be Int (sign: 1, -1, or 0), got %s", t2)
+		}
+		e.NumericMethod = "isinf"
+		return TypeBool
+	case "Pow10":
+		if len(args) != 1 {
+			c.errorf(e.Pos(), "Pow10() takes exactly 1 argument, got %d", len(args))
+			for _, arg := range args {
+				c.checkNode(arg)
+			}
+			return TypeVoid
+		}
+		t := c.checkNode(args[0])
+		if !t.Equals(TypeInt) {
+			c.errorf(args[0].Pos(), "Pow10() argument must be Int, got %s", t)
+			return TypeVoid
+		}
+		e.NumericMethod = "pow10"
 		return TypeFloat
 	default:
 		for _, arg := range args {

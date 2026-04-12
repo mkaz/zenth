@@ -20,6 +20,11 @@ syn keyword zenthType         Array Tuple Hashmap Set Fn
 
 " Built-in functions
 syn keyword zenthBuiltin      Print Println Len Str Hashmap File Args Env Exit Range Rangei Int Float Ord Chr Abs Min Max Clamp Round Floor Ceil Pow Sqrt Assert AssertEq Zip Tuple Date Input
+syn keyword zenthBuiltin      Sin Cos Tan Asin Acos Atan Atan2 Sinh Cosh Tanh Asinh Acosh Atanh
+syn keyword zenthBuiltin      Log Log2 Log10 Log1p Exp Exp2 Expm1 Cbrt Trunc
+syn keyword zenthBuiltin      Hypot Mod Dim Copysign Remainder
+syn keyword zenthBuiltin      IsNaN Signbit NaN Inf IsInf Pow10
+syn keyword zenthBuiltin      Erf Erfc Gamma Lgamma
 
 " Operators
 syn match zenthOperator       /[+\-*/%=<>!&|^~]/
