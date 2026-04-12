@@ -24,7 +24,7 @@ cd zenth
 just build
 ```
 
-This produces a `zenth` binary in the current directory. To install it to your `$GOPATH/bin`:
+This produces a `zenth` binary in the current directory. To install, add it to your `$PATH`:
 
 ```sh
 just install
